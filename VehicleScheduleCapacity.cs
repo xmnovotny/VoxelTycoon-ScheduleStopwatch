@@ -78,20 +78,20 @@ namespace ScheduleStopwatch
          */
         private bool Refit(RefitTask refitTask, Dictionary<VehicleUnit, StorageState> storages)
         {
-            var item = refitTask.Item;
+            Item item = refitTask.Item;
             if (item == null)
             {
                 //refit to auto = cannot determine begin state
                 return false;
             }
-            var targetUnits = refitTask.GetTargetUnits();
-            var targetUnitsCount = targetUnits.Count;
+            ImmutableUniqueList<VehicleUnit> targetUnits = refitTask.GetTargetUnits();
+            int targetUnitsCount = targetUnits.Count;
 
-            var storageManager = LazyManager<StorageManager>.Current;
+            StorageManager storageManager = LazyManager<StorageManager>.Current;
             for (var k = 0; k < targetUnitsCount; k++)
             {
-                var targetUnit = targetUnits[k];
-                storageManager.TryGetStorage(targetUnit.SharedData.AssetId, item, out var newStorage);
+                VehicleUnit targetUnit = targetUnits[k];
+                storageManager.TryGetStorage(targetUnit.SharedData.AssetId, item, out Storage newStorage);
                 if (newStorage != null && storages.ContainsKey(targetUnit) && storages[targetUnit].storage.Item != newStorage.Item)
                 {
                     storages[targetUnit] = new StorageState(newStorage);
@@ -106,13 +106,13 @@ namespace ScheduleStopwatch
          */
         private void Transfer(TransferTask transferTask, Dictionary<VehicleUnit, StorageState> storages, ref TaskTransfers taskTransfers, bool calculateTransfer = false)
         {
-            var targetUnits = transferTask.GetTargetUnits();
-            var targetUnitsCount = targetUnits.Count;
+            ImmutableUniqueList<VehicleUnit> targetUnits = transferTask.GetTargetUnits();
+            int targetUnitsCount = targetUnits.Count;
 
-            for (var k = 0; k < targetUnitsCount; k++)
+            for (int k = 0; k < targetUnitsCount; k++)
             {
-                var targetUnit = targetUnits[k];
-                if (storages.TryGetValue(targetUnit, out var storage))
+                VehicleUnit targetUnit = targetUnits[k];
+                if (storages.TryGetValue(targetUnit, out StorageState storage))
                 {
                     int newCount = transferTask is LoadTask ? storage.storage.Capacity : 0;
                     if (storage.count != newCount)
@@ -134,9 +134,9 @@ namespace ScheduleStopwatch
 
         private Dictionary<VehicleUnit, StorageState> GetActualStorages()
         {
-            var vehicle = VehicleSchedule.Vehicle;
-            var units = vehicle.Units;
-            var unitsCount = units.Count;
+            Vehicle vehicle = VehicleSchedule.Vehicle;
+            ImmutableUniqueList<VehicleUnit> units = vehicle.Units;
+            int unitsCount = units.Count;
 
             var storages = new Dictionary<VehicleUnit, StorageState>(unitsCount);
             for (var i = 0; i < unitsCount; i++)
@@ -149,18 +149,18 @@ namespace ScheduleStopwatch
 
         private bool ProcessSchedule(Dictionary<VehicleUnit, StorageState> storages, bool onlyRefit, Dictionary<RootTask, TaskTransfers> transfers = null)
         {
-            var tasks = VehicleSchedule.GetTasks();
-            var tasksCount = tasks.Count;
-            for (var i = 0; i < tasksCount; i++)
+            ImmutableList<RootTask> tasks = VehicleSchedule.GetTasks();
+            int tasksCount = tasks.Count;
+            for (int i = 0; i < tasksCount; i++)
             {
-                var task = tasks[i];
-                var subTasks = task.GetSubTasks();
-                var subTaskCount = subTasks.Count;
+                RootTask task = tasks[i];
+                ImmutableList<SubTask> subTasks = task.GetSubTasks();
+                int subTaskCount = subTasks.Count;
                 TaskTransfers transfer = null;
 
-                for (var j = 0; j < subTaskCount; j++)
+                for (int j = 0; j < subTaskCount; j++)
                 {
-                    var subTask = subTasks[j];
+                    SubTask subTask = subTasks[j];
                     if (subTask is RefitTask refitTask)
                     {
                         if (!Refit(refitTask, storages))
@@ -185,7 +185,7 @@ namespace ScheduleStopwatch
         private void BuildTaskTransfers()
         {
             _transfers.Clear();
-            var storages = GetActualStorages();
+            Dictionary<VehicleUnit, StorageState> storages = GetActualStorages();
             if (!ProcessSchedule(storages, true))  //find start state of storages
             {
                 return;
