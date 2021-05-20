@@ -7,7 +7,7 @@ namespace ScheduleStopwatch
     {
         protected override void InitializeInternal(SettingsControl settingsControl)
         {
-            var settings = Settings.Current;
+            Settings settings = Settings.Current;
             settingsControl.AddToggle("Display time for individual tasks in the schedule", null, settings.ShowIndividualTaskTimes, delegate ()
             {
                 settings.ShowIndividualTaskTimes = true;

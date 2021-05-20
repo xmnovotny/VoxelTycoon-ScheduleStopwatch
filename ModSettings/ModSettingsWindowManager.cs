@@ -61,14 +61,14 @@ namespace ModSettings
             {
                 if (registered.TryGetValue(item.Pack.Name, out var data))
                 {
-                    var hint = __result.transform.Find("Row1/NameContainer/Hint");
-                    var settings = UnityEngine.Object.Instantiate<Transform>(hint, hint.parent);
-                    var text = settings.GetComponent<Text>();
+                    Transform hint = __result.transform.Find("Row1/NameContainer/Hint");
+                    Transform settings = UnityEngine.Object.Instantiate<Transform>(hint, hint.parent);
+                    Text text = settings.GetComponent<Text>();
                     text.text = "";
                     text.font = R.Fonts.Ketizoloto;
                     text.color = Color.black;
 
-                    var button = settings.GetComponent<Button>();
+                    Button button = settings.GetComponent<Button>();
                     button.onClick.RemoveAllListeners();
                     button.onClick.AddListener(data.Show);
                     settings.gameObject.SetActive(true);

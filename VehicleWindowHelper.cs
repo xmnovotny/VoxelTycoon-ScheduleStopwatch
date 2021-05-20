@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using VoxelTycoon.UI.Controls;
 using System.Collections.Generic;
 using VoxelTycoon.Tracks.Tasks;
+using System;
 
 namespace ScheduleStopwatch
 {
@@ -34,14 +35,14 @@ namespace ScheduleStopwatch
             {
                 if (indicators.TryGetValue(task, out var indicator))
                 {
-                    var travel = data.GetAverageTravelDuration(task);
+                    TimeSpan? travel = data.GetAverageTravelDuration(task);
                     if (travel.HasValue) {
                         indicator.travel.text = string.Format("{0}d {1}h", travel.Value.TotalDays.ToString("N0"), travel.Value.Hours.ToString("N0"));
                     } else
                     {
                         indicator.travel.text = "UNKNOWN";
                     }
-                    var loading = data.GetAverageStationLoadingDuration(task);
+                    TimeSpan? loading = data.GetAverageStationLoadingDuration(task);
                     if (loading.HasValue)
                     {
                         indicator.loading.text = string.Format("{0}h {1}m", loading.Value.TotalHours.ToString("N0"), loading.Value.Minutes.ToString("N0"));
@@ -54,7 +55,7 @@ namespace ScheduleStopwatch
 
                 if (totalIndicator != null)
                 {
-                    var time = data.ScheduleAvereageDuration;
+                    TimeSpan? time = data.ScheduleAvereageDuration;
                     totalIndicator.text = time.HasValue ? string.Format("{0}d {1}h", time.Value.TotalDays.ToString("N0"), time.Value.Hours.ToString("N0")) : "Unknown".ToUpper();
                 }
             }
@@ -81,7 +82,7 @@ namespace ScheduleStopwatch
         {
             foreach (var window in _windows.Keys)
             {
-                var tab = window.transform.GetComponentInChildren<VehicleWindowScheduleTab>();
+                VehicleWindowScheduleTab tab = window.transform.GetComponentInChildren<VehicleWindowScheduleTab>();
                 if (tab && !tab.EditMode)
                 {
                     tab.FillWithTasks();
@@ -94,41 +95,41 @@ namespace ScheduleStopwatch
             TaskTimeTemplate = UnityEngine.Object.Instantiate<Transform>(separatorView.transform.Find("AddStop"));
             GameObject.DestroyImmediate(TaskTimeTemplate.GetComponent<ButtonEx>());
             GameObject.DestroyImmediate(TaskTimeTemplate.GetComponent<ClickableDecorator>());
-            var iconTransform = TaskTimeTemplate.Find("Icon");
+            Transform iconTransform = TaskTimeTemplate.Find("Icon");
             iconTransform.name = "TravelTimeIcon";
-            var iconText = iconTransform.GetComponent<Text>();
+            Text iconText = iconTransform.GetComponent<Text>();
             iconText.text = "";
             iconText.font = R.Fonts.Ketizoloto;
 
-            var textTransform = TaskTimeTemplate.Find("Text");
+            Transform textTransform = TaskTimeTemplate.Find("Text");
             textTransform.name = "TravelTimeText";
-            var text = textTransform.GetComponent<Text>();
+            Text text = textTransform.GetComponent<Text>();
             text.text = "Unknown".ToUpper();
 
-            var loadingIcon = UnityEngine.Object.Instantiate<Transform>(iconTransform, iconTransform.parent);
+            Transform loadingIcon = UnityEngine.Object.Instantiate<Transform>(iconTransform, iconTransform.parent);
             loadingIcon.name = "LoadingTimeIcon";
-            var iconText2 = loadingIcon.GetComponent<Text>();
+            Text iconText2 = loadingIcon.GetComponent<Text>();
             iconText2.text = "";
 
-            var loadingTextTransf = UnityEngine.Object.Instantiate<Transform>(textTransform, textTransform.parent);
+            Transform loadingTextTransf = UnityEngine.Object.Instantiate<Transform>(textTransform, textTransform.parent);
             loadingTextTransf.name = "LoadingTimeText";
 
             TotalTimeTemplate = UnityEngine.Object.Instantiate<Transform>(TaskTimeTemplate);
             TotalTimeTemplate.Find("TravelTimeIcon").DestroyGameObject(true);
             TotalTimeTemplate.Find("LoadingTimeIcon").DestroyGameObject(true);
-            var totalLabel = TotalTimeTemplate.Find("TravelTimeText");
+            Transform totalLabel = TotalTimeTemplate.Find("TravelTimeText");
             totalLabel.name = "Label";
             totalLabel.GetComponent<Text>().text = "TOTAL TIME: ";
 
-            var textTransform2 = TotalTimeTemplate.Find("LoadingTimeText");
+            Transform textTransform2 = TotalTimeTemplate.Find("LoadingTimeText");
             textTransform2.name = "TotalTimeText";
-            var text2 = textTransform2.GetComponent<Text>();
+            Text text2 = textTransform2.GetComponent<Text>();
             text2.text = "Unknown".ToUpper();
         }
 
         private static void CreateTotalTimeIndicator(VehicleWindowScheduleTabSeparatorView separatorView, VehicleWindowScheduleTab scheduleTab)
         {
-            var transform = UnityEngine.Object.Instantiate<Transform>(TotalTimeTemplate, separatorView.transform);
+            Transform transform = UnityEngine.Object.Instantiate<Transform>(TotalTimeTemplate, separatorView.transform);
             transform.name = "TotalDuration";
             transform.SetSiblingIndex(0);
             transform.gameObject.SetActive(true);
@@ -138,7 +139,7 @@ namespace ScheduleStopwatch
 
         private static void CreateTaskTimeIndicator(VehicleWindowScheduleTabSeparatorView separatorView, VehicleWindowScheduleTab scheduleTab, RootTask task)
         {
-            var transform = UnityEngine.Object.Instantiate<Transform>(TaskTimeTemplate, separatorView.transform);
+            Transform transform = UnityEngine.Object.Instantiate<Transform>(TaskTimeTemplate, separatorView.transform);
             transform.name = "StopWatchDuration";
             transform.gameObject.SetActive(true);
 
@@ -146,14 +147,14 @@ namespace ScheduleStopwatch
             indicator.travel = transform.Find("TravelTimeText").GetComponent<Text>();
             indicator.loading = transform.Find("LoadingTimeText").GetComponent<Text>();
 
-            var data = _windows[scheduleTab.Window];
+            WindowData data = _windows[scheduleTab.Window];
             data.indicators.Add(task, indicator);
         }
 
         private static void CreateTimeIndicators(VehicleWindowScheduleTabSeparatorView separatorView, VehicleWindowScheduleTab scheduleTab, int insertIndex)
         {
-            var settings = Settings.Current;
-            var task = scheduleTab.Vehicle.Schedule.GetTasks()[insertIndex];
+            Settings settings = Settings.Current;
+            RootTask task = scheduleTab.Vehicle.Schedule.GetTasks()[insertIndex];
             if (insertIndex == 0 && settings.ShowScheduleTotalTime)
             {
                 CreateTotalTimeIndicator(separatorView, scheduleTab);
@@ -178,10 +179,10 @@ namespace ScheduleStopwatch
         [HarmonyPatch(typeof(VehicleWindow), "Initialize")]
         private static void VehicleWindow_Initialize_pof(VehicleWindow __instance)
         {
-            if (_windows.TryGetValue(__instance, out var windowData))
+            if (_windows.TryGetValue(__instance, out WindowData windowData))
             {
                 VehicleScheduleDataManager.Current.SubscribeDataChanged(__instance.Vehicle, windowData.Invalidate);
-                var scheduleData = VehicleScheduleDataManager.Current[__instance.Vehicle];
+                VehicleScheduleData scheduleData = VehicleScheduleDataManager.Current[__instance.Vehicle];
                 if (scheduleData != null)
                 {
                     windowData.Invalidate(scheduleData);
@@ -193,7 +194,7 @@ namespace ScheduleStopwatch
         [HarmonyPatch(typeof(VehicleWindow), "OnClose")]
         private static void VehicleWindow_OnClose_pof(VehicleWindow __instance)
         {
-            if (_windows.TryGetValue(__instance, out var windowData))
+            if (_windows.TryGetValue(__instance, out WindowData windowData))
             {
                 VehicleScheduleDataManager.Current.UnsubscribeDataChanged(__instance.Vehicle, windowData.Invalidate);
                 _windows.Remove(__instance);
@@ -205,7 +206,7 @@ namespace ScheduleStopwatch
         [HarmonyPatch(typeof(VehicleWindowScheduleTab), "FillWithTasks")]
         private static void VehicleWindowScheduleTab_FillWithTasks_prf(VehicleWindowScheduleTab __instance)
         {
-            if (_windows.TryGetValue(__instance.Window, out var data))
+            if (_windows.TryGetValue(__instance.Window, out WindowData data))
             {
                 data.indicators.Clear();
                 data.totalIndicator = null;
@@ -216,8 +217,8 @@ namespace ScheduleStopwatch
         [HarmonyPatch(typeof(VehicleWindowScheduleTab), "FillWithTasks")]
         private static void VehicleWindowScheduleTab_FillWithTasks_pof(VehicleWindowScheduleTab __instance)
         {
-            var scheduleData = VehicleScheduleDataManager.Current[__instance.Vehicle];
-            if (scheduleData != null && _windows.TryGetValue(__instance.Window, out var data))
+            VehicleScheduleData scheduleData = VehicleScheduleDataManager.Current[__instance.Vehicle];
+            if (scheduleData != null && _windows.TryGetValue(__instance.Window, out WindowData data))
             {
                 data.Invalidate(scheduleData);
             }

@@ -48,7 +48,7 @@ namespace ScheduleStopwatch
             TimeSpan result = default;
             foreach (RootTask task in tasks)
             {
-                var duration = GetAverageDuration(task);
+                TimeSpan? duration = GetAverageDuration(task);
                 if (!duration.HasValue)
                 {
                     return null;
@@ -99,13 +99,13 @@ namespace ScheduleStopwatch
         }
         internal static TaskDurationDataSet Read(StateBinaryReader reader, VehicleSchedule schedule, byte version) 
         {
-            var result = new TaskDurationDataSet();
-            var count = reader.ReadInt();
+            TaskDurationDataSet result = new TaskDurationDataSet();
+            int count = reader.ReadInt();
 
             for(int i = 0; i < count; i++)
             {
-                var taskIndex = reader.ReadInt();
-                var task = schedule.GetTasks()[taskIndex];
+                int taskIndex = reader.ReadInt();
+                RootTask task = schedule.GetTasks()[taskIndex];
                 result._data.Add(task, DurationDataSet.Read(reader, version));
             }
             return result;

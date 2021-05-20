@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using VoxelTycoon;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.Tracks.Tasks;
 
@@ -97,18 +98,18 @@ namespace ScheduleStopwatch
 
             public Snapshot(VehicleSchedule schedule)
             {
-                var tasks = schedule.GetTasks();
-                var count = tasks.Count;
+                ImmutableList<RootTask> tasks = schedule.GetTasks();
+                int count = tasks.Count;
                 for (int i = 0; i < count; i++)
                 {
-                    var task = tasks[i];
+                    RootTask task = tasks[i];
                     _taskSnapshots.Add(new TaskSnapshot(task, i));
                 }
             }
 
             public IEnumerable<RootTask> GetNonNonstopTasks()
             {
-                foreach(var snapshot in _taskSnapshots)
+                foreach(TaskSnapshot snapshot in _taskSnapshots)
                 {                    
                     if (!snapshot.nonstop)
                     {
@@ -120,11 +121,11 @@ namespace ScheduleStopwatch
 
             public SnapshotComparsion CompareWithNewer(Snapshot newSnapshot)
             {
-                var result = new SnapshotComparsion();
+                SnapshotComparsion result = new SnapshotComparsion();
                 if (_taskSnapshots.Count > 0)
                 {
-                    var oldTaskToIndex = TaskToIndex;
-                    var newTaskToIndex = newSnapshot.TaskToIndex;
+                    Dictionary<RootTask, int> oldTaskToIndex = TaskToIndex;
+                    Dictionary<RootTask, int> newTaskToIndex = newSnapshot.TaskToIndex;
                     bool travelChanged = false;
                     int? lastNewIndex = null, expectedNewIndex;
                     RootTask firstNonNonstopInOld = null;
@@ -133,7 +134,7 @@ namespace ScheduleStopwatch
                         lastNewIndex = i;
                      
                     //find missing and changed
-                    foreach (var oldSnapshot in _taskSnapshots)
+                    foreach (TaskSnapshot oldSnapshot in _taskSnapshots)
                     {
                         if (lastNewIndex.HasValue)
                             expectedNewIndex = (lastNewIndex.Value + 1) % newSnapshot.Count;
@@ -179,7 +180,6 @@ namespace ScheduleStopwatch
 
                     if (travelChanged && !result.incomingRouteChange.Contains(firstNonNonstopInOld))
                     {
-                        FileLog.Log("Last element changed");
                         result.incomingRouteChange.Add(firstNonNonstopInOld);
                     }
                 }

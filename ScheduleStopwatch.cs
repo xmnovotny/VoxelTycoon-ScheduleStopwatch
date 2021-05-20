@@ -45,7 +45,7 @@ namespace ScheduleStopwatch
         {
             try
             {
-                var version = reader.ReadByte();
+                byte version = reader.ReadByte();
                 VehicleScheduleDataManager.Current.Read(reader, version);
             }
             catch (Exception e)

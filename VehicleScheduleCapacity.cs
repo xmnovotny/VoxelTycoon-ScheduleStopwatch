@@ -135,7 +135,7 @@ namespace ScheduleStopwatch
         private Dictionary<VehicleUnit, StorageState> GetActualStorages()
         {
             Vehicle vehicle = VehicleSchedule.Vehicle;
-            ImmutableUniqueList<VehicleUnit> units = vehicle.Units;
+            ImmutableList<VehicleUnit> units = vehicle.Units;
             int unitsCount = units.Count;
 
             var storages = new Dictionary<VehicleUnit, StorageState>(unitsCount);

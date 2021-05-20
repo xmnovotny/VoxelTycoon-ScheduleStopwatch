@@ -58,13 +58,6 @@ namespace ScheduleStopwatch
                     {
                         return null;
                     }
-
-                    /*                    TimeSpan resultSum = default;
-                                        foreach (TimeSpan duration in _durationData)
-                                        {
-                                            resultSum += duration;
-                                        }
-                    */
                     _average = new TimeSpan(_runningSum.Ticks / _durationData.Size);
                 }
                 return _average;
@@ -82,7 +75,7 @@ namespace ScheduleStopwatch
         public void Write(StateBinaryWriter writer)
         {
             writer.WriteInt(_durationData.Size);
-            foreach (var duration in _durationData)
+            foreach (TimeSpan duration in _durationData)
             {
                 writer.WriteLong(duration.Ticks);
             }
@@ -92,11 +85,11 @@ namespace ScheduleStopwatch
 
         internal static DurationDataSet Read(StateBinaryReader reader, byte version)
         {
-            var result = new DurationDataSet();
-            var count = reader.ReadInt();
+            DurationDataSet result = new DurationDataSet();
+            int count = reader.ReadInt();
             for (int i = 0; i < count; i++)
             {
-                var span = new TimeSpan(reader.ReadLong());
+                TimeSpan span = new TimeSpan(reader.ReadLong());
                 result._durationData.Put(span);
                 result._runningSum += span;
             }

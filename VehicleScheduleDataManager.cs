@@ -25,13 +25,13 @@ namespace ScheduleStopwatch
         }
         public void SubscribeDataChanged(Vehicle vehicle, Action<VehicleScheduleData, RootTask> handler)
         {
-            var data = GetOrCreateVehicleScheduleData(vehicle);
+            VehicleScheduleData data = GetOrCreateVehicleScheduleData(vehicle);
             data.SubscribeDataChanged(handler);
         }
 
         public void UnsubscribeDataChanged(Vehicle vehicle, Action<VehicleScheduleData, RootTask> handler)
         {
-            var scheduleData = this[vehicle];
+            VehicleScheduleData scheduleData = this[vehicle];
             if (scheduleData != null)
             {
                 scheduleData.UnsubscribeDataChanged(handler);
@@ -69,24 +69,20 @@ namespace ScheduleStopwatch
 
         private void OnDestinationReached(Vehicle vehicle, VehicleStation station, RootTask task)
         {
-            var vehicleData = GetOrCreateVehicleScheduleData(vehicle);
-            vehicleData.OnDestinationReached(station, task);
+            GetOrCreateVehicleScheduleData(vehicle).OnDestinationReached(station, task);
         }
         private void OnStationLeaved(Vehicle vehicle, VehicleStation station, RootTask task)
         {
-            var vehicleData = GetOrCreateVehicleScheduleData(vehicle);
-            vehicleData.OnStationLeaved(station, task);
+            GetOrCreateVehicleScheduleData(vehicle).OnStationLeaved(station, task);
         }
         private void OnScheduleChanged(Vehicle vehicle, RootTask task, bool minorChange)
         {
-            var vehicleData = GetOrCreateVehicleScheduleData(vehicle);
-            vehicleData.OnScheduleChanged(task, minorChange);
+            GetOrCreateVehicleScheduleData(vehicle).OnScheduleChanged(task, minorChange);
         }
 
         private void OnMeasurementInvalidated(Vehicle vehicle)
         {
-            var vehicleData = GetOrCreateVehicleScheduleData(vehicle);
-            vehicleData.OnMeasurementInvalidated();
+            GetOrCreateVehicleScheduleData(vehicle).OnMeasurementInvalidated();
         }
 
         public static VehicleScheduleDataManager Current
@@ -109,7 +105,7 @@ namespace ScheduleStopwatch
         internal void Write(StateBinaryWriter writer)
         {
             writer.WriteInt(_vehiclesData.Count);
-            foreach (var pair in _vehiclesData)
+            foreach (KeyValuePair<Vehicle, VehicleScheduleData> pair in _vehiclesData)
             {
                 writer.WriteInt(pair.Key.Id);
                 pair.Value.Write(writer);
@@ -119,11 +115,11 @@ namespace ScheduleStopwatch
         internal void Read(StateBinaryReader reader, byte version)
         {
             _vehiclesData.Clear();
-            var count = reader.ReadInt();
+            int count = reader.ReadInt();
             for (int i = 0; i < count; i++)
             {
-                var vehicleId = reader.ReadInt();
-                var vehicle = LazyManager<VehicleManager>.Current.FindById(vehicleId);
+                int vehicleId = reader.ReadInt();
+                Vehicle vehicle = LazyManager<VehicleManager>.Current.FindById(vehicleId);
                 _vehiclesData.Add(vehicle, VehicleScheduleData.Read(reader, vehicle, version));
             }
         }

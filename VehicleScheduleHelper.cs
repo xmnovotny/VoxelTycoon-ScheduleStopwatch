@@ -23,11 +23,11 @@ namespace ScheduleStopwatch
         /** iterates through tasks that do not have nonstop behaviour nonstop */
         static public IEnumerable<RootTask> GetNonNonstopTasks(Vehicle vehicle)
         {
-            var tasks = vehicle.Schedule.GetTasks();
-            var count = tasks.Count;
+            ImmutableList<RootTask> tasks = vehicle.Schedule.GetTasks();
+            int count = tasks.Count;
             for (int i = 0; i < count; i++)
             {
-                var task = tasks[i];
+                RootTask task = tasks[i];
                 if (task.Behavior != RootTaskBehavior.NonStop)
                 {
                     yield return task;
@@ -52,7 +52,7 @@ namespace ScheduleStopwatch
         {
             if (getRootTaskVersionFunc == null)
             {
-                var minf = typeof(RootTask).GetMethod("GetVersion", BindingFlags.NonPublic | BindingFlags.Instance);
+                MethodInfo minf = typeof(RootTask).GetMethod("GetVersion", BindingFlags.NonPublic | BindingFlags.Instance);
                 getRootTaskVersionFunc = (Func<RootTask, int>)Delegate.CreateDelegate(typeof(Func<RootTask, int>), minf);
             }
             return getRootTaskVersionFunc(rootTask);

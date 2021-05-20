@@ -52,8 +52,8 @@ namespace ScheduleStopwatch
 
             internal static Measurement Read(StateBinaryReader reader, VehicleSchedule schedule, VehicleScheduleData data, byte version)
             {
-                var task = schedule.GetTasks()[reader.ReadInt()];
-                var result = MeasurementSurrogate.Read(reader, data, task);
+                RootTask task = schedule.GetTasks()[reader.ReadInt()];
+                Measurement result = MeasurementSurrogate.Read(reader, data, task);
                 result.startTime = new DateTime(reader.ReadLong());
                 return result;
             }
@@ -103,7 +103,7 @@ namespace ScheduleStopwatch
 
             internal static Measurement Read(StateBinaryReader reader, VehicleScheduleData data, RootTask task)
             {
-                var id = reader.ReadByte();
+                byte id = reader.ReadByte();
                 switch (id)
                 {
                     case 0:

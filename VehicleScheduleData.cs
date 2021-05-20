@@ -161,19 +161,15 @@ namespace ScheduleStopwatch
 
         internal void OnScheduleChanged(RootTask task, bool minorChange)
         {
-            FileLog.Log("OnScheduleChange");
             Snapshot newSnapshot = new Snapshot(Vehicle.Schedule);
             if (!minorChange)
             {
-                FileLog.Log("TestChange");
                 var comparsion = _lastSnapshot.CompareWithNewer(newSnapshot);
                 if (comparsion.IsDifference) //in comparsion there aren't any new tasks, it is only difference in old tasks
                 {
                     var invalidateMeasurement = false;
-                    FileLog.Log("Changed");
                     foreach (var removedTask in comparsion.removed)
                     {
-                        FileLog.Log("Task Removed: " + removedTask.Destination.Name);
                         _travelData.Remove(removedTask);
                         _stationLoadingData.Remove(removedTask);
                         if (_measurement != null && _measurement.Task == removedTask)
@@ -183,7 +179,6 @@ namespace ScheduleStopwatch
                     }
                     foreach (var changedTask in comparsion.changed)
                     {
-                        FileLog.Log("Task Changed: " + changedTask.Destination.Name);
                         _stationLoadingData.Clear(changedTask);
                         if (_measurement is StationLoadingMeasurement measurement && measurement.Task == changedTask)
                         {
@@ -192,7 +187,6 @@ namespace ScheduleStopwatch
                     }
                     foreach (var travelChangedTask in comparsion.incomingRouteChange)
                     {
-                        FileLog.Log("Incoming Route Changed: " + travelChangedTask.Destination.Name);
                         _travelData.Clear(travelChangedTask);
                         if (_measurement is TravelMeasurement measurement && measurement.Task == travelChangedTask)
                         {
@@ -209,7 +203,6 @@ namespace ScheduleStopwatch
             }
             else
             {
-                FileLog.Log("MinorChange");
                 _lastSnapshot = newSnapshot;
             }
         }
