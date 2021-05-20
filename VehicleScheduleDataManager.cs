@@ -106,14 +106,6 @@ namespace ScheduleStopwatch
             _vehiclesData.Remove(vehicle);
         }
 
-/*        internal void OnStationRemoved(VehicleStation station)
-        {
-            foreach (VehicleScheduleData data in _vehiclesData.Values)
-            {
-                data.OnStationRemoved(station);
-            }
-        }*/
-
         internal void Write(StateBinaryWriter writer)
         {
             writer.WriteInt(_vehiclesData.Count);
