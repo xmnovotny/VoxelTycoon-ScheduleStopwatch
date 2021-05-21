@@ -11,6 +11,7 @@ namespace ScheduleStopwatch
     class VehicleScheduleDataManager
     {
         private static VehicleScheduleDataManager _current;
+        private static bool _initialized = false;
 
         private Dictionary<Vehicle, VehicleScheduleData> _vehiclesData = new Dictionary<Vehicle, VehicleScheduleData>();
 
@@ -40,12 +41,17 @@ namespace ScheduleStopwatch
 
         internal void Initialize()
         {
+            if (_initialized)
+            {
+                throw new InvalidOperationException("Already initialized");
+            }
             VehicleScheduleHelper.DestinationReached += OnDestinationReached;
             VehicleScheduleHelper.StationLeaved += OnStationLeaved;
             VehicleScheduleHelper.MeasurementInvalidated += OnMeasurementInvalidated;
             VehicleScheduleHelper.ScheduleChanged += OnScheduleChanged;
             LazyManager<VehicleManager>.Current.VehicleRemoved += OnRemoveVehicle;
-            
+            LazyManager<VehicleManager>.Current.VehicleEdited += OnVehicleEdited;
+            _initialized = true;
         }
 
         internal void Deinitialize()
@@ -55,7 +61,9 @@ namespace ScheduleStopwatch
             VehicleScheduleHelper.MeasurementInvalidated -= OnMeasurementInvalidated;
             VehicleScheduleHelper.ScheduleChanged -= OnScheduleChanged;
             LazyManager<VehicleManager>.Current.VehicleRemoved -= OnRemoveVehicle;
+            LazyManager<VehicleManager>.Current.VehicleEdited -= OnVehicleEdited;
             _vehiclesData.Clear();
+            _initialized = false;
         }
 
         private VehicleScheduleData GetOrCreateVehicleScheduleData(Vehicle vehicle)
@@ -99,7 +107,18 @@ namespace ScheduleStopwatch
 
         internal void OnRemoveVehicle(Vehicle vehicle)
         {
+            if (_vehiclesData.TryGetValue(vehicle, out VehicleScheduleData data)) {
+                data.OnVehicleRemoved();
+            }
             _vehiclesData.Remove(vehicle);
+        }
+
+        internal void OnVehicleEdited(Vehicle vehicle)
+        {
+            if (_vehiclesData.TryGetValue(vehicle, out VehicleScheduleData data))
+            {
+                data.OnVehicleEdited();
+            }
         }
 
         internal void Write(StateBinaryWriter writer)

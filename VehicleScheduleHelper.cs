@@ -2,10 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using UnityEngine.UI;
 using VoxelTycoon;
 using VoxelTycoon.Game.UI;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.Tracks.Tasks;
+using VoxelTycoon.UI;
 using XMNUtils;
 
 namespace ScheduleStopwatch
@@ -80,6 +82,11 @@ namespace ScheduleStopwatch
                 ScheduleChanged?.Invoke(vehicle, task, minorChange);
                 NotificationUtils.ShowVehicleHint(vehicle, "OnScheduleChanged" + (minorChange ? " minor" : ""));
             }
+        }
+
+        static private void OnSubtaskChanged(SubTask subTask, bool minorChange = true, bool notifyRoute = false)
+        {
+            OnScheduleChanged(subTask.Vehicle, subTask.ParentTask, minorChange, notifyRoute);
         }
 
         #region Harmony
@@ -234,7 +241,56 @@ namespace ScheduleStopwatch
                 OnScheduleChanged(vehicle, ____task, notifyRoute: true);
             }
         }
-        
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UnitsTask), "SetTargetUnitIndexes")]
+        static private void UnitsTask_SetTargetUnitIndexes_pof(UnitsTask __instance)
+        {
+            Vehicle vehicle = __instance?.Vehicle;
+            if (vehicle)
+            {
+                OnSubtaskChanged(__instance);
+            }
+        }
+
+        #region VehicleWindowScheduleTabRefitPropertyView
+
+        private static RefitTask _itemChangeRefitTask;
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(VehicleWindowScheduleTabRefitPropertyView), "Initialize")]
+        static private void VehicleWindowScheduleTabRefitPropertyView_Initialize_pof(VehicleWindowScheduleTabRefitPropertyView __instance , RefitTask task, bool editMode, ref GridPickerEx ____gridPicker)
+        {
+            _itemChangeRefitTask = null;
+            if (editMode && task != null)
+            {
+                Button component = __instance.transform.GetComponent<Button>();
+                component.onClick.AddListener(delegate ()
+                {
+                    _itemChangeRefitTask = task;
+                });
+            }
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(GridPickerHelper), "PickItemToRefitVehicleUnits")]
+        static private void GridPickerHelper_PickItemToRefitVehicleUnits_prf(ref Action<Item> callback)
+        {
+            RefitTask task = _itemChangeRefitTask;
+            if (task != null && task.Vehicle != null)
+            {
+                Item origItem = task.Item;
+                callback += delegate (Item item)
+                {
+                    if (origItem != item)
+                    {
+                        OnSubtaskChanged(task, notifyRoute: true);
+                    }
+                };
+            }
+            _itemChangeRefitTask = null;
+        }
+        #endregion
         #endregion
     }
 }

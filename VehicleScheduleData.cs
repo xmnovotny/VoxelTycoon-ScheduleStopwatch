@@ -26,6 +26,7 @@ namespace ScheduleStopwatch
         private TimeSpan? _totalStationLoadingAverage;
         private TimeSpan? _totalAverage;
         private Snapshot _lastSnapshot;
+        private VehicleScheduleCapacity _capacity;
 
         public TimeSpan? ScheduleTravelAvereageDuration
         {
@@ -49,6 +50,19 @@ namespace ScheduleStopwatch
             {
                 Invalidate();
                 return _totalAverage;
+            }
+        }
+
+        public VehicleScheduleCapacity Capacity
+        {
+            get
+            {
+                if (_capacity == null)
+                {
+                    _capacity = new VehicleScheduleCapacity(Vehicle.Schedule);
+                    _capacity.DataChanged += OnCapacityDataChanged;
+                }
+                return _capacity;
             }
         }
 
@@ -95,6 +109,11 @@ namespace ScheduleStopwatch
             dataChanged?.Invoke(this, task);
         }
 
+        private void OnCapacityDataChanged(VehicleScheduleCapacity _)
+        {
+            OnDataChanged(null);
+        }
+
         internal VehicleScheduleData(Vehicle vehicle)
         {
             this.Vehicle = vehicle;
@@ -107,14 +126,14 @@ namespace ScheduleStopwatch
         private void OnTravelMeasurementFinish(TravelMeasurement measurement)
         {
             _travelData.Add(measurement.Task, measurement.measuredTime);
-            NotificationUtils.ShowVehicleHint(Vehicle, String.Format("End travel measurement, days: {0} ({1})", measurement.measuredTime.TotalDays.ToString("N1"), GetAverageTravelDuration(measurement.Task).Value.TotalDays.ToString("N1")));
+//            NotificationUtils.ShowVehicleHint(Vehicle, String.Format("End travel measurement, days: {0} ({1})", measurement.measuredTime.TotalDays.ToString("N1"), GetAverageTravelDuration(measurement.Task).Value.TotalDays.ToString("N1")));
             this.OnDataChanged(measurement.Task);
         }
 
         private void OnStationLoadingMeasurementFinish(StationLoadingMeasurement measurement)
         {
             _stationLoadingData.Add(measurement.Task, measurement.measuredTime);
-            NotificationUtils.ShowVehicleHint(Vehicle, String.Format("End station loading measurement, hours: {0} ({1})", measurement.measuredTime.TotalHours.ToString("N1"), GetAverageStationLoadingDuration(measurement.Task).Value.TotalHours.ToString("N1")));
+//            NotificationUtils.ShowVehicleHint(Vehicle, String.Format("End station loading measurement, hours: {0} ({1})", measurement.measuredTime.TotalHours.ToString("N1"), GetAverageStationLoadingDuration(measurement.Task).Value.TotalHours.ToString("N1")));
             this.OnDataChanged(measurement.Task);
         }
 
@@ -138,8 +157,11 @@ namespace ScheduleStopwatch
 
         internal void OnStationLeaved(VehicleStation station, RootTask task)
         {
-            StationLoadingMeasurement measurement = _measurement as StationLoadingMeasurement;
-            if (measurement != null)
+            if (_measurement is TravelMeasurement && task.Behavior == RootTaskBehavior.NonStop)
+            {
+                return;
+            }
+            if (_measurement is StationLoadingMeasurement measurement)
             {
                 measurement.Finish();
             }
@@ -205,6 +227,7 @@ namespace ScheduleStopwatch
             {
                 _lastSnapshot = newSnapshot;
             }
+            _capacity?.MarkDirty();
         }
 
         public void MarkDirty()
@@ -235,6 +258,18 @@ namespace ScheduleStopwatch
             }
 
             return result;
+        }
+
+        internal void OnVehicleRemoved()
+        {
+        }
+
+        internal void OnVehicleEdited()
+        {
+            if (_capacity != null)
+            {
+                _capacity.OnVehicleEdited();
+            }
         }
     }
 }

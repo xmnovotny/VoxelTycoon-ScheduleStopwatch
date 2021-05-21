@@ -5,10 +5,11 @@ using System.Text;
 using VoxelTycoon;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.Tracks.Tasks;
+using XMNUtils;
 
 namespace ScheduleStopwatch
 {
-    class VehicleScheduleCapacity
+    public class VehicleScheduleCapacity
     {
 
         private class TaskTransfers
@@ -42,10 +43,12 @@ namespace ScheduleStopwatch
         }
 
         public VehicleSchedule VehicleSchedule { get; }
+        public event Action<VehicleScheduleCapacity> DataChanged;
 
         public VehicleScheduleCapacity(VehicleSchedule vehicleSchedule)
         {
             VehicleSchedule = vehicleSchedule ?? throw new ArgumentNullException(nameof(vehicleSchedule));
+            SubscribeUnitStorageChange();
         }
 
         public void MarkDirty()
@@ -56,17 +59,55 @@ namespace ScheduleStopwatch
         public IReadOnlyDictionary<Item, int> GetTransfers(RootTask task)
         {
             Invalidate();
-            if (_transfers.TryGetValue(task, out var transfer))
+            if (_transfers.TryGetValue(task, out TaskTransfers transfer))
             {
                 return transfer.transfers;
             }
             return null;
         }
 
+        /* Returns total of transferred items per schedule (=sum of unloaded items) */
+        public IReadOnlyDictionary<Item, int> GetTotalTransfers()
+        {
+            Invalidate();
+            if (_totalTransfer == null)
+            {
+                _totalTransfer = new TaskTransfers();
+                foreach (TaskTransfers taskTransfers in _transfers.Values)
+                {
+                    foreach (KeyValuePair<Item, int> transfer in taskTransfers.transfers)
+                    {
+                        if (transfer.Value < 0)
+                        {
+                            _totalTransfer.Add(transfer.Key, 0 - transfer.Value);
+                        }
+                    }
+                }
+            }
+            return _totalTransfer.transfers;
+        }
+
+        public void OnVehicleEdited()
+        {
+            SubscribeUnitStorageChange();
+            MarkDirty();
+            OnDataChanged();
+        }
+
+        private void SubscribeUnitStorageChange()
+        {
+            foreach (VehicleUnit unit in VehicleSchedule.Vehicle.Units.ToArray())
+            {
+                unit.StorageChanged -= this.OnVehicleUnitStorageChange;
+                unit.StorageChanged += this.OnVehicleUnitStorageChange;
+            }
+        }
+
         private void Invalidate()
         {
             if (_dirty)
             {
+                _totalTransfer = null;
                 BuildTaskTransfers();
                 _dirty = false;
             }
@@ -104,7 +145,7 @@ namespace ScheduleStopwatch
         /**
          * Simulate transfer task on provided storages.
          */
-        private void Transfer(TransferTask transferTask, Dictionary<VehicleUnit, StorageState> storages, ref TaskTransfers taskTransfers, bool calculateTransfer = false)
+        private bool Transfer(TransferTask transferTask, Dictionary<VehicleUnit, StorageState> storages, ref TaskTransfers taskTransfers, bool calculateTransfer = false)
         {
             ImmutableUniqueList<VehicleUnit> targetUnits = transferTask.GetTargetUnits();
             int targetUnitsCount = targetUnits.Count;
@@ -114,6 +155,11 @@ namespace ScheduleStopwatch
                 VehicleUnit targetUnit = targetUnits[k];
                 if (storages.TryGetValue(targetUnit, out StorageState storage))
                 {
+                    if (storage.storage == null)
+                    {
+                        //autorefitable storage = cannot determine transfer
+                        return false;
+                    }
                     int newCount = transferTask is LoadTask ? storage.storage.Capacity : 0;
                     if (storage.count != newCount)
                     {
@@ -130,6 +176,7 @@ namespace ScheduleStopwatch
                     }
                 }
             }
+            return true;
         }
 
         private Dictionary<VehicleUnit, StorageState> GetActualStorages()
@@ -170,7 +217,10 @@ namespace ScheduleStopwatch
                     } else
                     if (!onlyRefit && subTask is TransferTask transferTask)
                     {
-                        Transfer(transferTask, storages, ref transfer, transfers != null);
+                        if (!Transfer(transferTask, storages, ref transfer, transfers != null))
+                        {
+                            return false;
+                        }
                     }
                 }
 
@@ -188,13 +238,49 @@ namespace ScheduleStopwatch
             Dictionary<VehicleUnit, StorageState> storages = GetActualStorages();
             if (!ProcessSchedule(storages, true))  //find start state of storages
             {
-                return;
+                return; //some refit is set to auto
             }
-            ProcessSchedule(storages, false); //find start state of loaded items
+            if (!ProcessSchedule(storages, false)) //find start state of loaded items
+                return;  //some vehicle unit has stroage setted to auto and there is no refit in the schedule for set it to the specific item
             ProcessSchedule(storages, false, _transfers); //finally simulate counts loaded and unloaded for each task
         }
 
-        private Dictionary<RootTask, TaskTransfers> _transfers = new Dictionary<RootTask, TaskTransfers>();
+        private void OnVehicleUnitStorageChange(object _, Storage __, Storage ___)
+        {
+            if (!((VehicleSchedule.CurrentTask as RootTask)?.CurrentSubTask is RefitTask))
+            {
+                MarkDirty();
+                OnDataChanged();
+                NotificationUtils.ShowVehicleHint(VehicleSchedule.Vehicle, "Storage changed");
+            }
+        }
+
+        private void OnVehicleConsistItemAdded(VehicleRecipeInstance recipe)
+        {
+            foreach(VehicleRecipeSectionInstance section in recipe.Sections.ToArray())
+            {
+                foreach (VehicleUnit unit in section.Units.ToArray())
+                {
+                    unit.StorageChanged += OnVehicleUnitStorageChange;
+                }
+            }
+            MarkDirty();
+            OnDataChanged();
+        }
+
+        private void OnVehicleConsistItemRemoved(VehicleRecipeInstance _)
+        {
+            MarkDirty();
+            OnDataChanged();
+        }
+
+        private void OnDataChanged()
+        {
+            DataChanged?.Invoke(this);
+        }
+
+        private readonly Dictionary<RootTask, TaskTransfers> _transfers = new Dictionary<RootTask, TaskTransfers>();
+        private TaskTransfers _totalTransfer;
 
         private bool _dirty = true;
     }

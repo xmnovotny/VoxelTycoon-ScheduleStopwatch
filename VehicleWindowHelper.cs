@@ -7,6 +7,10 @@ using VoxelTycoon.UI.Controls;
 using System.Collections.Generic;
 using VoxelTycoon.Tracks.Tasks;
 using System;
+using VoxelTycoon.UI;
+using VoxelTycoon.Localization;
+using VoxelTycoon.Game.UI.VehicleUnitPickerWindowViews;
+using ScheduleStopwatch.UI;
 
 namespace ScheduleStopwatch
 {
@@ -31,40 +35,79 @@ namespace ScheduleStopwatch
             public readonly Dictionary<RootTask, Indicator> indicators;
             public Text totalIndicator;
 
+            public TimeSpan? lastTotalTime;
+            public IReadOnlyDictionary<Item, int> lastTotalTransfers;
+            public float? lastMonthMultiplier;
+
             public void Invalidate(VehicleScheduleData data, RootTask task)
             {
-                if (indicators.TryGetValue(task, out var indicator))
+                if (task == null)
+                {
+                    Invalidate(data);
+                } else
+                {
+                    Invalidate(data, task, true);
+                }
+            }
+
+            public void Invalidate(VehicleScheduleData data, RootTask task, bool updateTotal = true)
+            {
+                Locale locale = LazyManager<LocaleManager>.Current.Locale;
+                if (indicators.TryGetValue(task, out Indicator indicator))
                 {
                     TimeSpan? travel = data.GetAverageTravelDuration(task);
                     if (travel.HasValue) {
-                        indicator.travel.text = string.Format("{0}d {1}h", travel.Value.TotalDays.ToString("N0"), travel.Value.Hours.ToString("N0"));
+                        indicator.travel.text = locale.GetString("schedule_stopwatch/days_hours").Format(travel.Value.TotalDays.ToString("N0"), travel.Value.Hours.ToString("N0"));
                     } else
                     {
-                        indicator.travel.text = "UNKNOWN";
+                        indicator.travel.text = locale.GetString("schedule_stopwatch/unknown").ToUpper();
                     }
                     TimeSpan? loading = data.GetAverageStationLoadingDuration(task);
                     if (loading.HasValue)
                     {
-                        indicator.loading.text = string.Format("{0}h {1}m", loading.Value.TotalHours.ToString("N0"), loading.Value.Minutes.ToString("N0"));
+                        indicator.loading.text = locale.GetString("schedule_stopwatch/hours_minutes").Format(loading.Value.TotalHours.ToString("N0"), loading.Value.Minutes.ToString("N0"));
                     }
                     else
                     {
-                        indicator.loading.text = "UNKNOWN";
+                        indicator.loading.text = locale.GetString("schedule_stopwatch/unknown").ToUpper();
                     }
                 }
 
-                if (totalIndicator != null)
+                if (totalIndicator != null && updateTotal)
                 {
-                    TimeSpan? time = data.ScheduleAvereageDuration;
-                    totalIndicator.text = time.HasValue ? string.Format("{0}d {1}h", time.Value.TotalDays.ToString("N0"), time.Value.Hours.ToString("N0")) : "Unknown".ToUpper();
+                    lastTotalTime = data.ScheduleAvereageDuration;
+                    if (lastTotalTime.HasValue)
+                    {
+                        totalIndicator.text = locale.GetString("schedule_stopwatch/days_hours").Format(lastTotalTime.Value.TotalDays.ToString("N0"), lastTotalTime.Value.Hours.ToString("N0"));
+                        lastMonthMultiplier = (Convert.ToSingle((30 * 86400) / lastTotalTime.Value.TotalSeconds));
+                    } else
+                    {
+                        totalIndicator.text = locale.GetString("schedule_stopwatch/unknown").ToUpper();
+                        lastMonthMultiplier = null;
+                    }
+
+                    lastTotalTransfers = data.Capacity.GetTotalTransfers();
+                    totalIndicator.transform.parent.GetComponent<CargoCapacityIndicator>().UpdateItems(lastTotalTransfers, lastMonthMultiplier);
+/*                    foreach (CargoCapacityIndicatorItem item in totalIndicator.transform.parent.GetComponentsInChildren<CargoCapacityIndicatorItem>())
+                    {
+                        item.DestroyGameObject();
+                    }
+                        
+                    foreach (KeyValuePair<Item, int> transfer in lastTotalTransfers)
+                    {
+                        var itemObject = UnityEngine.Object.Instantiate<CargoCapacityIndicatorItem>(VehicleWindowHelper._cargoCapacityTemplate, totalIndicator.transform.parent);
+                        itemObject.Initialize(transfer.Key, transfer.Value);
+                    }*/
                 }
             }
 
             public void Invalidate(VehicleScheduleData data)
             {
+                bool updateTotal = true;
                 foreach (RootTask task in indicators.Keys)
                 {
-                    Invalidate(data, task);
+                    Invalidate(data, task, updateTotal);
+                    updateTotal = false;
                 }
             }
 
@@ -92,6 +135,8 @@ namespace ScheduleStopwatch
 
         private static void CreateTemplates(VehicleWindowScheduleTabSeparatorView separatorView)
         {
+            Locale locale = LazyManager<LocaleManager>.Current.Locale;
+
             TaskTimeTemplate = UnityEngine.Object.Instantiate<Transform>(separatorView.transform.Find("AddStop"));
             GameObject.DestroyImmediate(TaskTimeTemplate.GetComponent<ButtonEx>());
             GameObject.DestroyImmediate(TaskTimeTemplate.GetComponent<ClickableDecorator>());
@@ -119,7 +164,7 @@ namespace ScheduleStopwatch
             TotalTimeTemplate.Find("LoadingTimeIcon").DestroyGameObject(true);
             Transform totalLabel = TotalTimeTemplate.Find("TravelTimeText");
             totalLabel.name = "Label";
-            totalLabel.GetComponent<Text>().text = "TOTAL TIME: ";
+            totalLabel.GetComponent<Text>().text = locale.GetString("schedule_stopwatch/total_label");
 
             Transform textTransform2 = TotalTimeTemplate.Find("LoadingTimeText");
             textTransform2.name = "TotalTimeText";
@@ -134,7 +179,18 @@ namespace ScheduleStopwatch
             transform.SetSiblingIndex(0);
             transform.gameObject.SetActive(true);
 
-            _windows[scheduleTab.Window].totalIndicator = transform.Find("TotalTimeText").GetComponent<Text>();
+            WindowData windowData = _windows[scheduleTab.Window];
+
+            windowData.totalIndicator = transform.Find("TotalTimeText").GetComponent<Text>();
+            Locale locale = LazyManager<LocaleManager>.Current.Locale;
+            Tooltip.For(
+                windowData.totalIndicator.transform, 
+                () => windowData.lastTotalTime.HasValue 
+                    ? locale.GetString("schedule_stopwatch/times_per_month").Format((Convert.ToSingle((30 * 86400) / windowData.lastTotalTime.Value.TotalSeconds)).ToString("N1", LazyManager<LocaleManager>.Current.Locale.CultureInfo)) 
+                    : locale.GetString("schedule_stopwatch/missing_time_segment"), 
+                null
+            );
+            windowData.totalIndicator.transform.parent.gameObject.AddComponent<CargoCapacityIndicator>();
         }
 
         private static void CreateTaskTimeIndicator(VehicleWindowScheduleTabSeparatorView separatorView, VehicleWindowScheduleTab scheduleTab, RootTask task)

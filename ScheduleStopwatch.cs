@@ -3,6 +3,8 @@ using System;
 using VoxelTycoon.Modding;
 using ModSettings;
 using VoxelTycoon.Serialization;
+using VoxelTycoon.Game.UI;
+using System.Reflection;
 
 namespace ScheduleStopwatch
 {
@@ -18,6 +20,16 @@ namespace ScheduleStopwatch
             harmony = (Harmony)(object)new Harmony(harmonyID);
             Harmony.DEBUG = false;
             FileLog.Reset();
+            var interf = typeof(VehicleWindowScheduleTabRefitPropertyView).GetInterface("IFrameCloseHandler");
+            var interfaceMapping = typeof(VehicleWindowScheduleTabRefitPropertyView).GetInterfaceMap(interf);
+            foreach (MethodInfo info in AccessTools.GetDeclaredMethods(typeof(VehicleWindowScheduleTabRefitPropertyView)))
+            {
+                FileLog.Log(info.Name);
+            }
+            foreach (MethodInfo info in interfaceMapping.TargetMethods)
+            {
+                FileLog.Log(info.Name);
+            }
             harmony.PatchAll();
             VehicleScheduleDataManager.Current.Initialize();
         }
