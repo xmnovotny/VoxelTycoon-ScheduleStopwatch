@@ -1,4 +1,5 @@
 ﻿using ModSettings;
+using VoxelTycoon;
 
 namespace ScheduleStopwatch
 {
@@ -8,9 +9,15 @@ namespace ScheduleStopwatch
         private bool _showScheduleTotalTime = true;
 
         private static Settings _current;
+        private UpdateBehaviour Behaviour { get; set; }
 
         private Settings()
         {
+            this.Behaviour = UpdateBehaviour.Create(this.GetType().FullName);
+            this.Behaviour.OnDestroyAction = delegate ()
+            {
+                Settings._current = null;
+            };
         }
 
         public static Settings Current

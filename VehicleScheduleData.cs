@@ -53,6 +53,20 @@ namespace ScheduleStopwatch
             }
         }
 
+        public float? ScheduleMonthlyMultiplier
+        {
+            get
+            {
+                Invalidate();
+                if (_totalAverage != null)
+                {
+                    return (Convert.ToSingle((30 * 86400) / _totalAverage.Value.TotalSeconds));
+                }
+
+                return null;
+            }
+        }
+
         public VehicleScheduleCapacity Capacity
         {
             get

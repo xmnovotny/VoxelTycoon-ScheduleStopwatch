@@ -20,7 +20,7 @@ namespace ScheduleStopwatch
             {
                 this.task = task;
                 location = task.Destination.VehicleStationLocation;
-                version = VehicleScheduleHelper.GetRootTaskVersion(task);
+                version = VehicleScheduleHelper.Current.GetRootTaskVersion(task);
                 nonstop = task.Behavior == RootTaskBehavior.NonStop;
                 this.index = index;
             }

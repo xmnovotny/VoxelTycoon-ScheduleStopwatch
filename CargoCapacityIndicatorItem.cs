@@ -26,21 +26,21 @@ namespace ScheduleStopwatch.UI
         }
 
 			// Token: 0x060030CA RID: 12490 RVA: 0x0009FEFC File Offset: 0x0009E0FC
-		public void Initialize(Item item, float count)
+		public void Initialize(Item item, float count, float? routeTotalCount = null)
 		{
 			_thumb = base.transform.GetComponentInChildren<Image>();
 			_text = base.transform.GetComponentInChildren<Text>();
-			UpdateItemData(item, count);
+			UpdateItemData(item, count, routeTotalCount);
 		}
 
-		public void UpdateCount(int count)
+		public void UpdateCount(float count, float? routeTotalCount = null)
         {
-			_text.text = count.ToString();
+			_text.text = count.ToString("N0") + (routeTotalCount != null ? "/" + routeTotalCount.Value.ToString("N0") : "");
 		}
 
-		public void UpdateItemData(Item item, float count)
+		public void UpdateItemData(Item item, float count, float? routeTotalCount=null)
 		{
-			_text.text = count.ToString("N0");
+			UpdateCount(count, routeTotalCount);
 			Item = item;
 		}
 	}

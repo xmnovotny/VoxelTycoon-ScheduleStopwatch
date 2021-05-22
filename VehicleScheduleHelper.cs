@@ -13,17 +13,17 @@ using XMNUtils;
 namespace ScheduleStopwatch
 {
     [HarmonyPatch]
-    class VehicleScheduleHelper
+    class VehicleScheduleHelper: LazyManager<VehicleScheduleHelper>
     {
-        static public event Action<Vehicle, VehicleStation, RootTask> DestinationReached;
-        static public event Action<Vehicle, VehicleStation, RootTask> StationLeaved;
-        static public event Action<Vehicle> MeasurementInvalidated;
-        static public event Action<Vehicle, RootTask, bool> ScheduleChanged;
+        public event Action<Vehicle, VehicleStation, RootTask> DestinationReached;
+        public event Action<Vehicle, VehicleStation, RootTask> StationLeaved;
+        public event Action<Vehicle> MeasurementInvalidated;
+        public event Action<Vehicle, RootTask, bool> ScheduleChanged;
 
-        static private Func<RootTask, int> getRootTaskVersionFunc;
+        private Func<RootTask, int> getRootTaskVersionFunc;
 
         /** iterates through tasks that do not have nonstop behaviour nonstop */
-        static public IEnumerable<RootTask> GetNonNonstopTasks(Vehicle vehicle)
+        public IEnumerable<RootTask> GetNonNonstopTasks(Vehicle vehicle)
         {
             ImmutableList<RootTask> tasks = vehicle.Schedule.GetTasks();
             int count = tasks.Count;
@@ -38,19 +38,19 @@ namespace ScheduleStopwatch
             yield break;
         }
 
-        static private void OnMeasurementInvalidated(Vehicle vehicle)
+        private void OnMeasurementInvalidated(Vehicle vehicle)
         {
             NotificationUtils.ShowVehicleHint(vehicle, "OnMeasurementInvalidated");
             MeasurementInvalidated?.Invoke(vehicle);
         }
 
-        static private void OnStationLeaved(Vehicle vehicle, VehicleStation vehicleStation, RootTask rootTask)
+        private void OnStationLeaved(Vehicle vehicle, VehicleStation vehicleStation, RootTask rootTask)
         {
 //            NotificationUtils.ShowVehicleHint(vehicle, "OnStationLeaved " + vehicleStation.Location.Name);
             StationLeaved?.Invoke(vehicle, vehicleStation, rootTask);
         }
 
-        public static int GetRootTaskVersion(RootTask rootTask)
+        public int GetRootTaskVersion(RootTask rootTask)
         {
             if (getRootTaskVersionFunc == null)
             {
@@ -60,13 +60,13 @@ namespace ScheduleStopwatch
             return getRootTaskVersionFunc(rootTask);
         }
 
-        static private void OnDestinationReached(Vehicle vehicle, VehicleStation vehicleStation, RootTask task)
+        private void OnDestinationReached(Vehicle vehicle, VehicleStation vehicleStation, RootTask task)
         {
  //           NotificationUtils.ShowVehicleHint(vehicle, "OnDestinationReached " + vehicleStation.Location.Name);
             DestinationReached?.Invoke(vehicle, vehicleStation, task);
         }
 
-        static private void OnScheduleChanged(Vehicle vehicle, RootTask task, bool minorChange=false, bool notifyRoute=false)
+        private void OnScheduleChanged(Vehicle vehicle, RootTask task, bool minorChange=false, bool notifyRoute=false)
         {
             if (notifyRoute && vehicle.Route != null)
             {
@@ -84,7 +84,7 @@ namespace ScheduleStopwatch
             }
         }
 
-        static private void OnSubtaskChanged(SubTask subTask, bool minorChange = true, bool notifyRoute = false)
+        private void OnSubtaskChanged(SubTask subTask, bool minorChange = true, bool notifyRoute = false)
         {
             OnScheduleChanged(subTask.Vehicle, subTask.ParentTask, minorChange, notifyRoute);
         }
@@ -101,10 +101,10 @@ namespace ScheduleStopwatch
             if (vehicle) { 
                 if (vehicleStation && __instance.IsCompleted)
                 {
-                    OnStationLeaved(vehicle, vehicleStation, __instance);
+                    Current.OnStationLeaved(vehicle, vehicleStation, __instance);
                 } else
                 {
-                    OnMeasurementInvalidated(vehicle);
+                    Current.OnMeasurementInvalidated(vehicle);
                 }
             }
         }
@@ -116,7 +116,7 @@ namespace ScheduleStopwatch
             Vehicle vehicle = __instance.Vehicle;
             if (vehicle)
             {
-                OnMeasurementInvalidated(vehicle);
+                Current.OnMeasurementInvalidated(vehicle);
             }
         }
 
@@ -130,10 +130,10 @@ namespace ScheduleStopwatch
                 VehicleStation vehicleStation = __instance.Destination?.VehicleStationLocation?.VehicleStation;
                 if (vehicleStation)
                 {
-                    OnDestinationReached(vehicle, vehicleStation, __instance);
+                    Current.OnDestinationReached(vehicle, vehicleStation, __instance);
                 } else
                 {
-                    OnMeasurementInvalidated(vehicle);
+                    Current.OnMeasurementInvalidated(vehicle);
                 }
             }
         }
@@ -145,7 +145,7 @@ namespace ScheduleStopwatch
             Vehicle vehicle = __instance.Vehicle;
             if (vehicle)
             {
-                OnScheduleChanged(vehicle, __instance);
+                Current.OnScheduleChanged(vehicle, __instance);
             }
         }
 
@@ -156,7 +156,7 @@ namespace ScheduleStopwatch
             Vehicle vehicle = __instance.Vehicle;
             if (vehicle)
             {
-                OnScheduleChanged(vehicle, __instance);
+                Current.OnScheduleChanged(vehicle, __instance);
             }
         }
 
@@ -167,7 +167,7 @@ namespace ScheduleStopwatch
             Vehicle vehicle = __instance.Vehicle;
             if (vehicle)
             {
-                OnScheduleChanged(vehicle, __instance);
+                Current.OnScheduleChanged(vehicle, __instance);
             }
         }
 
@@ -190,7 +190,7 @@ namespace ScheduleStopwatch
             if (vehicle)
             {
                 bool minor = (__state != null && __state.VehicleStationLocation.VehicleStation == destination.VehicleStationLocation.VehicleStation);
-                OnScheduleChanged(vehicle, __instance, minor, true);
+                Current.OnScheduleChanged(vehicle, __instance, minor, true);
             }
         }
 
@@ -203,7 +203,7 @@ namespace ScheduleStopwatch
             Vehicle vehicle = __instance.Vehicle;
             if (vehicle)
             {
-                OnScheduleChanged(vehicle, task);
+                Current.OnScheduleChanged(vehicle, task);
             }
         }
 
@@ -214,7 +214,7 @@ namespace ScheduleStopwatch
             Vehicle vehicle = __instance.Vehicle;
             if (vehicle)
             {
-                OnScheduleChanged(vehicle, task);
+                Current.OnScheduleChanged(vehicle, task);
             }
         }
 
@@ -225,7 +225,7 @@ namespace ScheduleStopwatch
             Vehicle vehicle = __instance.Vehicle;
             if (vehicle)
             {
-                OnScheduleChanged(vehicle, ____tasks[newIndex]);
+                Current.OnScheduleChanged(vehicle, ____tasks[newIndex]);
             }
         }
         #endregion
@@ -238,7 +238,7 @@ namespace ScheduleStopwatch
             Vehicle vehicle = ____task?.Vehicle;
             if (vehicle)
             {
-                OnScheduleChanged(vehicle, ____task, notifyRoute: true);
+                Current.OnScheduleChanged(vehicle, ____task, notifyRoute: true);
             }
         }
 
@@ -249,7 +249,7 @@ namespace ScheduleStopwatch
             Vehicle vehicle = __instance?.Vehicle;
             if (vehicle)
             {
-                OnSubtaskChanged(__instance);
+                Current.OnSubtaskChanged(__instance);
             }
         }
 
@@ -284,7 +284,7 @@ namespace ScheduleStopwatch
                 {
                     if (origItem != item)
                     {
-                        OnSubtaskChanged(task, notifyRoute: true);
+                        Current.OnSubtaskChanged(task, notifyRoute: true);
                     }
                 };
             }

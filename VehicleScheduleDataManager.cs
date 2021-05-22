@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using VoxelTycoon;
@@ -8,15 +9,9 @@ using VoxelTycoon.Tracks.Tasks;
 
 namespace ScheduleStopwatch
 {
-    class VehicleScheduleDataManager
+    class VehicleScheduleDataManager: Manager<VehicleScheduleDataManager>
     {
-        private static VehicleScheduleDataManager _current;
-        private static bool _initialized = false;
-
         private Dictionary<Vehicle, VehicleScheduleData> _vehiclesData = new Dictionary<Vehicle, VehicleScheduleData>();
-
-        private VehicleScheduleDataManager(){
-        }
 
         public VehicleScheduleData this[Vehicle vehicle] {
             get
@@ -39,31 +34,14 @@ namespace ScheduleStopwatch
             }
         }
 
-        internal void Initialize()
+        protected override void OnInitialize()
         {
-            if (_initialized)
-            {
-                throw new InvalidOperationException("Already initialized");
-            }
-            VehicleScheduleHelper.DestinationReached += OnDestinationReached;
-            VehicleScheduleHelper.StationLeaved += OnStationLeaved;
-            VehicleScheduleHelper.MeasurementInvalidated += OnMeasurementInvalidated;
-            VehicleScheduleHelper.ScheduleChanged += OnScheduleChanged;
+            VehicleScheduleHelper.Current.DestinationReached += OnDestinationReached;
+            VehicleScheduleHelper.Current.StationLeaved += OnStationLeaved;
+            VehicleScheduleHelper.Current.MeasurementInvalidated += OnMeasurementInvalidated;
+            VehicleScheduleHelper.Current.ScheduleChanged += OnScheduleChanged;
             LazyManager<VehicleManager>.Current.VehicleRemoved += OnRemoveVehicle;
             LazyManager<VehicleManager>.Current.VehicleEdited += OnVehicleEdited;
-            _initialized = true;
-        }
-
-        internal void Deinitialize()
-        {
-            VehicleScheduleHelper.DestinationReached -= OnDestinationReached;
-            VehicleScheduleHelper.StationLeaved -= OnStationLeaved;
-            VehicleScheduleHelper.MeasurementInvalidated -= OnMeasurementInvalidated;
-            VehicleScheduleHelper.ScheduleChanged -= OnScheduleChanged;
-            LazyManager<VehicleManager>.Current.VehicleRemoved -= OnRemoveVehicle;
-            LazyManager<VehicleManager>.Current.VehicleEdited -= OnVehicleEdited;
-            _vehiclesData.Clear();
-            _initialized = false;
         }
 
         private VehicleScheduleData GetOrCreateVehicleScheduleData(Vehicle vehicle)
@@ -91,18 +69,6 @@ namespace ScheduleStopwatch
         private void OnMeasurementInvalidated(Vehicle vehicle)
         {
             GetOrCreateVehicleScheduleData(vehicle).OnMeasurementInvalidated();
-        }
-
-        public static VehicleScheduleDataManager Current
-        {
-            get
-            {
-                if (_current == null)
-                {
-                    _current = new VehicleScheduleDataManager();
-                }
-                return _current;
-            }
         }
 
         internal void OnRemoveVehicle(Vehicle vehicle)

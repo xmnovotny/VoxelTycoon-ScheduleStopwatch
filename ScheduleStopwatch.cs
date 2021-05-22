@@ -5,6 +5,7 @@ using ModSettings;
 using VoxelTycoon.Serialization;
 using VoxelTycoon.Game.UI;
 using System.Reflection;
+using VoxelTycoon;
 
 namespace ScheduleStopwatch
 {
@@ -30,8 +31,8 @@ namespace ScheduleStopwatch
             {
                 FileLog.Log(info.Name);
             }
+            Manager<VehicleScheduleDataManager>.Initialize();
             harmony.PatchAll();
-            VehicleScheduleDataManager.Current.Initialize();
         }
 
         protected override void OnGameStarted()
@@ -41,7 +42,6 @@ namespace ScheduleStopwatch
 
         protected override void Deinitialize()
         {
-            VehicleScheduleDataManager.Current.Deinitialize();
             ModSettingsWindowManager.Current.Unregister(this.GetType().Name);
             harmony.UnpatchAll(harmonyID);
             harmony = null;
@@ -66,7 +66,5 @@ namespace ScheduleStopwatch
                 FileLog.Log(e.StackTrace.ToString());
             }
         }
-
-
     }
 }

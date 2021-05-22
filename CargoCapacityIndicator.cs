@@ -11,17 +11,17 @@ namespace ScheduleStopwatch.UI
         private readonly List<CargoCapacityIndicatorItem> indicatorItems = new List<CargoCapacityIndicatorItem>();
         private static CargoCapacityIndicatorItem _itemTemplate;
 
-        public void Initialize(IReadOnlyDictionary<Item, int> items, float? multiplier)
+        public void Initialize(IReadOnlyDictionary<Item, int> items, float? multiplier, IReadOnlyDictionary<Item, int> routeTotal = null)
         {
             foreach(CargoCapacityIndicatorItem indItem in indicatorItems)
             {
                 indItem.DestroyGameObject();
             }
             indicatorItems.Clear();
-            UpdateItems(items, multiplier);
+            UpdateItems(items, multiplier, routeTotal);
         }
 
-        public void UpdateItems(IReadOnlyDictionary<Item, int> items, float? multiplier)
+        public void UpdateItems(IReadOnlyDictionary<Item, int> items, float? multiplier, IReadOnlyDictionary<Item, int> routeTotal = null)
         {
             int origCount = indicatorItems.Count;
             int index = 0;
@@ -29,16 +29,21 @@ namespace ScheduleStopwatch.UI
             {
                 foreach (KeyValuePair<Item, int> itemData in items)
                 {
+                    float? routeTotalCount = null;
+                    if (routeTotal != null && routeTotal.TryGetValue(itemData.Key, out int i))
+                    {
+                        routeTotalCount = i;
+                    }
                     if (index < origCount)
                     {
-                        indicatorItems[index].UpdateItemData(itemData.Key, itemData.Value * multiplier.Value);
+                        indicatorItems[index].UpdateItemData(itemData.Key, itemData.Value * multiplier.Value, routeTotalCount);
                         indicatorItems[index].SetActive(true);
                     }
                     else
                     {
                         CargoCapacityIndicatorItem indicatorItem = GetIndicatorItemInstance(base.transform);
                         indicatorItems.Add(indicatorItem);
-                        indicatorItem.Initialize(itemData.Key, itemData.Value * multiplier.Value);
+                        indicatorItem.Initialize(itemData.Key, itemData.Value * multiplier.Value, routeTotalCount);
                         indicatorItem.gameObject.SetActive(true);
                     }
                     index++;

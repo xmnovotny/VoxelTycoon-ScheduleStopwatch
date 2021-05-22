@@ -35,13 +35,9 @@ namespace ModSettings
 
         private T CreateContent<T>() where T : ModSettingsWindowPage
         {
-            FileLog.Log("CreateContent");
             T t = new GameObject("ModSettingsTab").AddComponent<T>();
-            FileLog.Log("CreateContent-AddComp");
             t.gameObject.AddComponent<VerticalLayoutGroup>();
-            FileLog.Log("CreateContent-AddComp2");
             t.transform.SetParent(base.ContentContainer);
-            FileLog.Log("CreateContent-SetParent");
             return t;
         }
 
