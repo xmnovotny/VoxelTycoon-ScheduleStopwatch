@@ -1,0 +1,11 @@
+﻿{
+  "schedule_stopwatch/missing_time_segment": "Nejsou data pro část jízdního řádu",
+  "schedule_stopwatch/times_per_month": "{0}x za měsíc",
+  "schedule_stopwatch/days_hours": "{0}d {1}h",
+  "schedule_stopwatch/hours_minutes": "{0}h {1}m",
+  "schedule_stopwatch/unknown": "neznámé",
+  "schedule_stopwatch/display_time_for_inidividual_tasks": "Zobrazit časy jednotlivých úkolů v jízdním řádu",
+  "schedule_stopwatch/display_totaltime_in_schedule": "Zobrazit celkový čas jízdního řádu v okně vozidla",
+  "schedule_stopwatch/settings_window_title": "Nastavení modu 'Automatic schedule stopwatch'"
+}
+

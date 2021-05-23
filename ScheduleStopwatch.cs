@@ -6,6 +6,7 @@ using VoxelTycoon.Serialization;
 using VoxelTycoon.Game.UI;
 using System.Reflection;
 using VoxelTycoon;
+using VoxelTycoon.Localization;
 
 namespace ScheduleStopwatch
 {
@@ -13,7 +14,7 @@ namespace ScheduleStopwatch
     public class ScheduleStopwatch : Mod
     {
         public const int SAVE_VERSION = 1;
-        private static Harmony harmony;
+        private Harmony harmony;
         private const string harmonyID = "cz.xmnovotny.schedulestopwatch.patch";
 
         protected override void Initialize()
@@ -21,28 +22,17 @@ namespace ScheduleStopwatch
             harmony = (Harmony)(object)new Harmony(harmonyID);
             Harmony.DEBUG = false;
             FileLog.Reset();
-            var interf = typeof(VehicleWindowScheduleTabRefitPropertyView).GetInterface("IFrameCloseHandler");
-            var interfaceMapping = typeof(VehicleWindowScheduleTabRefitPropertyView).GetInterfaceMap(interf);
-            foreach (MethodInfo info in AccessTools.GetDeclaredMethods(typeof(VehicleWindowScheduleTabRefitPropertyView)))
-            {
-                FileLog.Log(info.Name);
-            }
-            foreach (MethodInfo info in interfaceMapping.TargetMethods)
-            {
-                FileLog.Log(info.Name);
-            }
             Manager<VehicleScheduleDataManager>.Initialize();
             harmony.PatchAll();
         }
 
         protected override void OnGameStarted()
         {
-            ModSettingsWindowManager.Current.Register<SettingsWindowPage>(this.GetType().Name, "Automatic schedule stopwatch settings");
+            ModSettingsWindowManager.Current.Register<SettingsWindowPage>(this.GetType().Name, LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/settings_window_title"));
         }
 
         protected override void Deinitialize()
         {
-            ModSettingsWindowManager.Current.Unregister(this.GetType().Name);
             harmony.UnpatchAll(harmonyID);
             harmony = null;
         }

@@ -1,5 +1,5 @@
 {
   "LocaleUri": "base/en.locale",
-  "ItemsUri": "ScheduleStopwatch/en.json",
+  "ItemsUri": "ScheduleStopwatch/en.strings.json",
   "Items": null
 }

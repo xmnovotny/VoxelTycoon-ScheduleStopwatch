@@ -1,9 +1,0 @@
-{
-  "schedule_stopwatch/missing_time_segment": "Some schedule segment doesn't have time data",
-  "schedule_stopwatch/times_per_month": "{0}x per month",
-  "schedule_stopwatch/days_hours": "{0}d {1}h",
-  "schedule_stopwatch/hours_minutes": "{0}h {1}m",
-  "schedule_stopwatch/unknown": "unknown",
-  "schedule_stopwatch/total_time_label": "TOTAL TIME:",
-  "schedule_stopwatch/total_label": "TOTAL:"
-}

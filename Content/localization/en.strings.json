@@ -1,0 +1,10 @@
+﻿{
+  "schedule_stopwatch/missing_time_segment": "Some schedule segment doesn't have time data",
+  "schedule_stopwatch/times_per_month": "{0}x per month",
+  "schedule_stopwatch/days_hours": "{0}d {1}h",
+  "schedule_stopwatch/hours_minutes": "{0}h {1}m",
+  "schedule_stopwatch/unknown": "unknown",
+  "schedule_stopwatch/display_time_for_inidividual_tasks": "Display time for individual tasks in the schedule",
+  "schedule_stopwatch/display_totaltime_in_schedule": "Display total time in the vehicle's window",
+  "schedule_stopwatch/settings_window_title": "Automatic schedule stopwatch settings"
+}

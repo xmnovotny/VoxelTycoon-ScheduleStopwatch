@@ -104,11 +104,15 @@ namespace ScheduleStopwatch
             OnDataChanged();
         }
 
-        public IReadOnlyDictionary<Item, int> GetRouteTotalTransfers() {
+        public IReadOnlyDictionary<Item, int> GetRouteTotalTransfers(bool skipForOnlyOneVehicle=true) {
             if (!HasValidData || VehicleSchedule.Vehicle.Route != null)
             {
                 TaskTransfers totalTransfers = new TaskTransfers();
                 VehicleRoute route = VehicleSchedule.Vehicle.Route;
+                if (skipForOnlyOneVehicle && route.Vehicles.Count == 1)
+                {
+                    return null;
+                }
                 foreach (Vehicle vehicle in route.Vehicles.ToArray())
                 {
                     if (vehicle.IsEnabled)

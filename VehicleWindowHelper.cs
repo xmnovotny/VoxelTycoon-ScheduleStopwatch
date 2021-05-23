@@ -59,7 +59,7 @@ namespace ScheduleStopwatch
             Transform textTransform = TaskTimeTemplate.Find("Text");
             textTransform.name = "TravelTimeText";
             Text text = textTransform.GetComponent<Text>();
-            text.text = "Unknown".ToUpper();
+            text.text = locale.GetString("schedule_stopwatch/unknown").ToUpper();
 
             Transform loadingIcon = UnityEngine.Object.Instantiate<Transform>(iconTransform, iconTransform.parent);
             loadingIcon.name = "LoadingTimeIcon";
@@ -74,12 +74,12 @@ namespace ScheduleStopwatch
             TotalTimeTemplate.Find("LoadingTimeIcon").DestroyGameObject(true);
             Transform totalLabel = TotalTimeTemplate.Find("TravelTimeText");
             totalLabel.name = "Label";
-            totalLabel.GetComponent<Text>().text = locale.GetString("schedule_stopwatch/total_label");
+            totalLabel.GetComponent<Text>().text = "∑";
 
             Transform textTransform2 = TotalTimeTemplate.Find("LoadingTimeText");
             textTransform2.name = "TotalTimeText";
             Text text2 = textTransform2.GetComponent<Text>();
-            text2.text = "Unknown".ToUpper();
+            text2.text = locale.GetString("schedule_stopwatch/unknown").ToUpper();
         }
 
         private void CreateTotalTimeIndicator(VehicleWindowScheduleTabSeparatorView separatorView, VehicleWindowScheduleTab scheduleTab)

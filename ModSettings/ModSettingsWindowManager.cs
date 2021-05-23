@@ -11,27 +11,14 @@ using VoxelTycoon.Game.UI;
 namespace ModSettings
 {
     [Harmony]
-    class ModSettingsWindowManager
+    class ModSettingsWindowManager: LazyManager<ModSettingsWindowManager>
     {
-        private static ModSettingsWindowManager _current;
-        private static readonly Dictionary<string, ModData> registered = new Dictionary<string, ModData>();
+        private readonly Dictionary<string, ModData> registered = new Dictionary<string, ModData>();
 
         private struct ModData
         {
             public string Title;
             public UnityAction Show;
-        }
-
-        public static ModSettingsWindowManager Current
-        {
-            get
-            {
-                if (_current == null)
-                {
-                    _current = new ModSettingsWindowManager();
-                }
-                return _current;
-            }
         }
 
         private void ShowWindow<T>(string Title) where T : ModSettingsWindowPage
@@ -59,7 +46,7 @@ namespace ModSettings
         {
             if (__instance is GameSettingsWindowInGamePacksPage)
             {
-                if (registered.TryGetValue(item.Pack.Name, out var data))
+                if (Current.registered.TryGetValue(item.Pack.Name, out var data))
                 {
                     Transform hint = __result.transform.Find("Row1/NameContainer/Hint");
                     Transform settings = UnityEngine.Object.Instantiate<Transform>(hint, hint.parent);

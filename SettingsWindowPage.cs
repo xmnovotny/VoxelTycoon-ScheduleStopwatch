@@ -1,5 +1,7 @@
 ﻿using ModSettings;
+using VoxelTycoon;
 using VoxelTycoon.Game.UI;
+using VoxelTycoon.Localization;
 
 namespace ScheduleStopwatch
 {
@@ -8,7 +10,8 @@ namespace ScheduleStopwatch
         protected override void InitializeInternal(SettingsControl settingsControl)
         {
             Settings settings = Settings.Current;
-            settingsControl.AddToggle("Display time for individual tasks in the schedule", null, settings.ShowIndividualTaskTimes, delegate ()
+            Locale locale = LazyManager<LocaleManager>.Current.Locale;
+            settingsControl.AddToggle(locale.GetString("schedule_stopwatch/display_time_for_inidividual_tasks"), null, settings.ShowIndividualTaskTimes, delegate ()
             {
                 settings.ShowIndividualTaskTimes = true;
             }, delegate ()
@@ -16,7 +19,7 @@ namespace ScheduleStopwatch
                 settings.ShowIndividualTaskTimes = false;
             });
 
-            settingsControl.AddToggle("Display total time in the vehicle details window", null, settings.ShowScheduleTotalTime, delegate ()
+            settingsControl.AddToggle(locale.GetString("schedule_stopwatch/display_totaltime_in_schedule"), null, settings.ShowScheduleTotalTime, delegate ()
             {
                 settings.ShowScheduleTotalTime = true;
             }, delegate ()
