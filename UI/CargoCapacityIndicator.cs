@@ -28,8 +28,6 @@ namespace ScheduleStopwatch.UI
 
         public void UpdateItems(IReadOnlyDictionary<Item, int> items, float? multiplier, IReadOnlyDictionary<Item, int> routeTotal = null)
         {
-            FileLog.Log("CapacityIndicatorUpdateData");
-            FileLog.Log(XMNUtils.GameObjectDumper.DumpGameObject(transform.parent.gameObject));
             int origCount = indicatorItems.Count;
             int index = 0;
             if (items != null && multiplier != null)
@@ -79,6 +77,8 @@ namespace ScheduleStopwatch.UI
             Transform tr = UnityEngine.GameObject.Instantiate<Transform>((new GameObject("CargoCapacity", typeof(RectTransform))).transform);
             tr.gameObject.SetActive(false);
             LayoutHelper.MakeLayoutGroup(tr, LayoutHelper.Orientation.Horizontal, new RectOffset(0, 0, 0, 0), 0f, 0, LayoutHelper.ChildSizing.ChildControlsSize);
+            tr.gameObject.AddComponent<CanvasRenderer>();
+            tr.gameObject.AddComponent<NonDrawingGraphic>();
             return tr.gameObject.AddComponent<CargoCapacityIndicator>();
         }
     }

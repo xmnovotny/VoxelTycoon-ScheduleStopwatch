@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using VoxelTycoon;
@@ -47,6 +48,11 @@ namespace ScheduleStopwatch.UI
             );
             _capacityIndicator = transform.GetComponentInChildren<CargoCapacityIndicator>();
             _capacityIndicator.Initialize(null, null);
+            Tooltip.For(
+                _capacityIndicator,
+                () => GetCapacityTooltipText(),
+                null
+            );
             _scheduleData = data;
             UpdateValues(data, null);
         }
@@ -71,6 +77,34 @@ namespace ScheduleStopwatch.UI
             _lastTotalTransfers = data.Capacity.GetTotalTransfers();
             _lastTotalRouteTransfers = data.Capacity.GetRouteTotalTransfers();
             _capacityIndicator.UpdateItems(_lastTotalTransfers, _lastMonthMultiplier, _lastTotalRouteTransfers);
+        }
+
+        private string GetCapacityTooltipText()
+        {
+            string result;
+            if (_lastMonthMultiplier != null && _lastTotalTransfers != null && _lastTotalTransfers.Count>0)
+            {
+                bool isRoute = _lastTotalRouteTransfers != null && _lastTotalRouteTransfers.Count>0;
+                StringBuilder sb = new StringBuilder();
+                sb.Append(StringHelper.Boldify("Total monthly transfers"));
+                if (isRoute)
+                {
+                    sb.Append(StringHelper.Colorify(" (this vehicle/all vehicles in the route)", UIColors.Popup.SubtleText));
+                }
+                foreach (KeyValuePair<Item, int> transfer in _lastTotalTransfers)
+                {
+                    sb.AppendLine();
+                    string countStr = (transfer.Value * _lastMonthMultiplier.Value).ToString("N0");
+                    if (isRoute && _lastTotalRouteTransfers.TryGetValue(transfer.Key, out int routeCount))
+                    {
+                        countStr += "/" + routeCount.ToString();
+                    }
+                    sb.Append(StringHelper.FormatCountString(transfer.Key.DisplayName, countStr));
+                }
+
+                return sb.ToString();
+            }
+            return "";
         }
 
         private static void CreateTemplate()
