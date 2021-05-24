@@ -21,6 +21,7 @@ namespace ScheduleStopwatch
         private TaskDurationDataSet _travelData;
         private TaskDurationDataSet _stationLoadingData;
         private Action<VehicleScheduleData, RootTask> dataChanged;
+        private Dictionary<RootTask, Action<VehicleScheduleData, RootTask>> _taskDataChanged = new Dictionary<RootTask, Action<VehicleScheduleData, RootTask>>(); //events for one task
         private bool _isDirty = true;
         private TimeSpan? _totalTravelAverage;
         private TimeSpan? _totalStationLoadingAverage;
@@ -96,6 +97,27 @@ namespace ScheduleStopwatch
             return _stationLoadingData.GetAverageDuration(task);
         }
 
+        public void SubscribeTaskDataChanged(RootTask task, Action<VehicleScheduleData, RootTask> handler)
+        {
+            if (!_taskDataChanged.TryGetValue(task, out Action<VehicleScheduleData, RootTask> akce))
+            {
+                _taskDataChanged.Add(task, handler);
+            }
+            else
+            {
+                akce += handler;
+                _taskDataChanged[task] = akce;
+            }
+        }
+
+        public void UnsubscribeTaskDataChanged(RootTask task, Action<VehicleScheduleData, RootTask> handler)
+        {
+            if (_taskDataChanged.TryGetValue(task, out Action<VehicleScheduleData, RootTask> akce))
+            {
+                akce -= handler;
+                _taskDataChanged[task] = akce;
+            }
+        }
         public void SubscribeDataChanged(Action<VehicleScheduleData, RootTask> handler)
         {
             dataChanged += handler;
@@ -121,10 +143,20 @@ namespace ScheduleStopwatch
         {
             MarkDirty();
             dataChanged?.Invoke(this, task);
+            if (task == null)
+            {
+                foreach (Action<VehicleScheduleData, RootTask> action in _taskDataChanged.Values)
+                {
+                    action?.Invoke(this, null);
+                }
+            } else if (_taskDataChanged.TryGetValue(task, out Action<VehicleScheduleData, RootTask> action)) {
+                action?.Invoke(this, task);
+            }
         }
 
         private void OnCapacityDataChanged(VehicleScheduleCapacity _)
         {
+            FileLog.Log("CapacityDataChanged");
             OnDataChanged(null);
         }
 

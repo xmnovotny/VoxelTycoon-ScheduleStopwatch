@@ -44,7 +44,7 @@ namespace ScheduleStopwatch
             LazyManager<VehicleManager>.Current.VehicleEdited += OnVehicleEdited;
         }
 
-        private VehicleScheduleData GetOrCreateVehicleScheduleData(Vehicle vehicle)
+        public VehicleScheduleData GetOrCreateVehicleScheduleData(Vehicle vehicle)
         {
             if (!_vehiclesData.ContainsKey(vehicle))
             {

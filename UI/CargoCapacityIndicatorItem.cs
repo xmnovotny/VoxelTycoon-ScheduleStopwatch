@@ -1,11 +1,14 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using VoxelTycoon;
+using VoxelTycoon.Game.UI.VehicleUnitPickerWindowViews;
 
 namespace ScheduleStopwatch.UI
 {
-    public class CargoCapacityIndicatorItem: MonoBehaviour
-    {
+	public class CargoCapacityIndicatorItem : MonoBehaviour
+	{
+		
+		private static CargoCapacityIndicatorItem _template;
 		private Image _thumb;
 		private Text _text;
 		private Item _item;
@@ -42,6 +45,29 @@ namespace ScheduleStopwatch.UI
 		{
 			UpdateCount(count, routeTotalCount);
 			Item = item;
+		}
+
+		public static CargoCapacityIndicatorItem GetInstance(Transform parent)
+        {
+			if (_template == null)
+			{
+				_template = CreateTemplate();
+			}
+			CargoCapacityIndicatorItem item = UnityEngine.Object.Instantiate<CargoCapacityIndicatorItem>(_template, parent);
+			item.gameObject.name = "CargoCapacityItem";
+			return item;
+		}
+
+		private static CargoCapacityIndicatorItem CreateTemplate()
+        {
+			DepotWindowVehicleListItemStoragesViewTooltipItem item = UnityEngine.Object.Instantiate<DepotWindowVehicleListItemStoragesViewTooltipItem>(R.Game.UI.DepotWindow.DepotWindowVehicleListItemStoragesViewTooltipItem);
+			Transform itemTransform = item.transform;
+			UnityEngine.Object.DestroyImmediate(item);
+
+			CargoCapacityIndicatorItem result = itemTransform.gameObject.AddComponent<CargoCapacityIndicatorItem>();
+			LayoutElement layout = itemTransform.GetComponent<LayoutElement>();
+			layout.flexibleWidth = 0.00f;
+			return result;
 		}
 	}
 }
