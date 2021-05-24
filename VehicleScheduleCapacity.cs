@@ -9,48 +9,8 @@ using XMNUtils;
 
 namespace ScheduleStopwatch
 {
-    public class VehicleScheduleCapacity
+    public partial class VehicleScheduleCapacity
     {
-
-        public class TaskTransfers
-        {
-            //transfer per Item ( >0 = loading, <0 = unloading)
-            private readonly Dictionary<Item, int> _transfers = new Dictionary<Item, int>();
-
-            public IReadOnlyDictionary<Item, int> Transfers
-            {
-                get
-                {
-                    return _transfers;
-                }
-            }
-
-            public void Add(Item item, int count)
-            {
-                if (_transfers.ContainsKey(item))
-                {
-                    _transfers[item] += count;
-                }
-                else
-                {
-                    _transfers.Add(item, count);
-                }
-            }
-
-            public void Add(TaskTransfers transfers, float? multiplier = null)
-            {
-                Add(transfers._transfers, multiplier);
-            }
-
-            public void Add(IReadOnlyDictionary<Item, int> transfers, float? multiplier=null)
-            {
-                foreach (KeyValuePair<Item, int> transfer in transfers)
-                {
-                    int value = multiplier != null ? (transfer.Value * multiplier.Value).RoundToInt() : transfer.Value;
-                    this.Add(transfer.Key, value);
-                }
-            }
-        }
 
 
         public VehicleSchedule VehicleSchedule { get; }
@@ -94,7 +54,7 @@ namespace ScheduleStopwatch
         /* Returns total of transferred items per schedule (=sum of unloaded items) */
         public IReadOnlyDictionary<Item, int> GetTotalTransfers()
         {
-            return TotalTransfers.Transfers;
+            return TotalTransfers?.Transfers;
         }
 
         public void OnVehicleEdited()
@@ -131,6 +91,39 @@ namespace ScheduleStopwatch
             }
             return null;
         }
+        public TransfersPerStationCont GetRouteTransfersPerStation(bool skipForOnlyOneVehicle = true)
+        {
+            if (!HasValidData || VehicleSchedule.Vehicle.Route != null)
+            {
+                TransfersPerStationCont totalTransfers = new TransfersPerStationCont();
+                VehicleRoute route = VehicleSchedule.Vehicle.Route;
+                if (skipForOnlyOneVehicle && route.Vehicles.Count == 1)
+                {
+                    return null;
+                }
+                foreach (Vehicle vehicle in route.Vehicles.ToArray())
+                {
+                    if (vehicle.IsEnabled)
+                    {
+                        VehicleScheduleData vehicleData = VehicleScheduleDataManager.Current[vehicle];
+                        float? mult;
+                        if (vehicleData == null || !vehicleData.Capacity.HasValidData || (mult = vehicleData.ScheduleMonthlyMultiplier) == null)
+                        {
+                            return null;
+                        }
+                        totalTransfers.Add(vehicleData.Capacity.GetTransfersPerStation(), mult);
+                    }
+                }
+
+                return totalTransfers.AsReadonly();
+            }
+            return null;
+        }
+
+        public TransfersPerStationCont GetTransfersPerStation()
+        {
+            return TransfersPerStation.AsReadonly();
+        }
 
         private struct StorageState
         {
@@ -159,6 +152,7 @@ namespace ScheduleStopwatch
             if (_dirty)
             {
                 _totalTransfers = null;
+                _transfPerStation = null;
                 BuildTaskTransfers();
                 _dirty = false;
             }
@@ -308,25 +302,6 @@ namespace ScheduleStopwatch
             }
         }
 
-        private void OnVehicleConsistItemAdded(VehicleRecipeInstance recipe)
-        {
-            foreach(VehicleRecipeSectionInstance section in recipe.Sections.ToArray())
-            {
-                foreach (VehicleUnit unit in section.Units.ToArray())
-                {
-                    unit.StorageChanged += OnVehicleUnitStorageChange;
-                }
-            }
-            MarkDirty();
-            OnDataChanged();
-        }
-
-        private void OnVehicleConsistItemRemoved(VehicleRecipeInstance _)
-        {
-            MarkDirty();
-            OnDataChanged();
-        }
-
         private void OnDataChanged()
         {
             DataChanged?.Invoke(this);
@@ -355,8 +330,22 @@ namespace ScheduleStopwatch
             }
         }
 
+        private TransfersPerStationCont TransfersPerStation
+        {
+            get
+            {
+                Invalidate();
+                if (_transfPerStation == null && HasValidData)
+                {
+                    _transfPerStation = new TransfersPerStationCont(_transfers);
+                }
+                return _transfPerStation;
+            }
+        }
+
         private readonly Dictionary<RootTask, TaskTransfers> _transfers = new Dictionary<RootTask, TaskTransfers>();
         private TaskTransfers _totalTransfers;
+        private TransfersPerStationCont _transfPerStation;
 
         private bool _dirty = true;
         private bool _hasValidData = false;

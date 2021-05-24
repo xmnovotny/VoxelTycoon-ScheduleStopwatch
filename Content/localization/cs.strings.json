@@ -1,11 +1,16 @@
 ﻿{
-  "schedule_stopwatch/missing_time_segment": "Nejsou data pro část jízdního řádu",
-  "schedule_stopwatch/times_per_month": "{0}x za měsíc",
+  "schedule_stopwatch/missing_time_segment": "Chybí data pro část jízdního řádu",
+  "schedule_stopwatch/times_per_month": "Celkový čas jízdního řádu ({0}x za měsíc)",
   "schedule_stopwatch/days_hours": "{0}d {1}h",
   "schedule_stopwatch/hours_minutes": "{0}h {1}m",
   "schedule_stopwatch/unknown": "neznámé",
   "schedule_stopwatch/display_time_for_inidividual_tasks": "Zobrazit časy jednotlivých úkolů v jízdním řádu",
   "schedule_stopwatch/display_totaltime_in_schedule": "Zobrazit celkový čas jízdního řádu v okně vozidla",
-  "schedule_stopwatch/settings_window_title": "Nastavení modu 'Automatic schedule stopwatch'"
+  "schedule_stopwatch/settings_window_title": "Nastavení modu 'Automatic schedule stopwatch'",
+  "schedule_stopwatch/loaded_items_count": "Naloženo {0}",
+  "schedule_stopwatch/unloaded_items_count": "Vyloženo {0}",
+  "schedule_stopwatch/estim_monthly_transf": "Odhadované měsíční přesuny",
+  "schedule_stopwatch/estim_monthly_transf_hint": "(toto vozidlo/všechna vozidla trasy)",
+  "schedule_stopwatch/total_transfer": "Celkové přesuny"
 }
 

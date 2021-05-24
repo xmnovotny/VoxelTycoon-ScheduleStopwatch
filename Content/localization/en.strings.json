@@ -1,10 +1,15 @@
 ﻿{
-  "schedule_stopwatch/missing_time_segment": "Some schedule segment doesn't have time data",
-  "schedule_stopwatch/times_per_month": "{0}x per month",
+  "schedule_stopwatch/missing_time_segment": "Missing data for part of the schedule",
+  "schedule_stopwatch/times_per_month": "Total schedule duration ({0}x per month)",
   "schedule_stopwatch/days_hours": "{0}d {1}h",
   "schedule_stopwatch/hours_minutes": "{0}h {1}m",
   "schedule_stopwatch/unknown": "unknown",
-  "schedule_stopwatch/display_time_for_inidividual_tasks": "Display time for individual tasks in the schedule",
-  "schedule_stopwatch/display_totaltime_in_schedule": "Display total time in the vehicle's window",
-  "schedule_stopwatch/settings_window_title": "Automatic schedule stopwatch settings"
+  "schedule_stopwatch/display_time_for_inidividual_tasks": "Display the time for individual tasks in the schedule",
+  "schedule_stopwatch/display_totaltime_in_schedule": "Display the total time in the vehicle window",
+  "schedule_stopwatch/settings_window_title": "Automatic schedule stopwatch settings",
+  "schedule_stopwatch/loaded_items_count": "Load {0}",
+  "schedule_stopwatch/unloaded_items_count": "Unload {0}",
+  "schedule_stopwatch/estim_monthly_transf": "Estimated monthly transfers",
+  "schedule_stopwatch/estim_monthly_transf_hint": "(this vehicle/all route vehicles)",
+  "schedule_stopwatch/total_transfer": "Total transfers"
 }

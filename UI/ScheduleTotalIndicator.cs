@@ -6,8 +6,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using VoxelTycoon;
 using VoxelTycoon.Localization;
+using VoxelTycoon.Tracks;
 using VoxelTycoon.Tracks.Tasks;
 using VoxelTycoon.UI;
+using TransfersPerStationCont = ScheduleStopwatch.VehicleScheduleCapacity.TransfersPerStationCont;
 
 namespace ScheduleStopwatch.UI
 {
@@ -18,9 +20,33 @@ namespace ScheduleStopwatch.UI
         private float? _lastMonthMultiplier;
         private IReadOnlyDictionary<Item, int> _lastTotalTransfers;
         private IReadOnlyDictionary<Item, int> _lastTotalRouteTransfers;
+        private TransfersPerStationCont _lastTransfersPerStation;
+        private TransfersPerStationCont _lastRouteTransfersPerStation;
         private CargoCapacityIndicator _capacityIndicator;
         private VehicleScheduleData _scheduleData;
         private static ScheduleTotalIndicator _template;
+        private TransfersPerStationCont LastTransfersPerStation
+        {
+            get
+            {
+                if (_lastTransfersPerStation == null && _lastTotalTransfers != null)
+                {
+                    _lastTransfersPerStation = _scheduleData.Capacity.GetTransfersPerStation();
+                }
+                return _lastTransfersPerStation;
+            }
+        }
+        private TransfersPerStationCont LastRouteTransfersPerStation
+        {
+            get
+            {
+                if (_lastRouteTransfersPerStation == null && _lastTotalTransfers != null && _scheduleData.Vehicle.Route?.Vehicles.Count > 0)
+                {
+                    _lastRouteTransfersPerStation = _scheduleData.Capacity.GetRouteTransfersPerStation();
+                }
+                return _lastRouteTransfersPerStation;
+            }
+        }
 
         public static ScheduleTotalIndicator GetInstance(Transform parent)
         {
@@ -63,6 +89,8 @@ namespace ScheduleStopwatch.UI
                 throw new ArgumentException("Schedule data is not for this ScheduleTotalIndicator");
 
             Locale locale = LazyManager<LocaleManager>.Current.Locale;
+            _lastTransfersPerStation = null;
+            _lastRouteTransfersPerStation = null;
             _lastTotalTime = data.ScheduleAvereageDuration;
             _lastMonthMultiplier = data.ScheduleMonthlyMultiplier;
             if (_lastTotalTime.HasValue)
@@ -81,27 +109,47 @@ namespace ScheduleStopwatch.UI
 
         private string GetCapacityTooltipText()
         {
-            string result;
+            Locale locale = LazyManager<LocaleManager>.Current.Locale;
             if (_lastMonthMultiplier != null && _lastTotalTransfers != null && _lastTotalTransfers.Count>0)
             {
                 bool isRoute = _lastTotalRouteTransfers != null && _lastTotalRouteTransfers.Count>0;
                 StringBuilder sb = new StringBuilder();
-                sb.Append(StringHelper.Boldify("Total monthly transfers"));
+                sb.Append(StringHelper.Boldify(locale.GetString("schedule_stopwatch/estim_monthly_transf").ToUpper()));
                 if (isRoute)
                 {
-                    sb.Append(StringHelper.Colorify(" (this vehicle/all vehicles in the route)", UIColors.Popup.SubtleText));
+                    sb.Append(" " + StringHelper.Colorify(locale.GetString("schedule_stopwatch/estim_monthly_transf_hint"),UIColors.Solid.Text * 0.5f));
                 }
-                foreach (KeyValuePair<Item, int> transfer in _lastTotalTransfers)
+                TransfersPerStationCont transfPerSt = LastTransfersPerStation;
+                if (transfPerSt != null && transfPerSt.Count>0)
                 {
-                    sb.AppendLine();
-                    string countStr = (transfer.Value * _lastMonthMultiplier.Value).ToString("N0");
-                    if (isRoute && _lastTotalRouteTransfers.TryGetValue(transfer.Key, out int routeCount))
+                    TransfersPerStationCont routeTransfPerst = null;
+                    if (isRoute)
                     {
-                        countStr += "/" + routeCount.ToString();
+                        routeTransfPerst = LastRouteTransfersPerStation;
                     }
-                    sb.Append(StringHelper.FormatCountString(transfer.Key.DisplayName, countStr));
-                }
+                    foreach (KeyValuePair<VehicleStation, IReadOnlyDictionary<Item, int>> pair in transfPerSt)
+                    {
+                        StringBuilder stationSb = new StringBuilder();
+                        string stationName = StringHelper.Boldify(pair.Key.Location.Name);
+                        stationSb.Append(stationName);
+                        IReadOnlyDictionary<Item, int> routeTransfers = routeTransfPerst?[pair.Key];
 
+                        if (TooltipTextForStation(pair.Value, stationSb, routeTransfers, _lastMonthMultiplier.Value))
+                        {
+                            sb.AppendLine().Append(stationSb.ToString());
+                        }
+                    }
+                    sb.AppendLine().Append(StringHelper.Colorify(StringHelper.Boldify(locale.GetString("schedule_stopwatch/total_transfer").ToUpper()), UIColors.Solid.Text * 0.8f));
+                    foreach (KeyValuePair<Item, int> transfer in _lastTotalTransfers)
+                    {
+                        string countStr = (transfer.Value * _lastMonthMultiplier.Value).ToString("N0");
+                        if (isRoute && _lastTotalRouteTransfers.TryGetValue(transfer.Key, out int routeCount))
+                        {
+                            countStr += "/" + routeCount.ToString();
+                        }
+                        sb.AppendLine().Append(StringHelper.FormatCountString(transfer.Key.DisplayName, countStr));
+                    }
+                }
                 return sb.ToString();
             }
             return "";
