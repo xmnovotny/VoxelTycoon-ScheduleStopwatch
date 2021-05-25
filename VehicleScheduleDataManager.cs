@@ -19,10 +19,10 @@ namespace ScheduleStopwatch
                 return _vehiclesData.TryGetValue(vehicle, out VehicleScheduleData vehicleScheduleData) ? vehicleScheduleData : null;
             }
         }
-        public void SubscribeDataChanged(Vehicle vehicle, Action<VehicleScheduleData, RootTask> handler)
+        public void SubscribeDataChanged(Vehicle vehicle, Action<VehicleScheduleData, RootTask> handler, bool priority = false)
         {
             VehicleScheduleData data = GetOrCreateVehicleScheduleData(vehicle);
-            data.SubscribeDataChanged(handler);
+            data.SubscribeDataChanged(handler, priority);
         }
 
         public void UnsubscribeDataChanged(Vehicle vehicle, Action<VehicleScheduleData, RootTask> handler)

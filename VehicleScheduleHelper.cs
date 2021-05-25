@@ -19,6 +19,7 @@ namespace ScheduleStopwatch
         public event Action<Vehicle, VehicleStation, RootTask> StationLeaved;
         public event Action<Vehicle> MeasurementInvalidated;
         public event Action<Vehicle, RootTask, bool> ScheduleChanged;
+        public event Action<Vehicle, VehicleRoute, VehicleRoute> VehicleRouteChanged;  //vehicle, old route, new route
 
         private Func<RootTask, int> getRootTaskVersionFunc;
 
@@ -87,6 +88,11 @@ namespace ScheduleStopwatch
         private void OnSubtaskChanged(SubTask subTask, bool minorChange = true, bool notifyRoute = false)
         {
             OnScheduleChanged(subTask.Vehicle, subTask.ParentTask, minorChange, notifyRoute);
+        }
+
+        private void OnVehicleRouteChanged(Vehicle vehicle, VehicleRoute oldRoute, VehicleRoute newRoute)
+        {
+            VehicleRouteChanged?.Invoke(vehicle, oldRoute, newRoute);
         }
 
         #region Harmony
@@ -289,6 +295,22 @@ namespace ScheduleStopwatch
                 };
             }
             _itemChangeRefitTask = null;
+        }
+        #endregion
+
+        #region Vehicle
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Vehicle), "SetRouteInternal")]
+        static private void Vehicle_SetRouteInternal_prf(Vehicle __instance, VehicleRoute route, out VehicleRoute __state)
+        {
+            __state = __instance.Route;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Vehicle), "SetRouteInternal")]
+        static private void Vehicle_SetRouteInternal_pof(Vehicle __instance, VehicleRoute route, VehicleRoute __state)
+        {
+            Current.OnVehicleRouteChanged(__instance, __state, route);
         }
         #endregion
         #endregion

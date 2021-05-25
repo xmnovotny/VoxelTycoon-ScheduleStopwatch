@@ -43,6 +43,7 @@ namespace ScheduleStopwatch.UI
             LayoutHelper.MakeLayoutGroup(tr, LayoutHelper.Orientation.Horizontal, new RectOffset(0, 0, 0, 0), 4, group.childAlignment, LayoutHelper.ChildSizing.ChildControlsSize);
             _baseTemplate.Find("Icon").SetParent(tr);
             _baseTemplate.Find("Text").SetParent(tr);
+            _baseTemplate.SetActive(false);
         }
 
         protected bool TooltipTextForStation(IReadOnlyDictionary<Item, int> transfers, StringBuilder strBuilder, IReadOnlyDictionary<Item, int> routeTransfers, float monthMultiplier)

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <DebugType>Full</DebugType>
+    <DebugType>portable</DebugType>
     <UserSecretsId>9b7ea2c0-28cc-4f3f-a92d-6c02087cf6be</UserSecretsId>
   </PropertyGroup>
 
@@ -13,6 +13,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>TRACE</DefineConstants>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
   <ItemGroup>

@@ -7,8 +7,8 @@
   "schedule_stopwatch/display_time_for_inidividual_tasks": "Zobrazit časy jednotlivých úkolů v jízdním řádu",
   "schedule_stopwatch/display_totaltime_in_schedule": "Zobrazit celkový čas jízdního řádu v okně vozidla",
   "schedule_stopwatch/settings_window_title": "Nastavení modu 'Automatic schedule stopwatch'",
-  "schedule_stopwatch/loaded_items_count": "Naloženo {0}",
-  "schedule_stopwatch/unloaded_items_count": "Vyloženo {0}",
+  "schedule_stopwatch/loaded_items_count": "Nakládka {0}",
+  "schedule_stopwatch/unloaded_items_count": "Vykládka {0}",
   "schedule_stopwatch/estim_monthly_transf": "Odhadované měsíční přesuny",
   "schedule_stopwatch/estim_monthly_transf_hint": "(toto vozidlo/všechna vozidla trasy)",
   "schedule_stopwatch/total_transfer": "Celkové přesuny"

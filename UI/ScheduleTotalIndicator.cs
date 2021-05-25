@@ -19,9 +19,7 @@ namespace ScheduleStopwatch.UI
         private TimeSpan? _lastTotalTime;
         private float? _lastMonthMultiplier;
         private IReadOnlyDictionary<Item, int> _lastTotalTransfers;
-        private IReadOnlyDictionary<Item, int> _lastTotalRouteTransfers;
         private TransfersPerStationCont _lastTransfersPerStation;
-        private TransfersPerStationCont _lastRouteTransfersPerStation;
         private CargoCapacityIndicator _capacityIndicator;
         private VehicleScheduleData _scheduleData;
         private static ScheduleTotalIndicator _template;
@@ -36,15 +34,27 @@ namespace ScheduleStopwatch.UI
                 return _lastTransfersPerStation;
             }
         }
-        private TransfersPerStationCont LastRouteTransfersPerStation
+        private TransfersPerStationCont RouteTransfersPerStation
         {
             get
             {
-                if (_lastRouteTransfersPerStation == null && _lastTotalTransfers != null && _scheduleData.Vehicle.Route?.Vehicles.Count > 0)
+                if (_lastTotalTransfers != null && _scheduleData.Vehicle.Route?.Vehicles.Count > 0)
                 {
-                    _lastRouteTransfersPerStation = _scheduleData.Capacity.GetRouteTransfersPerStation();
+                    return LazyManager<RouteCapacityCache>.Current.GetRouteTransfersPerStation(_scheduleData.Vehicle.Route);
                 }
-                return _lastRouteTransfersPerStation;
+                return null;
+            }
+        }
+
+        private IReadOnlyDictionary<Item, int> RouteTotalTransfers
+        {
+            get
+            {
+                if (_lastTotalTransfers != null && _scheduleData.Vehicle.Route?.Vehicles.Count > 0)
+                {
+                    return LazyManager<RouteCapacityCache>.Current.GetRouteTotalTransfers(_scheduleData.Vehicle.Route);
+                }
+                return null;
             }
         }
 
@@ -90,7 +100,6 @@ namespace ScheduleStopwatch.UI
 
             Locale locale = LazyManager<LocaleManager>.Current.Locale;
             _lastTransfersPerStation = null;
-            _lastRouteTransfersPerStation = null;
             _lastTotalTime = data.ScheduleAvereageDuration;
             _lastMonthMultiplier = data.ScheduleMonthlyMultiplier;
             if (_lastTotalTime.HasValue)
@@ -103,8 +112,7 @@ namespace ScheduleStopwatch.UI
             }
 
             _lastTotalTransfers = data.Capacity.GetTotalTransfers();
-            _lastTotalRouteTransfers = data.Capacity.GetRouteTotalTransfers();
-            _capacityIndicator.UpdateItems(_lastTotalTransfers, _lastMonthMultiplier, _lastTotalRouteTransfers);
+            _capacityIndicator.UpdateItems(_lastTotalTransfers, _lastMonthMultiplier, RouteTotalTransfers);
         }
 
         private string GetCapacityTooltipText()
@@ -112,12 +120,13 @@ namespace ScheduleStopwatch.UI
             Locale locale = LazyManager<LocaleManager>.Current.Locale;
             if (_lastMonthMultiplier != null && _lastTotalTransfers != null && _lastTotalTransfers.Count>0)
             {
-                bool isRoute = _lastTotalRouteTransfers != null && _lastTotalRouteTransfers.Count>0;
+                IReadOnlyDictionary<Item, int> routeToalTransfers = RouteTotalTransfers;
+                bool isRoute = routeToalTransfers != null && routeToalTransfers.Count>0;
                 StringBuilder sb = new StringBuilder();
                 sb.Append(StringHelper.Boldify(locale.GetString("schedule_stopwatch/estim_monthly_transf").ToUpper()));
                 if (isRoute)
                 {
-                    sb.Append(" " + StringHelper.Colorify(locale.GetString("schedule_stopwatch/estim_monthly_transf_hint"),UIColors.Solid.Text * 0.5f));
+                    sb.AppendLine().Append(StringHelper.Colorify(locale.GetString("schedule_stopwatch/estim_monthly_transf_hint"),UIColors.Solid.Text * 0.5f));
                 }
                 TransfersPerStationCont transfPerSt = LastTransfersPerStation;
                 if (transfPerSt != null && transfPerSt.Count>0)
@@ -125,7 +134,7 @@ namespace ScheduleStopwatch.UI
                     TransfersPerStationCont routeTransfPerst = null;
                     if (isRoute)
                     {
-                        routeTransfPerst = LastRouteTransfersPerStation;
+                        routeTransfPerst = RouteTransfersPerStation;
                     }
                     foreach (KeyValuePair<VehicleStation, IReadOnlyDictionary<Item, int>> pair in transfPerSt)
                     {
@@ -143,7 +152,7 @@ namespace ScheduleStopwatch.UI
                     foreach (KeyValuePair<Item, int> transfer in _lastTotalTransfers)
                     {
                         string countStr = (transfer.Value * _lastMonthMultiplier.Value).ToString("N0");
-                        if (isRoute && _lastTotalRouteTransfers.TryGetValue(transfer.Key, out int routeCount))
+                        if (isRoute && routeToalTransfers.TryGetValue(transfer.Key, out int routeCount))
                         {
                             countStr += "/" + routeCount.ToString();
                         }

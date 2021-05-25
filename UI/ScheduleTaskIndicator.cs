@@ -25,25 +25,24 @@ namespace ScheduleStopwatch.UI
 
         public void Initialize(RootTask task, VehicleScheduleData data)
         {
+            FileLog.Log("TaskIndicator Initialize");
             Task = task;
             _scheduleData = data;
             transform.name = "StopWatchDuration";
-            transform.gameObject.SetActive(true);
 
             _travelTimeText = transform.Find("TimeIndicator/TravelTimeText").GetComponent<Text>();
             _loadingTimeText = transform.Find("TimeIndicator/LoadingTimeText").GetComponent<Text>();
-
-            UpdateValues(data, task);
+            transform.gameObject.SetActive(true);
+//            UpdateValues(data, task);
         }
 
         public void UpdateValues(VehicleScheduleData data, RootTask task)
         {
-            FileLog.Log("ScheduleTaskUpdated");
-            if (task != Task || data != _scheduleData)
+            if ((task != null && task != Task) || data != _scheduleData || data == null)
             {
                 throw new ArgumentException("Schedule data or task is not for this ScheduleTaskIndicator");
             }
-            TimeSpan? travel = data.GetAverageTravelDuration(task);
+            TimeSpan? travel = data.GetAverageTravelDuration(Task);
             Locale locale = LazyManager<LocaleManager>.Current.Locale;
             if (travel.HasValue)
             {
@@ -53,7 +52,7 @@ namespace ScheduleStopwatch.UI
             {
                 _travelTimeText.text = locale.GetString("schedule_stopwatch/unknown").ToUpper();
             }
-            TimeSpan? loading = data.GetAverageStationLoadingDuration(task);
+            TimeSpan? loading = data.GetAverageStationLoadingDuration(Task);
             if (loading.HasValue)
             {
                 _loadingTimeText.text = locale.GetString("schedule_stopwatch/hours_minutes").Format(loading.Value.TotalHours.ToString("N0"), loading.Value.Minutes.ToString("N0"));
@@ -67,6 +66,7 @@ namespace ScheduleStopwatch.UI
         private static void CreateTemplate()
         {
             var baseTemplate = UnityEngine.Object.Instantiate<Transform>(ScheduleIndicator.BaseTemplate);
+            baseTemplate.gameObject.SetActive(false);
             _template = baseTemplate.gameObject.AddComponent<ScheduleTaskIndicator>();
             Transform timeContainer = baseTemplate.Find("TimeIndicator");
             Transform iconTransform = timeContainer.transform.Find("Icon");
@@ -91,15 +91,19 @@ namespace ScheduleStopwatch.UI
 
         protected void OnEnable()
         {
+            FileLog.Log("TaskInicator OnEnable");
             if (_scheduleData != null)
             {
                 _scheduleData.SubscribeTaskDataChanged(Task, UpdateValues);
+                FileLog.Log("TaskInicator OnEnable Subscribe");
+
                 UpdateValues(_scheduleData, Task);
             }
         }
 
         protected void OnDisable()
         {
+            FileLog.Log("TaskInicator OnDisable");
             if (_scheduleData != null && Task != null)
             {
                 _scheduleData.UnsubscribeTaskDataChanged(Task, UpdateValues);

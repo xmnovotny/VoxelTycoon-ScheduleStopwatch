@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using VoxelTycoon;
 using VoxelTycoon.Serialization;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.Tracks.Tasks;
@@ -20,8 +21,9 @@ namespace ScheduleStopwatch
 
         private TaskDurationDataSet _travelData;
         private TaskDurationDataSet _stationLoadingData;
-        private Action<VehicleScheduleData, RootTask> dataChanged;
-        private Dictionary<RootTask, Action<VehicleScheduleData, RootTask>> _taskDataChanged = new Dictionary<RootTask, Action<VehicleScheduleData, RootTask>>(); //events for one task
+        private Action<VehicleScheduleData, RootTask> dataChanged; //called for both own data change data change from another vehicle in the route
+        private Action<VehicleScheduleData> ownDataChanged; //called only for own data change (called before dataChanged and taskDataChanged)
+        private Dictionary<RootTask, Action<VehicleScheduleData, RootTask>> _taskDataChanged = new Dictionary<RootTask, Action<VehicleScheduleData, RootTask>>(); //events for one task, called for both own data change data change from another vehicle in the route
         private bool _isDirty = true;
         private TimeSpan? _totalTravelAverage;
         private TimeSpan? _totalStationLoadingAverage;
@@ -97,6 +99,7 @@ namespace ScheduleStopwatch
             return _stationLoadingData.GetAverageDuration(task);
         }
 
+        /* handler will be called only when own schedule data is changed, not data of another vehicles in the same route */
         public void SubscribeTaskDataChanged(RootTask task, Action<VehicleScheduleData, RootTask> handler)
         {
             if (!_taskDataChanged.TryGetValue(task, out Action<VehicleScheduleData, RootTask> akce))
@@ -105,6 +108,7 @@ namespace ScheduleStopwatch
             }
             else
             {
+                akce -= handler;
                 akce += handler;
                 _taskDataChanged[task] = akce;
             }
@@ -118,14 +122,29 @@ namespace ScheduleStopwatch
                 _taskDataChanged[task] = akce;
             }
         }
-        public void SubscribeDataChanged(Action<VehicleScheduleData, RootTask> handler)
+
+        /* handler will be called only when own schedule data is changed, not data of another vehicles in the same route */
+        public void SubscribeDataChanged(Action<VehicleScheduleData, RootTask> handler, bool priority = false)
         {
-            dataChanged += handler;
+            if (priority)
+                dataChanged = handler + dataChanged;
+            else 
+                dataChanged += handler;
         }
 
         public void UnsubscribeDataChanged(Action<VehicleScheduleData, RootTask> handler)
         {
             dataChanged -= handler;
+        }
+
+        public void SubscribeOwnDataChanged(Action<VehicleScheduleData> handler)
+        {
+             ownDataChanged += handler;
+        }
+
+        public void UnsubscribeOwnDataChanged(Action<VehicleScheduleData> handler)
+        {
+            ownDataChanged -= handler;
         }
 
         private void Invalidate()
@@ -139,9 +158,24 @@ namespace ScheduleStopwatch
             }
         }
 
-        private void OnDataChanged(RootTask task)
+        //called only when route has more than one vehicle
+        public void CallDataChangedEventsForRoute(RootTask task)
         {
-            MarkDirty();
+            VehicleRoute route = Vehicle.Route;
+            if (route?.Vehicles.Count > 1)
+            {
+                int? taskIndex = task?.GetIndex();
+                VehicleScheduleDataManager manager = Manager<VehicleScheduleDataManager>.Current;
+                foreach (Vehicle vehicle in route.Vehicles.ToArray())
+                {
+                    RootTask localTask = taskIndex != null ? vehicle.Schedule.GetTasks()[taskIndex.Value] : null;
+                    manager[vehicle]?.CallDataChangedEvents(localTask);
+                }
+            }
+        }
+
+        private void CallDataChangedEvents(RootTask task)
+        {
             dataChanged?.Invoke(this, task);
             if (task == null)
             {
@@ -149,8 +183,31 @@ namespace ScheduleStopwatch
                 {
                     action?.Invoke(this, null);
                 }
-            } else if (_taskDataChanged.TryGetValue(task, out Action<VehicleScheduleData, RootTask> action)) {
+            }
+            else if (_taskDataChanged.TryGetValue(task, out Action<VehicleScheduleData, RootTask> action))
+            {
                 action?.Invoke(this, task);
+            }
+        }
+
+        private void OnDataChanged(RootTask task)
+        {
+            MarkDirty();
+            ownDataChanged?.Invoke(this);
+            VehicleRoute route = Vehicle.Route;
+            if (route?.Vehicles.Count > 1)
+            {
+                int? taskIndex = task?.GetIndex();
+                VehicleScheduleDataManager manager = Manager<VehicleScheduleDataManager>.Current;
+                foreach (Vehicle vehicle in route.Vehicles.ToArray())
+                {
+                    RootTask localTask = taskIndex != null ? vehicle.Schedule.GetTasks()[taskIndex.Value] : null;
+                    manager[vehicle]?.CallDataChangedEvents(localTask);
+                }
+            }
+            else
+            {
+                CallDataChangedEvents(task);
             }
         }
 

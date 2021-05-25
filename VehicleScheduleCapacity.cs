@@ -11,8 +11,6 @@ namespace ScheduleStopwatch
 {
     public partial class VehicleScheduleCapacity
     {
-
-
         public VehicleSchedule VehicleSchedule { get; }
         public event Action<VehicleScheduleCapacity> DataChanged;
         /* capacity and item transfers are valid (=i.e. there is no problem with calculation of that data) */
