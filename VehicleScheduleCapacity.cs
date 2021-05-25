@@ -89,6 +89,7 @@ namespace ScheduleStopwatch
             }
             return null;
         }
+
         public TransfersPerStationCont GetRouteTransfersPerStation(bool skipForOnlyOneVehicle = true)
         {
             if (!HasValidData || VehicleSchedule.Vehicle.Route != null)
@@ -114,6 +115,40 @@ namespace ScheduleStopwatch
                 }
 
                 return totalTransfers.AsReadonly();
+            }
+            return null;
+        }
+
+        public IReadOnlyDictionary<Item, int> GetRouteTaskTransfers(RootTask task, bool skipForOnlyOneVehicle = true)
+        {
+            if (task == null)
+            {
+                throw new ArgumentNullException("task");
+            }
+            if (!HasValidData || VehicleSchedule.Vehicle.Route != null)
+            {
+                TaskTransfers routeTransfers = new TaskTransfers();
+                VehicleRoute route = VehicleSchedule.Vehicle.Route;
+                if (skipForOnlyOneVehicle && route.Vehicles.Count == 1)
+                {
+                    return null;
+                }
+                int taskIndex = task.GetIndex();
+                foreach (Vehicle vehicle in route.Vehicles.ToArray())
+                {
+                    if (vehicle.IsEnabled)
+                    {
+                        VehicleScheduleData vehicleData = VehicleScheduleDataManager.Current[vehicle];
+                        float? mult;
+                        if (vehicleData == null || !vehicleData.Capacity.HasValidData || (mult = vehicleData.ScheduleMonthlyMultiplier) == null)
+                        {
+                            return null;
+                        }
+                        routeTransfers.Add(vehicleData.Capacity.GetTransfers(vehicle.Schedule.GetTasks()[taskIndex]), mult);
+                    }
+                }
+
+                return routeTransfers.Transfers;
             }
             return null;
         }

@@ -32,8 +32,17 @@ namespace ScheduleStopwatch.UI
 
             _travelTimeText = transform.Find("TimeIndicator/TravelTimeText").GetComponent<Text>();
             _loadingTimeText = transform.Find("TimeIndicator/LoadingTimeText").GetComponent<Text>();
+
+            _loadCapacityIndicator = transform.Find("CargoCapacityLoad").GetComponent<CargoCapacityIndicator>();
+            _loadCapacityIndicator.Initialize(null, null);
+
+            _unloadCapacityIndicator = transform.Find("CargoCapacityUnload").GetComponent<CargoCapacityIndicator>();
+            _unloadCapacityIndicator.Initialize(null, null);
+
+            _loadingCapIcon = transform.Find("LoadingCapacityIcon");
+            _unloadingCapIcon = transform.Find("UnloadingCapacityIcon");
+
             transform.gameObject.SetActive(true);
-//            UpdateValues(data, task);
         }
 
         public void UpdateValues(VehicleScheduleData data, RootTask task)
@@ -61,6 +70,18 @@ namespace ScheduleStopwatch.UI
             {
                 _loadingTimeText.text = locale.GetString("schedule_stopwatch/unknown").ToUpper();
             }
+            _lastMonthMultiplier = data.ScheduleMonthlyMultiplier;
+            _lastTaskTransfers = _scheduleData.Capacity.GetTransfers(Task);
+            IReadOnlyDictionary<Item, int> routeTransfers = RouteTaskTransfers;
+
+
+            _loadCapacityIndicator.UpdateItems(_lastTaskTransfers, _lastMonthMultiplier, routeTransfers, transfDirection: CargoCapacityIndicator.TransferDirection.loading);
+            _loadCapacityIndicator.gameObject.SetActive(_loadCapacityIndicator.ItemsCount > 0);
+            _loadingCapIcon.gameObject.SetActive(_loadCapacityIndicator.ItemsCount > 0);
+        
+            _unloadCapacityIndicator.UpdateItems(_lastTaskTransfers, _lastMonthMultiplier, routeTransfers, transfDirection: CargoCapacityIndicator.TransferDirection.unloading);
+            _unloadCapacityIndicator.gameObject.SetActive(_unloadCapacityIndicator.ItemsCount > 0);
+            _unloadingCapIcon.gameObject.SetActive(_unloadCapacityIndicator.ItemsCount > 0);
         }
 
         private static void CreateTemplate()
@@ -87,6 +108,36 @@ namespace ScheduleStopwatch.UI
 
             Transform loadingTextTransf = UnityEngine.Object.Instantiate<Transform>(textTransform, textTransform.parent);
             loadingTextTransf.name = "LoadingTimeText";
+
+            Transform unloadingCapIcon = UnityEngine.Object.Instantiate<Transform>(iconTransform, baseTemplate.transform);
+            unloadingCapIcon.name = "UnloadingCapacityIcon";
+            Text iconText4 = unloadingCapIcon.GetComponent<Text>();
+            iconText4.font = R.Fonts.FontAwesome5FreeSolid900;
+            iconText4.text = "";
+
+            CargoCapacityIndicator unloadIndicator = CargoCapacityIndicator.GetInstance(baseTemplate.transform);
+            unloadIndicator.transform.name = "CargoCapacityUnload";
+
+            Transform loadingCapIcon = UnityEngine.Object.Instantiate<Transform>(iconTransform, baseTemplate.transform);
+            loadingCapIcon.name = "LoadingCapacityIcon";
+            Text iconText3 = loadingCapIcon.GetComponent<Text>();
+            iconText3.font = R.Fonts.FontAwesome5FreeSolid900;
+            iconText3.text = "";
+
+            CargoCapacityIndicator loadIndicator = CargoCapacityIndicator.GetInstance(baseTemplate.transform);
+            loadIndicator.transform.name = "CargoCapacityLoad";
+        }
+
+        private IReadOnlyDictionary<Item, int> RouteTaskTransfers
+        {
+            get
+            {
+                if (_lastTaskTransfers != null && _scheduleData.Vehicle.Route?.Vehicles.Count > 0)
+                {
+                    return LazyManager<RouteCapacityCache>.Current.GetRouteTaskTransfers(_scheduleData.Vehicle.Route, Task);
+                }
+                return null;
+            }
         }
 
         protected void OnEnable()
@@ -111,12 +162,12 @@ namespace ScheduleStopwatch.UI
         }
 
         private Text _travelTimeText, _loadingTimeText;
-        /*        private TimeSpan? _lastTotalTime;
-                private float? _lastMonthMultiplier;
-                private IReadOnlyDictionary<Item, int> _lastTotalTransfers;
-                private IReadOnlyDictionary<Item, int> _lastTotalRouteTransfers;
-        private CargoCapacityIndicator _capacityIndicator;*/
+        private float? _lastMonthMultiplier;
+        private IReadOnlyDictionary<Item, int> _lastTaskTransfers;
         private static ScheduleTaskIndicator _template;
         private VehicleScheduleData _scheduleData;
+        private CargoCapacityIndicator _loadCapacityIndicator, _unloadCapacityIndicator;
+        private Transform _loadingCapIcon, _unloadingCapIcon;
+
     }
 }

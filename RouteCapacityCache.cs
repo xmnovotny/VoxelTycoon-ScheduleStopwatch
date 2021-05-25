@@ -75,6 +75,10 @@ namespace ScheduleStopwatch
             return GetOrCreateCacheData(route).TotalTransfers;
         }
 
+        public IReadOnlyDictionary<Item, int> GetRouteTaskTransfers(VehicleRoute route, RootTask task)
+        {
+            return GetOrCreateCacheData(route).GetTransfers(task);
+        }
         public TransfersPerStationCont GetRouteTransfersPerStation(VehicleRoute route)
         {
             return GetOrCreateCacheData(route).TransfersPerStation;
@@ -94,6 +98,8 @@ namespace ScheduleStopwatch
         {
             public VehicleRoute route;
             private IReadOnlyDictionary<Item, int> _totalTransfers;
+            /** route transfers per task (by task index) */
+            private readonly Dictionary<int, IReadOnlyDictionary<Item, int>> _transfers = new Dictionary<int, IReadOnlyDictionary<Item, int>>();
             private TransfersPerStationCont _perStationTrasf;
             private bool _loadedTotalTransfers, _loadedPerStationTransf;
 
@@ -147,12 +153,28 @@ namespace ScheduleStopwatch
                 }
             }
 
+            public IReadOnlyDictionary<Item, int> GetTransfers(RootTask task)
+            {
+                if (task.Vehicle.Route != route)
+                {
+                    throw new ArgumentException("Wrong route in the tasks vehicle", "task");
+                }
+                IReadOnlyDictionary<Item, int> result;
+                if (!_transfers.TryGetValue(task.GetIndex(), out result))
+                {
+                    result = Manager<VehicleScheduleDataManager>.Current[task.Vehicle]?.Capacity.GetRouteTaskTransfers(task);
+                    _transfers.Add(task.GetIndex(), result);
+                }
+                return result;
+            }
+
             public void MarkDirty()
             {
                 _loadedTotalTransfers = false;
                 _loadedPerStationTransf = false;
                 _totalTransfers = null;
                 _perStationTrasf = null;
+                _transfers.Clear();
             }
 
             public void OnRouteAddedToVehicle(Vehicle vehicle)
@@ -182,9 +204,12 @@ namespace ScheduleStopwatch
             public void OnRouteDataRemove()
             {
                 VehicleScheduleDataManager manager = Manager<VehicleScheduleDataManager>.Current;
-                foreach (Vehicle vehicle in route.Vehicles.ToArray())
+                if (manager != null)
                 {
-                    manager[vehicle]?.UnsubscribeOwnDataChanged(OnVehicleDataChanged);
+                    foreach (Vehicle vehicle in route.Vehicles.ToArray())
+                    {
+                        manager[vehicle]?.UnsubscribeOwnDataChanged(OnVehicleDataChanged);
+                    }
                 }
             }
 

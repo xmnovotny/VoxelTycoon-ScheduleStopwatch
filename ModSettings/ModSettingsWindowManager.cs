@@ -51,8 +51,8 @@ namespace ModSettings
                     Transform hint = __result.transform.Find("Row1/NameContainer/Hint");
                     Transform settings = UnityEngine.Object.Instantiate<Transform>(hint, hint.parent);
                     Text text = settings.GetComponent<Text>();
-                    text.text = "";
-                    text.font = R.Fonts.Ketizoloto;
+                    text.text = "";
+                    text.font = R.Fonts.FontawesomeWebfont;
                     text.color = Color.black;
 
                     Button button = settings.GetComponent<Button>();
