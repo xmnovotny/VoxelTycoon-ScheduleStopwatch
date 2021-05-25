@@ -38,7 +38,6 @@ namespace ScheduleStopwatch
 
         private void OnVehicleRouteChange(Vehicle vehicle, VehicleRoute oldRoute, VehicleRoute newRoute)
         {
-            FileLog.Log("OnVehicleRouteChange, oldRoute: " + (oldRoute != null ? oldRoute.Name : "") + " newRoute: " + (newRoute != null ? newRoute.Name : ""));
             if (oldRoute != null && _cache.TryGetValue(oldRoute, out CacheData oldData))
             {
                 oldData.OnRouteRemovedFromVehicle(vehicle, oldRoute);
@@ -86,7 +85,6 @@ namespace ScheduleStopwatch
 
         private void OnRemoveRoute(VehicleRoute route)
         {
-            FileLog.Log("OnRemoveRoute");
             if (_cache.TryGetValue(route, out CacheData routeData))
             {
                 routeData.OnRouteDataRemove();
@@ -119,7 +117,6 @@ namespace ScheduleStopwatch
                 {
                     if (!_loadedTotalTransfers)
                     {
-//                        FileLog.Log("TransfersCacheNotFound");
                         if (route.Vehicles.Count > 1)
                         {
                             _totalTransfers = Manager<VehicleScheduleDataManager>.Current[route.Vehicles[0]]?.Capacity.GetRouteTotalTransfers();
@@ -127,7 +124,6 @@ namespace ScheduleStopwatch
                         _loadedTotalTransfers = true;
                     } else
                     {
-//                        FileLog.Log("TransfersCacheHit");
                     }
                     return _totalTransfers;
                 }
@@ -139,7 +135,6 @@ namespace ScheduleStopwatch
                 {
                     if (!_loadedPerStationTransf)
                     {
-//                        FileLog.Log("TransfersPerStCacheNotFound");
                         if (route.Vehicles.Count > 1)
                         {
                             _perStationTrasf = Manager<VehicleScheduleDataManager>.Current[route.Vehicles[0]]?.Capacity.GetRouteTransfersPerStation();
@@ -147,7 +142,6 @@ namespace ScheduleStopwatch
                         _loadedPerStationTransf = true;
                     } else
                     {
-//                        FileLog.Log("TransfersPerStCacheHit");
                     }
                     return _perStationTrasf;
                 }
@@ -179,7 +173,6 @@ namespace ScheduleStopwatch
 
             public void OnRouteAddedToVehicle(Vehicle vehicle)
             {
-                FileLog.Log("OnRouteAddedToVehicle");
                 MarkDirty();
                 VehicleScheduleData data = Manager<VehicleScheduleDataManager>.Current.GetOrCreateVehicleScheduleData(vehicle);
                 data.SubscribeOwnDataChanged(OnVehicleDataChanged);
@@ -187,7 +180,6 @@ namespace ScheduleStopwatch
             }
             public void OnRouteRemovedFromVehicle(Vehicle vehicle, VehicleRoute oldRoute)
             {
-                FileLog.Log("OnRouteRemovedFromVehicle");
                 MarkDirty();
                 VehicleScheduleData data = Manager<VehicleScheduleDataManager>.Current[vehicle];
                 if (data != null)

@@ -213,7 +213,6 @@ namespace ScheduleStopwatch
 
         private void OnCapacityDataChanged(VehicleScheduleCapacity _)
         {
-            FileLog.Log("CapacityDataChanged");
             OnDataChanged(null);
         }
 

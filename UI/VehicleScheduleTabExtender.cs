@@ -16,7 +16,6 @@ namespace ScheduleStopwatch.UI
 
         public void Initialize(VehicleScheduleData vehicleScheduleData)
         {
-            FileLog.Log("ScheduleDataInitialize");
             ScheduleTab = gameObject.GetComponent<VehicleWindowScheduleTab>();
             if (ScheduleTab == null)
             {

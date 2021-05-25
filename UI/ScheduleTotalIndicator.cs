@@ -172,7 +172,6 @@ namespace ScheduleStopwatch.UI
             Transform timeContainer = baseTemplate.Find("TimeIndicator");
             timeContainer.gameObject.AddComponent<CanvasRenderer>();
             timeContainer.gameObject.AddComponent<NonDrawingGraphic>();
-            FileLog.Log(XMNUtils.GameObjectDumper.DumpGameObject(baseTemplate.gameObject));
 
             timeContainer.Find("Icon").DestroyGameObject(true);
             _template = baseTemplate.gameObject.AddComponent<ScheduleTotalIndicator>();

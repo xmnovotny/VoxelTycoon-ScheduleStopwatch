@@ -75,13 +75,13 @@ namespace ScheduleStopwatch
                 for (int i = 0; i < vehicles.Count; i++)
                 {
                     ScheduleChanged?.Invoke(vehicles[i], task, minorChange);
-                    NotificationUtils.ShowVehicleHint(vehicles[i], "OnScheduleChanged" + (minorChange ? " minor" : ""));
+//                    NotificationUtils.ShowVehicleHint(vehicles[i], "OnScheduleChanged" + (minorChange ? " minor" : ""));
                 }            
             }
             else
             {
                 ScheduleChanged?.Invoke(vehicle, task, minorChange);
-                NotificationUtils.ShowVehicleHint(vehicle, "OnScheduleChanged" + (minorChange ? " minor" : ""));
+//                NotificationUtils.ShowVehicleHint(vehicle, "OnScheduleChanged" + (minorChange ? " minor" : ""));
             }
         }
 

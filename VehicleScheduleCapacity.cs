@@ -331,7 +331,6 @@ namespace ScheduleStopwatch
             {
                 MarkDirty();
                 OnDataChanged();
-                NotificationUtils.ShowVehicleHint(VehicleSchedule.Vehicle, "Storage changed");
             }
         }
 

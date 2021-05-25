@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using VoxelTycoon;
 using VoxelTycoon.Localization;
 using VoxelTycoon.Tracks.Tasks;
+using VoxelTycoon.UI;
 
 namespace ScheduleStopwatch.UI
 {
@@ -25,7 +26,6 @@ namespace ScheduleStopwatch.UI
 
         public void Initialize(RootTask task, VehicleScheduleData data)
         {
-            FileLog.Log("TaskIndicator Initialize");
             Task = task;
             _scheduleData = data;
             transform.name = "StopWatchDuration";
@@ -41,6 +41,17 @@ namespace ScheduleStopwatch.UI
 
             _loadingCapIcon = transform.Find("LoadingCapacityIcon");
             _unloadingCapIcon = transform.Find("UnloadingCapacityIcon");
+
+            Tooltip.For(
+                _loadCapacityIndicator,
+                () => GetCapacityTooltipText(),
+                null
+            );
+            Tooltip.For(
+                _unloadCapacityIndicator,
+                () => GetCapacityTooltipText(),
+                null
+            );
 
             transform.gameObject.SetActive(true);
         }
@@ -82,6 +93,28 @@ namespace ScheduleStopwatch.UI
             _unloadCapacityIndicator.UpdateItems(_lastTaskTransfers, _lastMonthMultiplier, routeTransfers, transfDirection: CargoCapacityIndicator.TransferDirection.unloading);
             _unloadCapacityIndicator.gameObject.SetActive(_unloadCapacityIndicator.ItemsCount > 0);
             _unloadingCapIcon.gameObject.SetActive(_unloadCapacityIndicator.ItemsCount > 0);
+        }
+
+        private string GetCapacityTooltipText()
+        {
+            Locale locale = LazyManager<LocaleManager>.Current.Locale;
+            if (_lastMonthMultiplier != null && _lastTaskTransfers != null && _lastTaskTransfers.Count > 0)
+            {
+                IReadOnlyDictionary<Item, int> routeTaskTransfers = RouteTaskTransfers;
+                bool isRoute = routeTaskTransfers != null && routeTaskTransfers.Count > 0;
+                StringBuilder sb = new StringBuilder();
+                sb.Append(StringHelper.Boldify(locale.GetString("schedule_stopwatch/estim_monthly_transf").ToUpper()));
+                if (isRoute)
+                {
+                    sb.AppendLine().Append(StringHelper.Colorify(locale.GetString("schedule_stopwatch/estim_monthly_transf_hint"), UIColors.Solid.Text * 0.5f));
+                }
+                /*                string stationName = StringHelper.Boldify(Task.Destination.VehicleStationLocation.Name);
+                                stationSb.Append(stationName);*/
+
+                TooltipTextForStation(_lastTaskTransfers, sb, routeTaskTransfers, _lastMonthMultiplier.Value);
+                return sb.ToString();
+            }
+            return "";
         }
 
         private static void CreateTemplate()
@@ -142,11 +175,9 @@ namespace ScheduleStopwatch.UI
 
         protected void OnEnable()
         {
-            FileLog.Log("TaskInicator OnEnable");
             if (_scheduleData != null)
             {
                 _scheduleData.SubscribeTaskDataChanged(Task, UpdateValues);
-                FileLog.Log("TaskInicator OnEnable Subscribe");
 
                 UpdateValues(_scheduleData, Task);
             }
@@ -154,7 +185,6 @@ namespace ScheduleStopwatch.UI
 
         protected void OnDisable()
         {
-            FileLog.Log("TaskInicator OnDisable");
             if (_scheduleData != null && Task != null)
             {
                 _scheduleData.UnsubscribeTaskDataChanged(Task, UpdateValues);
