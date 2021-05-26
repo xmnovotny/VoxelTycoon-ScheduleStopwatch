@@ -242,6 +242,11 @@ namespace ScheduleStopwatch
         //this is also called when train is stopped in the station and then started
         internal void OnDestinationReached(VehicleStation station, RootTask task)
         {
+            if (Vehicle.Schedule.TraverseOrder == VehicleScheduleTraverseOrder.BackAndForth)
+            {
+                _measurement = null;
+                return;
+            }
             if (_measurement is TravelMeasurement measurement)
             {
                 if (task.Behavior == RootTaskBehavior.NonStop)
@@ -259,6 +264,11 @@ namespace ScheduleStopwatch
 
         internal void OnStationLeaved(VehicleStation station, RootTask task)
         {
+            if (Vehicle.Schedule.TraverseOrder == VehicleScheduleTraverseOrder.BackAndForth)
+            {
+                _measurement = null;
+                return;
+            }
             if (_measurement is TravelMeasurement && task.Behavior == RootTaskBehavior.NonStop)
             {
                 return;

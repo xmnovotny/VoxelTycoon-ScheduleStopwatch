@@ -26,6 +26,30 @@ namespace ScheduleStopwatch
             {
                 settings.ShowScheduleTotalTime = false;
             });
+
+            settingsControl.AddToggle(locale.GetString("schedule_stopwatch/display_total_capacity"), null, settings.ShowTotalTransferCapacity, delegate ()
+            {
+                settings.ShowTotalTransferCapacity = true;
+            }, delegate ()
+            {
+                settings.ShowTotalTransferCapacity = false;
+            });
+
+            settingsControl.AddToggle(locale.GetString("schedule_stopwatch/display_individual_unloading_capacity"), null, settings.ShowIndividualUnloadingCapacity, delegate ()
+            {
+                settings.ShowIndividualUnloadingCapacity = true;
+            }, delegate ()
+            {
+                settings.ShowIndividualUnloadingCapacity = false;
+            });
+
+            settingsControl.AddToggle(locale.GetString("schedule_stopwatch/display_individual_loading_capacity"), null, settings.ShowIndividualLoadingCapacity, delegate ()
+            {
+                settings.ShowIndividualLoadingCapacity = true;
+            }, delegate ()
+            {
+                settings.ShowIndividualLoadingCapacity = false;
+            });
         }
 
     }

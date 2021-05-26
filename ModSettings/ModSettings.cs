@@ -42,6 +42,15 @@ namespace ModSettings
         {
         }
 
+        protected void SetProperty<U>(U value, ref U propertyField)
+        {
+            if (!propertyField.Equals(value))
+            {
+                propertyField = value;
+                OnChange();
+            }
+        }
+
         public void Subscribe(Action settingsChanged)
         {
             _settingsChanged += settingsChanged;

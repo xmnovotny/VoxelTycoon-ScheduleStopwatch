@@ -28,18 +28,18 @@ namespace ScheduleStopwatch.UI
         {
             Settings settings = Settings.Current;
             RootTask task = ScheduleTab.Vehicle.Schedule.GetTasks()[insertIndex];
-            if (insertIndex == 0 && settings.ShowScheduleTotalTime)
+            if (insertIndex == 0 && (settings.ShowScheduleTotalTime || settings.ShowTotalTransferCapacity))
             {
                 _totalIndicator = ScheduleTotalIndicator.GetInstance(separatorView.transform);
                 _totalIndicator.transform.SetSiblingIndex(0);
-                _totalIndicator.Initialize(ScheduleData);
+                _totalIndicator.Initialize(ScheduleData, settings);
                 _totalIndicator.gameObject.SetActive(true);
 
             }
-            if (settings.ShowIndividualTaskTimes && task.Behavior != RootTaskBehavior.NonStop)
+            if ((settings.ShowIndividualTaskTimes || settings.ShowIndividualUnloadingCapacity || settings.ShowIndividualLoadingCapacity) && task.Behavior != RootTaskBehavior.NonStop)
             {
                 ScheduleTaskIndicator indicator = ScheduleTaskIndicator.GetInstance(separatorView.transform);
-                indicator.Initialize(task, ScheduleData);
+                indicator.Initialize(task, ScheduleData, settings);
                 indicator.gameObject.SetActive(true);
             }
         }
@@ -66,7 +66,7 @@ namespace ScheduleStopwatch.UI
         [HarmonyPatch(typeof(VehicleWindowScheduleTabSeparatorView), "Initialize")]
         private static void VehicleWindowScheduleTabSeparatorView_Initialize_pof(VehicleWindowScheduleTabSeparatorView __instance, VehicleWindowScheduleTab scheduleTab, int? insertIndex)
         {
-            if (!scheduleTab.EditMode && insertIndex.HasValue)
+            if (scheduleTab.Vehicle.Schedule.TraverseOrder == VoxelTycoon.Tracks.VehicleScheduleTraverseOrder.Default && !scheduleTab.EditMode && insertIndex.HasValue)
             {
                 VehicleScheduleTabExtender tabExt = scheduleTab.gameObject.GetComponent<VehicleScheduleTabExtender>();
                 if (tabExt != null)

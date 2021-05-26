@@ -24,35 +24,47 @@ namespace ScheduleStopwatch.UI
             return UnityEngine.Object.Instantiate<ScheduleTaskIndicator>(_template, parent);
         }
 
-        public void Initialize(RootTask task, VehicleScheduleData data)
+        public void Initialize(RootTask task, VehicleScheduleData data, Settings settings)
         {
             Task = task;
             _scheduleData = data;
             transform.name = "StopWatchDuration";
+            Transform timeIndicator = transform.Find("TimeIndicator");
 
-            _travelTimeText = transform.Find("TimeIndicator/TravelTimeText").GetComponent<Text>();
-            _loadingTimeText = transform.Find("TimeIndicator/LoadingTimeText").GetComponent<Text>();
+            if (settings.ShowIndividualTaskTimes)
+            {
+                _travelTimeText = transform.Find("TimeIndicator/TravelTimeText").GetComponent<Text>();
+                _loadingTimeText = transform.Find("TimeIndicator/LoadingTimeText").GetComponent<Text>();
+            } else
+            {
+                timeIndicator.gameObject.SetActive(false);
+            }
 
-            _loadCapacityIndicator = transform.Find("CargoCapacityLoad").GetComponent<CargoCapacityIndicator>();
-            _loadCapacityIndicator.Initialize(null, null);
+            if (settings.ShowIndividualLoadingCapacity)
+            {
+                _loadingCapIcon = transform.Find("LoadingCapacityIcon");
+                _loadCapacityIndicator = transform.Find("CargoCapacityLoad").GetComponent<CargoCapacityIndicator>();
+                _loadCapacityIndicator.Initialize(null, null);
 
-            _unloadCapacityIndicator = transform.Find("CargoCapacityUnload").GetComponent<CargoCapacityIndicator>();
-            _unloadCapacityIndicator.Initialize(null, null);
+                Tooltip.For(
+                    _loadCapacityIndicator,
+                    () => GetCapacityTooltipText(),
+                    null
+                );
+            }
 
-            _loadingCapIcon = transform.Find("LoadingCapacityIcon");
-            _unloadingCapIcon = transform.Find("UnloadingCapacityIcon");
+            if (settings.ShowIndividualUnloadingCapacity)
+            {
+                _unloadCapacityIndicator = transform.Find("CargoCapacityUnload").GetComponent<CargoCapacityIndicator>();
+                _unloadingCapIcon = transform.Find("UnloadingCapacityIcon");
+                _unloadCapacityIndicator.Initialize(null, null);
 
-            Tooltip.For(
-                _loadCapacityIndicator,
-                () => GetCapacityTooltipText(),
-                null
-            );
-            Tooltip.For(
-                _unloadCapacityIndicator,
-                () => GetCapacityTooltipText(),
-                null
-            );
-
+                Tooltip.For(
+                    _unloadCapacityIndicator,
+                    () => GetCapacityTooltipText(),
+                    null
+                );
+            }
             transform.gameObject.SetActive(true);
         }
 
@@ -62,37 +74,49 @@ namespace ScheduleStopwatch.UI
             {
                 throw new ArgumentException("Schedule data is not for this ScheduleTaskIndicator");
             }
-            TimeSpan? travel = data.GetAverageTravelDuration(Task);
             Locale locale = LazyManager<LocaleManager>.Current.Locale;
-            if (travel.HasValue)
+            if (_travelTimeText != null)
             {
-                _travelTimeText.text = locale.GetString("schedule_stopwatch/days_hours").Format(travel.Value.TotalDays.ToString("N0"), travel.Value.Hours.ToString("N0"));
+                TimeSpan? travel = data.GetAverageTravelDuration(Task);
+                if (travel.HasValue)
+                {
+                    _travelTimeText.text = locale.GetString("schedule_stopwatch/days_hours").Format(travel.Value.TotalDays.ToString("N0"), travel.Value.Hours.ToString("N0"));
+                }
+                else
+                {
+                    _travelTimeText.text = locale.GetString("schedule_stopwatch/unknown").ToUpper();
+                }
+                TimeSpan? loading = data.GetAverageStationLoadingDuration(Task);
+                if (loading.HasValue)
+                {
+                    _loadingTimeText.text = locale.GetString("schedule_stopwatch/hours_minutes").Format(loading.Value.TotalHours.ToString("N0"), loading.Value.Minutes.ToString("N0"));
+                }
+                else
+                {
+                    _loadingTimeText.text = locale.GetString("schedule_stopwatch/unknown").ToUpper();
+                }
             }
-            else
-            {
-                _travelTimeText.text = locale.GetString("schedule_stopwatch/unknown").ToUpper();
-            }
-            TimeSpan? loading = data.GetAverageStationLoadingDuration(Task);
-            if (loading.HasValue)
-            {
-                _loadingTimeText.text = locale.GetString("schedule_stopwatch/hours_minutes").Format(loading.Value.TotalHours.ToString("N0"), loading.Value.Minutes.ToString("N0"));
-            }
-            else
-            {
-                _loadingTimeText.text = locale.GetString("schedule_stopwatch/unknown").ToUpper();
-            }
-            _lastMonthMultiplier = data.ScheduleMonthlyMultiplier;
-            _lastTaskTransfers = _scheduleData.Capacity.GetTransfers(Task);
-            IReadOnlyDictionary<Item, int> routeTransfers = RouteTaskTransfers;
 
+            if (_loadCapacityIndicator != null || _unloadCapacityIndicator != null)
+            {
+                _lastMonthMultiplier = data.ScheduleMonthlyMultiplier;
+                _lastTaskTransfers = _scheduleData.Capacity.GetTransfers(Task);
+                IReadOnlyDictionary<Item, int> routeTransfers = RouteTaskTransfers;
 
-            _loadCapacityIndicator.UpdateItems(_lastTaskTransfers, _lastMonthMultiplier, routeTransfers, transfDirection: CargoCapacityIndicator.TransferDirection.loading);
-            _loadCapacityIndicator.gameObject.SetActive(_loadCapacityIndicator.ItemsCount > 0);
-            _loadingCapIcon.gameObject.SetActive(_loadCapacityIndicator.ItemsCount > 0);
-        
-            _unloadCapacityIndicator.UpdateItems(_lastTaskTransfers, _lastMonthMultiplier, routeTransfers, transfDirection: CargoCapacityIndicator.TransferDirection.unloading);
-            _unloadCapacityIndicator.gameObject.SetActive(_unloadCapacityIndicator.ItemsCount > 0);
-            _unloadingCapIcon.gameObject.SetActive(_unloadCapacityIndicator.ItemsCount > 0);
+                if (_loadCapacityIndicator != null)
+                {
+                    _loadCapacityIndicator.UpdateItems(_lastTaskTransfers, _lastMonthMultiplier, routeTransfers, transfDirection: CargoCapacityIndicator.TransferDirection.loading);
+                    _loadCapacityIndicator.gameObject.SetActive(_loadCapacityIndicator.ItemsCount > 0);
+                    _loadingCapIcon.gameObject.SetActive(_loadCapacityIndicator.ItemsCount > 0);
+                }
+
+                if (_unloadCapacityIndicator != null)
+                {
+                    _unloadCapacityIndicator.UpdateItems(_lastTaskTransfers, _lastMonthMultiplier, routeTransfers, transfDirection: CargoCapacityIndicator.TransferDirection.unloading);
+                    _unloadCapacityIndicator.gameObject.SetActive(_unloadCapacityIndicator.ItemsCount > 0);
+                    _unloadingCapIcon.gameObject.SetActive(_unloadCapacityIndicator.ItemsCount > 0);
+                }
+            }
         }
 
         private string GetCapacityTooltipText()
@@ -108,8 +132,6 @@ namespace ScheduleStopwatch.UI
                 {
                     sb.AppendLine().Append(StringHelper.Colorify(locale.GetString("schedule_stopwatch/estim_monthly_transf_hint"), UIColors.Solid.Text * 0.5f));
                 }
-                /*                string stationName = StringHelper.Boldify(Task.Destination.VehicleStationLocation.Name);
-                                stationSb.Append(stationName);*/
 
                 TooltipTextForStation(_lastTaskTransfers, sb, routeTaskTransfers, _lastMonthMultiplier.Value);
                 return sb.ToString();
@@ -143,6 +165,7 @@ namespace ScheduleStopwatch.UI
             loadingTextTransf.name = "LoadingTimeText";
 
             Transform unloadingCapIcon = UnityEngine.Object.Instantiate<Transform>(iconTransform, baseTemplate.transform);
+            unloadingCapIcon.SetActive(false);
             unloadingCapIcon.name = "UnloadingCapacityIcon";
             Text iconText4 = unloadingCapIcon.GetComponent<Text>();
             iconText4.font = R.Fonts.FontAwesome5FreeSolid900;
@@ -152,6 +175,7 @@ namespace ScheduleStopwatch.UI
             unloadIndicator.transform.name = "CargoCapacityUnload";
 
             Transform loadingCapIcon = UnityEngine.Object.Instantiate<Transform>(iconTransform, baseTemplate.transform);
+            loadingCapIcon.gameObject.SetActive(false);
             loadingCapIcon.name = "LoadingCapacityIcon";
             Text iconText3 = loadingCapIcon.GetComponent<Text>();
             iconText3.font = R.Fonts.FontAwesome5FreeSolid900;

@@ -69,26 +69,35 @@ namespace ScheduleStopwatch.UI
             return result;
         }
 
-        public void Initialize(VehicleScheduleData data)
+        public void Initialize(VehicleScheduleData data, Settings settings)
         {
             Transform timeIndicator = transform.Find("TimeIndicator");
+            if (settings.ShowScheduleTotalTime)
+            {
+                _text = timeIndicator.Find("TotalTimeText").GetComponent<Text>();
+                Locale locale = LazyManager<LocaleManager>.Current.Locale;
+                Tooltip.For(
+                    timeIndicator,
+                    () => _lastTotalTime.HasValue
+                        ? locale.GetString("schedule_stopwatch/times_per_month").Format((Convert.ToSingle((30 * 86400) / _lastTotalTime.Value.TotalSeconds)).ToString("N1", LazyManager<LocaleManager>.Current.Locale.CultureInfo))
+                        : locale.GetString("schedule_stopwatch/missing_time_segment"),
+                    null
+                );
+            } else
+            {
+                timeIndicator.SetActive(false);
+            }
 
-            _text = timeIndicator.Find("TotalTimeText").GetComponent<Text>();
-            Locale locale = LazyManager<LocaleManager>.Current.Locale;
-            Tooltip.For(
-                timeIndicator,
-                () => _lastTotalTime.HasValue
-                    ? locale.GetString("schedule_stopwatch/times_per_month").Format((Convert.ToSingle((30 * 86400) / _lastTotalTime.Value.TotalSeconds)).ToString("N1", LazyManager<LocaleManager>.Current.Locale.CultureInfo))
-                    : locale.GetString("schedule_stopwatch/missing_time_segment"),
-                null
-            );
-            _capacityIndicator = transform.GetComponentInChildren<CargoCapacityIndicator>();
-            _capacityIndicator.Initialize(null, null);
-            Tooltip.For(
-                _capacityIndicator,
-                () => GetCapacityTooltipText(),
-                null
-            );
+            if (settings.ShowTotalTransferCapacity)
+            {
+                _capacityIndicator = transform.GetComponentInChildren<CargoCapacityIndicator>();
+                _capacityIndicator.Initialize(null, null);
+                Tooltip.For(
+                    _capacityIndicator,
+                    () => GetCapacityTooltipText(),
+                    null
+                );
+            }
             _scheduleData = data;
             UpdateValues(data, null);
         }
@@ -100,19 +109,25 @@ namespace ScheduleStopwatch.UI
 
             Locale locale = LazyManager<LocaleManager>.Current.Locale;
             _lastTransfersPerStation = null;
-            _lastTotalTime = data.ScheduleAvereageDuration;
             _lastMonthMultiplier = data.ScheduleMonthlyMultiplier;
-            if (_lastTotalTime.HasValue)
+            if (_text != null)
             {
-                _text.text = locale.GetString("schedule_stopwatch/days_hours").Format(_lastTotalTime.Value.TotalDays.ToString("N0"), _lastTotalTime.Value.Hours.ToString("N0"));
-            }
-            else
-            {
-                _text.text = locale.GetString("schedule_stopwatch/unknown").ToUpper();
+                _lastTotalTime = data.ScheduleAvereageDuration;
+                if (_lastTotalTime.HasValue)
+                {
+                    _text.text = locale.GetString("schedule_stopwatch/days_hours").Format(_lastTotalTime.Value.TotalDays.ToString("N0"), _lastTotalTime.Value.Hours.ToString("N0"));
+                }
+                else
+                {
+                    _text.text = locale.GetString("schedule_stopwatch/unknown").ToUpper();
+                }
             }
 
-            _lastTotalTransfers = data.Capacity.GetTotalTransfers();
-            _capacityIndicator.UpdateItems(_lastTotalTransfers, _lastMonthMultiplier, RouteTotalTransfers);
+            if (_capacityIndicator != null)
+            {
+                _lastTotalTransfers = data.Capacity.GetTotalTransfers();
+                _capacityIndicator.UpdateItems(_lastTotalTransfers, _lastMonthMultiplier, RouteTotalTransfers);
+            }
         }
 
         private string GetCapacityTooltipText()

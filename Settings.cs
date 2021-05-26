@@ -7,30 +7,34 @@ namespace ScheduleStopwatch
     {
         private bool _showIndividualTaskTimes = true;
         private bool _showScheduleTotalTime = true;
+        private bool _showIndividualLoadingCapacity = true;
+        private bool _showIndividualUnloadingCapacity = true;
+        private bool _showTotalTransferCapacity = true;
 
         public bool ShowIndividualTaskTimes { 
             get => _showIndividualTaskTimes;
-            set
-            {
-                if (_showIndividualTaskTimes != value)
-                {
-                    _showIndividualTaskTimes = value;
-                    OnChange();
-                }
-            }
+            set =>  SetProperty<bool>(value, ref _showIndividualTaskTimes);
         }
         public bool ShowScheduleTotalTime
         {
             get => _showScheduleTotalTime; 
-            set
-            {
-                if (_showScheduleTotalTime != value) 
-                {
-                    _showScheduleTotalTime = value;
-                    OnChange();
-                }
-            }
+            set => SetProperty<bool>(value, ref _showScheduleTotalTime);
         }
 
+        public bool ShowIndividualLoadingCapacity
+        {
+            get => _showIndividualLoadingCapacity;
+            set => SetProperty<bool>(value, ref _showIndividualLoadingCapacity);
+        }
+        public bool ShowIndividualUnloadingCapacity
+        {
+            get => _showIndividualUnloadingCapacity;
+            set => SetProperty<bool>(value, ref _showIndividualUnloadingCapacity);
+        }
+        public bool ShowTotalTransferCapacity
+        {
+            get => _showTotalTransferCapacity;
+            set => SetProperty<bool>(value, ref _showTotalTransferCapacity);
+        }
     }
 }
