@@ -1,9 +1,11 @@
 ﻿using ModSettings;
+using Newtonsoft.Json;
 using VoxelTycoon;
 
 namespace ScheduleStopwatch
 {
-    class Settings: ModSettings<Settings>
+    [JsonObject(MemberSerialization.OptOut)]
+    class Settings : ModSettings<Settings>
     {
         private bool _showIndividualTaskTimes = true;
         private bool _showScheduleTotalTime = true;
