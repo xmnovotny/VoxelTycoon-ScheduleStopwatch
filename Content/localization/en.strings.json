@@ -14,5 +14,6 @@
   "schedule_stopwatch/unloaded_items_count": "Unload {0}",
   "schedule_stopwatch/estim_monthly_transf": "Estimated monthly transfers",
   "schedule_stopwatch/estim_monthly_transf_hint": "(this vehicle/all route vehicles)",
-  "schedule_stopwatch/total_transfer": "Total transfers"
+  "schedule_stopwatch/total_transfer": "Total transfers",
+  "schedule_stopwatch/task_times_hint": "Travel time since the previous task/Task time in the station"
 }

@@ -33,9 +33,14 @@ namespace ScheduleStopwatch.UI
 
             if (settings.ShowIndividualTaskTimes)
             {
-                _travelTimeText = transform.Find("TimeIndicator/TravelTimeText").GetComponent<Text>();
-                _loadingTimeText = transform.Find("TimeIndicator/LoadingTimeText").GetComponent<Text>();
-            } else
+                _travelTimeText = timeIndicator.Find("TravelTimeText").GetComponent<Text>();
+                _loadingTimeText = timeIndicator.Find("LoadingTimeText").GetComponent<Text>();
+                Tooltip.For(
+                    timeIndicator,
+                    LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/task_times_hint")                    
+                );
+            }
+            else
             {
                 timeIndicator.gameObject.SetActive(false);
             }
@@ -145,6 +150,8 @@ namespace ScheduleStopwatch.UI
             baseTemplate.gameObject.SetActive(false);
             _template = baseTemplate.gameObject.AddComponent<ScheduleTaskIndicator>();
             Transform timeContainer = baseTemplate.Find("TimeIndicator");
+            timeContainer.gameObject.AddComponent<CanvasRenderer>();
+            timeContainer.gameObject.AddComponent<NonDrawingGraphic>();
             Transform iconTransform = timeContainer.transform.Find("Icon");
             iconTransform.name = "TravelTimeIcon";
             Text iconText = iconTransform.GetComponent<Text>();
