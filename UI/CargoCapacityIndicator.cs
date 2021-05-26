@@ -12,7 +12,6 @@ namespace ScheduleStopwatch.UI
 {
     class CargoCapacityIndicator : MonoBehaviour
     {
-        public enum IndicatorIcon { noIcon, loading, unloading };
         public enum TransferDirection { both, loading, unloading };
         public int ItemsCount { get; private set; }
 
@@ -20,7 +19,7 @@ namespace ScheduleStopwatch.UI
 
         private static CargoCapacityIndicator _template;
 
-        public void Initialize(IReadOnlyDictionary<Item, int> items, float? multiplier, IReadOnlyDictionary<Item, int> routeTotal = null, IndicatorIcon icon = IndicatorIcon.noIcon)
+        public void Initialize(IReadOnlyDictionary<Item, int> items, float? multiplier, IReadOnlyDictionary<Item, int> routeTotal = null)
         {
             foreach (CargoCapacityIndicatorItem indItem in indicatorItems)
             {
@@ -37,27 +36,41 @@ namespace ScheduleStopwatch.UI
             int index = 0;
             if (items != null && multiplier != null)
             {
-                foreach (KeyValuePair<Item, int> itemData in items)
+                IReadOnlyDictionary<Item, int> itemsToDisplay = routeTotal ?? items;
+                foreach (KeyValuePair<Item, int> itemData in itemsToDisplay)
                 {
                     if ((transfDirection == TransferDirection.loading && itemData.Value<0) || (transfDirection == TransferDirection.unloading && itemData.Value>0)) {
                         continue;
                     }
 
                     float? routeTotalCount = null;
-                    if (routeTotal != null && routeTotal.TryGetValue(itemData.Key, out int i))
+                    float itemsCountValue = 0;
+                    if (routeTotal != null)
                     {
-                        routeTotalCount = Math.Abs(i);
+                        routeTotalCount = Math.Abs(itemData.Value);
+                        if (items.TryGetValue(itemData.Key, out int i))
+                        {
+                            itemsCountValue = Math.Abs(i);
+                        } 
+                    } else
+                    {
+                        itemsCountValue = Math.Abs(itemData.Value);
+                    }
+
+                    if (itemsCountValue == 0 && (routeTotalCount == null || routeTotalCount.Value == 0))
+                    {
+                        continue; //do not display zero values
                     }
                     if (index < origCount)
                     {
-                        indicatorItems[index].UpdateItemData(itemData.Key, Math.Abs(itemData.Value) * multiplier.Value, routeTotalCount);
+                        indicatorItems[index].UpdateItemData(itemData.Key, itemsCountValue * multiplier.Value, routeTotalCount);
                         indicatorItems[index].SetActive(true);
                     }
                     else
                     {
                         CargoCapacityIndicatorItem indicatorItem = CargoCapacityIndicatorItem.GetInstance(transform);
                         indicatorItems.Add(indicatorItem);
-                        indicatorItem.Initialize(itemData.Key, Math.Abs(itemData.Value) * multiplier.Value, routeTotalCount);
+                        indicatorItem.Initialize(itemData.Key, itemsCountValue * multiplier.Value, routeTotalCount);
                         indicatorItem.gameObject.SetActive(true);
                     }
                     index++;
