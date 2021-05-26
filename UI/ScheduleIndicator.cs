@@ -1,11 +1,9 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using VoxelTycoon;
-using VoxelTycoon.Game.UI;
 using VoxelTycoon.Localization;
 using VoxelTycoon.UI;
 using VoxelTycoon.UI.Controls;

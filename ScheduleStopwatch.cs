@@ -3,8 +3,6 @@ using System;
 using VoxelTycoon.Modding;
 using ModSettings;
 using VoxelTycoon.Serialization;
-using VoxelTycoon.Game.UI;
-using System.Reflection;
 using VoxelTycoon;
 using VoxelTycoon.Localization;
 

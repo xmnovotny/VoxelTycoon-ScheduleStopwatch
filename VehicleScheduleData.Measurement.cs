@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using VoxelTycoon;
 using VoxelTycoon.Serialization;
 using VoxelTycoon.Tracks;

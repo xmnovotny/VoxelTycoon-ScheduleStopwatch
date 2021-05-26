@@ -7,7 +7,6 @@ using VoxelTycoon;
 using VoxelTycoon.Game.UI;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.Tracks.Tasks;
-using VoxelTycoon.UI;
 using XMNUtils;
 
 namespace ScheduleStopwatch

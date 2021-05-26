@@ -1,12 +1,8 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using VoxelTycoon;
-using VoxelTycoon.Game.UI.VehicleUnitPickerWindowViews;
 using VoxelTycoon.UI;
-using VoxelTycoon.UI.Controls;
 
 namespace ScheduleStopwatch.UI
 {

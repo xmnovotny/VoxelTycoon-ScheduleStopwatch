@@ -1,6 +1,5 @@
 ﻿using ModSettings;
 using Newtonsoft.Json;
-using VoxelTycoon;
 
 namespace ScheduleStopwatch
 {
