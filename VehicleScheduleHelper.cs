@@ -40,7 +40,7 @@ namespace ScheduleStopwatch
 
         private void OnMeasurementInvalidated(Vehicle vehicle)
         {
-            NotificationUtils.ShowVehicleHint(vehicle, "OnMeasurementInvalidated");
+            //NotificationUtils.ShowVehicleHint(vehicle, "OnMeasurementInvalidated");
             MeasurementInvalidated?.Invoke(vehicle);
         }
 
