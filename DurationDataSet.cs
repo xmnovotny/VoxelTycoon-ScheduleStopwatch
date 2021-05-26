@@ -14,6 +14,7 @@ namespace ScheduleStopwatch
         private TimeSpan _totalSum;
         private TimeSpan _runningSum;
         private int _totalCount;
+        private bool _toOverride;
 
         private CircularBuffer<TimeSpan> _durationData;
         public DurationDataSet(int bufferSize = DEFAULT_BUFFER_SIZE)
@@ -35,8 +36,18 @@ namespace ScheduleStopwatch
             MarkDirty();
         }
 
+        /** marks task data for overwrite with next new data (all old data will be discarded when new data are added) */
+        public void MarkForOverwrite()
+        {
+            _toOverride = true;
+        }
+
         public void Add(TimeSpan duration)
         {
+            if (_toOverride)
+            {
+                Clear();
+            } else
             if (_durationData.IsFull)
             {
                 _runningSum -= _durationData.Get();

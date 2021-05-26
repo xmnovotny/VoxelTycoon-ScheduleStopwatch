@@ -56,11 +56,11 @@ namespace ScheduleStopwatch.UI
             transform.gameObject.SetActive(true);
         }
 
-        public void UpdateValues(VehicleScheduleData data, RootTask task)
+        public void UpdateValues(VehicleScheduleData data, RootTask _)
         {
-            if ((task != null && task != Task) || data != _scheduleData || data == null)
+            if (data != _scheduleData || data == null)
             {
-                throw new ArgumentException("Schedule data or task is not for this ScheduleTaskIndicator");
+                throw new ArgumentException("Schedule data is not for this ScheduleTaskIndicator");
             }
             TimeSpan? travel = data.GetAverageTravelDuration(Task);
             Locale locale = LazyManager<LocaleManager>.Current.Locale;
@@ -177,7 +177,8 @@ namespace ScheduleStopwatch.UI
         {
             if (_scheduleData != null)
             {
-                _scheduleData.SubscribeTaskDataChanged(Task, UpdateValues);
+                _scheduleData.SubscribeDataChanged(UpdateValues);
+//                _scheduleData.SubscribeTaskDataChanged(Task, UpdaeValues);
 
                 UpdateValues(_scheduleData, Task);
             }
@@ -187,6 +188,7 @@ namespace ScheduleStopwatch.UI
         {
             if (_scheduleData != null && Task != null)
             {
+                _scheduleData.UnsubscribeDataChanged(UpdateValues);
                 _scheduleData.UnsubscribeTaskDataChanged(Task, UpdateValues);
             }
         }

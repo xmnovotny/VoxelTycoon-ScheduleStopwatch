@@ -146,7 +146,7 @@ namespace ScheduleStopwatch
                             firstNonNonstopInOld = oldSnapshot.task;
                         }
 
-                        if ((!newTaskToIndex.TryGetValue(oldSnapshot.task, out var idx) || newSnapshot[idx].nonstop))
+                        if ((!newTaskToIndex.TryGetValue(oldSnapshot.task, out var idx) || (newSnapshot[idx].nonstop && !oldSnapshot.nonstop)))
                         {
                             if (!oldSnapshot.nonstop)
                             {
@@ -157,7 +157,7 @@ namespace ScheduleStopwatch
                         }
                         else
                         {
-                            if ((expectedNewIndex.HasValue && expectedNewIndex.Value != idx) || oldSnapshot.nonstop && !newSnapshot[idx].nonstop || newSnapshot[idx].location != oldSnapshot.location)
+                            if ((expectedNewIndex.HasValue && expectedNewIndex.Value != idx) || (oldSnapshot.nonstop && !newSnapshot[idx].nonstop) || newSnapshot[idx].location != oldSnapshot.location)
                             {
                                 travelChanged = true;
                                 lastNewIndex = null;
@@ -173,8 +173,8 @@ namespace ScheduleStopwatch
                                     result.incomingRouteChange.Add(oldSnapshot.task);
                                     travelChanged = newSnapshot[idx].location != oldSnapshot.location;  //when the location is changed, we must delete incoming and outcoming travel times
                                 }
-                                lastNewIndex = idx;
                             }
+                            lastNewIndex = idx;
                         }
                     }
 

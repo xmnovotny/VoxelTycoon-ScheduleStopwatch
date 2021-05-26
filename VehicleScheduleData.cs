@@ -286,50 +286,43 @@ namespace ScheduleStopwatch
         internal void OnScheduleChanged(RootTask task, bool minorChange)
         {
             Snapshot newSnapshot = new Snapshot(Vehicle.Schedule);
-            if (!minorChange)
+            var comparsion = _lastSnapshot.CompareWithNewer(newSnapshot);
+            if (comparsion.IsDifference) //in comparsion there aren't any new tasks, it is only difference in old tasks
             {
-                var comparsion = _lastSnapshot.CompareWithNewer(newSnapshot);
-                if (comparsion.IsDifference) //in comparsion there aren't any new tasks, it is only difference in old tasks
+                var invalidateMeasurement = false;
+                foreach (var removedTask in comparsion.removed)
                 {
-                    var invalidateMeasurement = false;
-                    foreach (var removedTask in comparsion.removed)
+                    _travelData.Remove(removedTask);
+                    _stationLoadingData.Remove(removedTask);
+                    if (_measurement != null && _measurement.Task == removedTask)
                     {
-                        _travelData.Remove(removedTask);
-                        _stationLoadingData.Remove(removedTask);
-                        if (_measurement != null && _measurement.Task == removedTask)
-                        {
-                            invalidateMeasurement = true;
-                        }
-                    }
-                    foreach (var changedTask in comparsion.changed)
-                    {
-                        _stationLoadingData.Clear(changedTask);
-                        if (_measurement is StationLoadingMeasurement measurement && measurement.Task == changedTask)
-                        {
-                            invalidateMeasurement = true;
-                        }
-                    }
-                    foreach (var travelChangedTask in comparsion.incomingRouteChange)
-                    {
-                        _travelData.Clear(travelChangedTask);
-                        if (_measurement is TravelMeasurement measurement && measurement.Task == travelChangedTask)
-                        {
-                            invalidateMeasurement = true;
-                        }
-                    }
-                    if (invalidateMeasurement)
-                    {
-                        OnMeasurementInvalidated();
+                        invalidateMeasurement = true;
                     }
                 }
-                _lastSnapshot = newSnapshot;
-                OnDataChanged(task);
+                foreach (var changedTask in comparsion.changed)
+                {
+                    _stationLoadingData.MarkForOverwrite(changedTask);
+                    if (_measurement is StationLoadingMeasurement measurement && measurement.Task == changedTask)
+                    {
+                        invalidateMeasurement = true;
+                    }
+                }
+                foreach (var travelChangedTask in comparsion.incomingRouteChange)
+                {
+                    _travelData.Clear(travelChangedTask);
+                    if (_measurement is TravelMeasurement measurement && measurement.Task == travelChangedTask)
+                    {
+                        invalidateMeasurement = true;
+                    }
+                }
+                if (invalidateMeasurement)
+                {
+                    OnMeasurementInvalidated();
+                }
             }
-            else
-            {
-                _lastSnapshot = newSnapshot;
-            }
+            _lastSnapshot = newSnapshot;
             _capacity?.MarkDirty();
+            OnDataChanged(task);
         }
 
         public void MarkDirty()

@@ -83,6 +83,15 @@ namespace ScheduleStopwatch
             }
         }
 
+        /** marks task data for overwrite with next new data (all old data will be discarded when new data are added) */
+        public void MarkForOverwrite(RootTask task)
+        {
+            if (_data.TryGetValue(task, out DurationDataSet dataSet))
+            {
+                dataSet.MarkForOverwrite();
+            }
+        }
+
         public void Remove(RootTask task)
         {
             _data.Remove(task);
