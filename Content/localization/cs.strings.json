@@ -9,7 +9,7 @@
   "schedule_stopwatch/display_total_capacity": "Zobrazit celkovou přepravní kapacitu v okně vozidla",
   "schedule_stopwatch/display_individual_unloading_capacity": "Zobrazit předpokládanou měsíční vykládku pro jednotlivé úkoly",
   "schedule_stopwatch/display_individual_loading_capacity": "Zobrazit předpokládanou měsíční nakládku pro jednotlivé úkoly",
-  "schedule_stopwatch/settings_window_title": "Nastavení modu 'Automatic schedule stopwatch'",
+  "schedule_stopwatch/settings_window_title": "Nastavení modu 'Transport capacity estimator'",
   "schedule_stopwatch/loaded_items_count": "Nakládka {0}",
   "schedule_stopwatch/unloaded_items_count": "Vykládka {0}",
   "schedule_stopwatch/estim_monthly_transf": "Odhadované měsíční přesuny",
