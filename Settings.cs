@@ -11,6 +11,8 @@ namespace ScheduleStopwatch
         private bool _showIndividualLoadingCapacity = true;
         private bool _showIndividualUnloadingCapacity = true;
         private bool _showTotalTransferCapacity = true;
+        private bool _showStationLoadedItems = true;
+        private bool _showStationUnloadedItems = true;
 
         public bool ShowIndividualTaskTimes { 
             get => _showIndividualTaskTimes;
@@ -36,6 +38,16 @@ namespace ScheduleStopwatch
         {
             get => _showTotalTransferCapacity;
             set => SetProperty<bool>(value, ref _showTotalTransferCapacity);
+        }
+        public bool ShowStationLoadedItems
+        {
+            get => _showStationLoadedItems;
+            set => SetProperty<bool>(value, ref _showStationLoadedItems);
+        }
+        public bool ShowStationUnloadedItems
+        {
+            get => _showStationUnloadedItems;
+            set => SetProperty<bool>(value, ref _showStationUnloadedItems);
         }
     }
 }

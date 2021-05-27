@@ -4,6 +4,7 @@ using VoxelTycoon;
 using VoxelTycoon.Serialization;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.Tracks.Tasks;
+using TaskTransfers = ScheduleStopwatch.VehicleScheduleCapacity.TaskTransfers;
 
 namespace ScheduleStopwatch
 {
@@ -49,6 +50,27 @@ namespace ScheduleStopwatch
                 _vehiclesData[vehicle] = new VehicleScheduleData(vehicle);
             }
             return _vehiclesData[vehicle];
+        }
+
+        public IReadOnlyDictionary<Item, int> GetStationTaskTransfersSum(ImmutableList<Vehicle> vehicles, VehicleStation station, out bool isIncomplete)
+        {
+            int count = vehicles.Count;
+            TaskTransfers transfersSum = new TaskTransfers();
+            isIncomplete = false;
+            for (int i = 0; i < vehicles.Count; i++)
+            {
+                VehicleScheduleData scheduleData = this[vehicles[i]];
+                IReadOnlyDictionary<Item, int> transfers = scheduleData?.Capacity.GetTransfersPerStation()[station];
+                float? mult;
+                if (transfers != null && (mult = scheduleData.ScheduleMonthlyMultiplier) != null)
+                {
+                    transfersSum.Add(transfers, mult);
+                } else
+                {
+                    isIncomplete = false;
+                }
+            }
+            return transfersSum.Transfers;
         }
 
         private void OnDestinationReached(Vehicle vehicle, VehicleStation station, RootTask task)

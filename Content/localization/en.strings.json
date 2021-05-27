@@ -9,11 +9,15 @@
   "schedule_stopwatch/display_total_capacity": "Display the total monthly transport capacity in the vehicle window",
   "schedule_stopwatch/display_individual_unloading_capacity": "Display expected monthly unloaded items for each task",
   "schedule_stopwatch/display_individual_loading_capacity": "Display expected monthly loaded items for each task",
+  "schedule_stopwatch/display_station_loading_capacity": "Display expected loaded items in the station window",
+  "schedule_stopwatch/display_station_unloading_capacity": "Display expected unloaded items in the station window",
   "schedule_stopwatch/settings_window_title": "Transport capacity estimator settings",
   "schedule_stopwatch/loaded_items_count": "Load {0}",
   "schedule_stopwatch/unloaded_items_count": "Unload {0}",
   "schedule_stopwatch/estim_monthly_transf": "Estimated monthly transfers",
   "schedule_stopwatch/estim_monthly_transf_hint": "(this vehicle/all route vehicles)",
   "schedule_stopwatch/total_transfer": "Total transfers",
-  "schedule_stopwatch/task_times_hint": "Travel time since the previous task/Task time in the station"
+  "schedule_stopwatch/task_times_hint": "Travel time since the previous task/Task time in the station",
+  "schedule_stopwatch/monthly_unloaded_items": "Expected monthly unloaded items",
+  "schedule_stopwatch/monthly_loaded_items": "Expected monthly loaded items"
 }

@@ -50,6 +50,22 @@ namespace ScheduleStopwatch
             {
                 settings.ShowIndividualLoadingCapacity = false;
             });
+
+            settingsControl.AddToggle(locale.GetString("schedule_stopwatch/display_station_loading_capacity"), null, settings.ShowStationLoadedItems, delegate ()
+            {
+                settings.ShowStationLoadedItems = true;
+            }, delegate ()
+            {
+                settings.ShowStationLoadedItems = false;
+            });
+
+            settingsControl.AddToggle(locale.GetString("schedule_stopwatch/display_station_unloading_capacity"), null, settings.ShowStationUnloadedItems, delegate ()
+            {
+                settings.ShowStationUnloadedItems = true;
+            }, delegate ()
+            {
+                settings.ShowStationUnloadedItems = false;
+            });
         }
 
     }

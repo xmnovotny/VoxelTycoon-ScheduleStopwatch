@@ -1,5 +1,6 @@
 ﻿using System;
 using Cyotek.Collections.Generic;
+using HarmonyLib;
 using VoxelTycoon.Serialization;
 
 namespace ScheduleStopwatch
@@ -9,15 +10,15 @@ namespace ScheduleStopwatch
         public const int DEFAULT_BUFFER_SIZE = 10;
         private TimeSpan? _average;
 
-        private TimeSpan _totalSum;
-        private TimeSpan _runningSum;
+        private TimeSpan _totalSum = default;
+        private TimeSpan _runningSum = default;
         private int _totalCount;
         private bool _toOverride;
 
         private CircularBuffer<TimeSpan> _durationData;
         public DurationDataSet(int bufferSize = DEFAULT_BUFFER_SIZE)
         {
-            _durationData = new CircularBuffer<TimeSpan>(bufferSize);
+            _durationData = new CircularBuffer<TimeSpan>(bufferSize, false);
         }
 
         public void MarkDirty()
@@ -31,6 +32,7 @@ namespace ScheduleStopwatch
             _totalSum = default;
             _totalCount = 0;
             _runningSum = default;
+            _toOverride = false;
             MarkDirty();
         }
 
@@ -38,6 +40,15 @@ namespace ScheduleStopwatch
         public void MarkForOverwrite()
         {
             _toOverride = true;
+        }
+
+        private TimeSpan CalcSum()
+        {
+            TimeSpan sum = default;
+            for (int i = 0; i < _durationData.Size; i++) { 
+                sum += _durationData.PeekAt(i);
+            }
+            return sum;
         }
 
         public void Add(TimeSpan duration)
@@ -54,6 +65,11 @@ namespace ScheduleStopwatch
             _totalCount++;
             _totalSum += duration;
             _runningSum += duration;
+/*            TimeSpan calc = CalcSum();
+            if (_runningSum != calc)
+            {
+                FileLog.Log("Running != Calc: " + _runningSum.TotalHours.ToString("N2") + " vs " + calc.TotalHours.ToString("N2"));
+            }*/
             MarkDirty();
         }
 
