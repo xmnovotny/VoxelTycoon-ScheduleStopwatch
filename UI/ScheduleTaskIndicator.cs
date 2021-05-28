@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -79,6 +80,7 @@ namespace ScheduleStopwatch.UI
                 throw new ArgumentException("Schedule data is not for this ScheduleTaskIndicator");
             }
             Locale locale = LazyManager<LocaleManager>.Current.Locale;
+
             if (_travelTimeText != null)
             {
                 TimeSpan? travel = data.GetAverageTravelDuration(Task);
@@ -106,20 +108,33 @@ namespace ScheduleStopwatch.UI
                 _lastMonthMultiplier = data.ScheduleMonthlyMultiplier;
                 _lastTaskTransfers = _scheduleData.Capacity.GetTransfers(Task);
                 IReadOnlyDictionary<Item, int> routeTransfers = RouteTaskTransfers;
+                int itemsLimit;
+                if (routeTransfers != null && routeTransfers.Count>0)
+                {
+                    itemsLimit = _travelTimeText != null ? 2 : 5;
+                } else
+                {
+                    itemsLimit = _travelTimeText != null ? 4 : 8;
+                }
+
+                FileLog.Log("ItemsLimit: " + itemsLimit.ToString());
+
+                if (_unloadCapacityIndicator != null)
+                {
+                    _unloadCapacityIndicator.UpdateItems(_lastTaskTransfers, _lastMonthMultiplier, routeTransfers, transfDirection: CargoCapacityIndicator.TransferDirection.unloading, itemsLimit);
+                    _unloadCapacityIndicator.gameObject.SetActive(_unloadCapacityIndicator.ItemsCount > 0);
+                    _unloadingCapIcon.gameObject.SetActive(_unloadCapacityIndicator.ItemsCount > 0);
+                    itemsLimit -= Math.Min(_unloadCapacityIndicator.ItemsCount, 1);
+                }
+
 
                 if (_loadCapacityIndicator != null)
                 {
-                    _loadCapacityIndicator.UpdateItems(_lastTaskTransfers, _lastMonthMultiplier, routeTransfers, transfDirection: CargoCapacityIndicator.TransferDirection.loading);
+                    _loadCapacityIndicator.UpdateItems(_lastTaskTransfers, _lastMonthMultiplier, routeTransfers, transfDirection: CargoCapacityIndicator.TransferDirection.loading, itemsLimit);
                     _loadCapacityIndicator.gameObject.SetActive(_loadCapacityIndicator.ItemsCount > 0);
                     _loadingCapIcon.gameObject.SetActive(_loadCapacityIndicator.ItemsCount > 0);
                 }
 
-                if (_unloadCapacityIndicator != null)
-                {
-                    _unloadCapacityIndicator.UpdateItems(_lastTaskTransfers, _lastMonthMultiplier, routeTransfers, transfDirection: CargoCapacityIndicator.TransferDirection.unloading);
-                    _unloadCapacityIndicator.gameObject.SetActive(_unloadCapacityIndicator.ItemsCount > 0);
-                    _unloadingCapIcon.gameObject.SetActive(_unloadCapacityIndicator.ItemsCount > 0);
-                }
             }
         }
 

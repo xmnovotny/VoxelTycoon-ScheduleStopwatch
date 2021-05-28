@@ -23,7 +23,15 @@ namespace ScheduleStopwatch.UI
 				if (value != _item)
                 {
 					_item = value;
-					_thumb.sprite = LazyManager<IconRenderer>.Current.GetItemIcon(value.AssetId);
+					if (value != null)
+					{
+						_thumb.sprite = LazyManager<IconRenderer>.Current.GetItemIcon(value.AssetId);
+						_thumb.transform.parent.gameObject.SetActive(true);
+					}
+					else
+                    {
+						_thumb.transform.parent.gameObject.SetActive(false);
+                    }
 				}
 			}
         }
@@ -39,6 +47,12 @@ namespace ScheduleStopwatch.UI
 		public void UpdateCount(float count, float? routeTotalCount = null)
         {
 			_text.text = count.ToString("N0") + (routeTotalCount != null ? "/" + routeTotalCount.Value.ToString("N0") : "");
+		}
+
+		public void UpdateAsOverflowCount(int count)
+		{
+			Item = null;
+			_text.text = "+" + count.ToString();
 		}
 
 		public void UpdateItemData(Item item, float count, float? routeTotalCount=null)

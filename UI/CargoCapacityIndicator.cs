@@ -1,7 +1,10 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using VoxelTycoon;
+using VoxelTycoon.Game.UI.VehicleUnitPickerWindowViews;
 using VoxelTycoon.UI;
 
 namespace ScheduleStopwatch.UI
@@ -12,24 +15,29 @@ namespace ScheduleStopwatch.UI
         public int ItemsCount { get; private set; }
 
         private readonly List<CargoCapacityIndicatorItem> indicatorItems = new List<CargoCapacityIndicatorItem>();
+        private Text _overFlowText;
+        private Transform _overflowCont;
 
         private static CargoCapacityIndicator _template;
 
-        public void Initialize(IReadOnlyDictionary<Item, int> items, float? multiplier, IReadOnlyDictionary<Item, int> routeTotal = null)
+        public void Initialize(IReadOnlyDictionary<Item, int> items, float? multiplier, IReadOnlyDictionary<Item, int> routeTotal = null, int itemsLimit = 0)
         {
             foreach (CargoCapacityIndicatorItem indItem in indicatorItems)
             {
                 indItem.DestroyGameObject();
             }
             ItemsCount = 0;
+            _overflowCont = transform.Find("OverflowText");
+            _overFlowText = _overflowCont.GetComponentInChildren<Text>();
             indicatorItems.Clear();
-            UpdateItems(items, multiplier, routeTotal);
+            UpdateItems(items, multiplier, routeTotal, itemsLimit: itemsLimit);
         }
 
-        public void UpdateItems(IReadOnlyDictionary<Item, int> items, float? multiplier, IReadOnlyDictionary<Item, int> routeTotal = null, TransferDirection transfDirection = TransferDirection.both)
+        public void UpdateItems(IReadOnlyDictionary<Item, int> items, float? multiplier, IReadOnlyDictionary<Item, int> routeTotal = null, TransferDirection transfDirection = TransferDirection.both, int itemsLimit = 0)
         {
             int origCount = indicatorItems.Count;
             int index = 0;
+            int overflowCount = 0;
             if (items != null && multiplier != null)
             {
                 IReadOnlyDictionary<Item, int> itemsToDisplay = routeTotal ?? items;
@@ -57,6 +65,13 @@ namespace ScheduleStopwatch.UI
                     {
                         continue; //do not display zero values
                     }
+
+                    if (itemsLimit > 0 && index >= itemsLimit)
+                    {
+                        overflowCount++;
+                        continue;
+                    }
+
                     if (index < origCount)
                     {
                         indicatorItems[index].UpdateItemData(itemData.Key, itemsCountValue * multiplier.Value, routeTotalCount);
@@ -73,6 +88,15 @@ namespace ScheduleStopwatch.UI
                 }
             }
             ItemsCount = index;
+            if (overflowCount > 0)
+            {
+                indicatorItems[index-1].UpdateAsOverflowCount(overflowCount+1);
+                indicatorItems[index-1].SetActive(true);
+            }
+            else
+            {
+                _overflowCont.SetActive(false);
+            }
             for (; index < origCount; index++)
             {
                 indicatorItems[index].gameObject.SetActive(false);
@@ -93,12 +117,22 @@ namespace ScheduleStopwatch.UI
 
         private static CargoCapacityIndicator CreateTemplate()
         {
-            Transform tr = UnityEngine.GameObject.Instantiate<Transform>((new GameObject("CargoCapacity", typeof(RectTransform))).transform);
+            Transform tr = UnityEngine.GameObject.Instantiate<Transform>(new GameObject("CargoCapacity", typeof(RectTransform)).transform);
             tr.gameObject.SetActive(false);
             LayoutHelper.MakeLayoutGroup(tr, LayoutHelper.Orientation.Horizontal, new RectOffset(0, 0, 0, 0), 0f, 0, LayoutHelper.ChildSizing.ChildControlsSize);
             tr.gameObject.AddComponent<CanvasRenderer>();
             tr.gameObject.AddComponent<NonDrawingGraphic>();
-            
+
+            //overflow indicator
+            Text overflowText = UnityEngine.Object.Instantiate<Text>(R.Game.UI.DepotWindow.DepotWindowVehicleListItemStoragesViewTooltipItem.GetComponentInChildren<Text>(), tr);
+            overflowText.transform.name = "OverflowText";
+            overflowText.gameObject.SetActive(false);
+            overflowText.color = Color.black;
+            LayoutElement layout = overflowText.gameObject.AddComponent<LayoutElement>();
+            layout.flexibleWidth = 0;
+            layout.minWidth = 20;
+
+//            FileLog.Log(XMNUtils.GameObjectDumper.DumpGameObject(R.Game.UI.DepotWindow.DepotWindowVehicleListItemStoragesViewTooltipItem.gameObject));
             return tr.gameObject.AddComponent<CargoCapacityIndicator>();
         }
     }
