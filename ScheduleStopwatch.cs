@@ -19,7 +19,7 @@ namespace ScheduleStopwatch
         {
             Harmony.DEBUG = false;
             harmony = (Harmony)(object)new Harmony(harmonyID);
-//            FileLog.Reset();
+            FileLog.Reset();
             Manager<VehicleScheduleDataManager>.Initialize();
             harmony.PatchAll();
         }

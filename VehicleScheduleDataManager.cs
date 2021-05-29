@@ -67,7 +67,6 @@ namespace ScheduleStopwatch
         /** copies average values of all vehicles in the route and add it as one-time data (will be overwriten when own data are available) */
         public VehicleScheduleData ReplaceVehicleScheduleDataFromRouteCopy(Vehicle vehicle)
         {
-            FileLog.Log("CreateVehicleScheduleDataAsRouteCopy");
             if (vehicle.Route == null || vehicle.Route.Vehicles.Count <= 1)
             {
                 throw new InvalidOperationException("Vehicle route is null or have only one vehicle");
@@ -143,10 +142,8 @@ namespace ScheduleStopwatch
 
         private void OnVehicleRouteChanged(Vehicle vehicle, VehicleRoute oldRoute, VehicleRoute newRoute)
         {
-            FileLog.Log("OnVehicleRouteChangedTest");
             if (newRoute != null && oldRoute != newRoute && newRoute.Vehicles.Count > 1)
             {
-                FileLog.Log("OnVehicleRouteChanged");
                 VehicleScheduleData vehicleData = ReplaceVehicleScheduleDataFromRouteCopy(vehicle);
                 vehicleData.CallDataChangedEventsForRoute(null);
             }

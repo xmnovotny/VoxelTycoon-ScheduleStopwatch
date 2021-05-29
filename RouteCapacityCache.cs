@@ -54,7 +54,6 @@ namespace ScheduleStopwatch
 
         private void OnVehicleIsEnabledChanged(Vehicle vehicle)
         {
-            FileLog.Log("OnVehicleIsEnabledChanged");
             CacheData cacheData = null;
             if (vehicle.Route != null && (cacheData = this[vehicle.Route]) != null)
             {
