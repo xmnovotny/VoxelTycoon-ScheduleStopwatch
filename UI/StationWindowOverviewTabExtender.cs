@@ -32,9 +32,11 @@ namespace ScheduleStopwatch.UI
             _unloadedContainer = CreateContainer(content, locale.GetString("schedule_stopwatch/monthly_unloaded_items").ToUpper());
             _unloadedContainer.SetSiblingIndex(2);
             _unloadedItemsContainer = _unloadedContainer.Find("Content");
+            _unloadedContainerTitle = _unloadedContainer.Find("Label").gameObject.GetComponent<Text>();
             _loadedContainer = CreateContainer(content,locale.GetString("schedule_stopwatch/monthly_loaded_items").ToUpper());
             _loadedContainer.SetSiblingIndex(3);
             _loadedItemsContainer = _loadedContainer.Find("Content");
+            _loadedContainerTitle = _loadedContainer.Find("Label").gameObject.GetComponent<Text>();
             this._offset = Time.unscaledTime;
         }
 
@@ -64,6 +66,13 @@ namespace ScheduleStopwatch.UI
                 IReadOnlyDictionary<Item, int> transfers = Manager<VehicleScheduleDataManager>.Current.GetStationTaskTransfersSum(vehicles, StationWindow.Location.VehicleStation, out bool incomplete);
                 FillContainerWithItems(_loadedContainer, _loadedItemsContainer, settings.ShowStationLoadedItems ? transfers : null, Direction.load);
                 FillContainerWithItems(_unloadedContainer, _unloadedItemsContainer, settings.ShowStationUnloadedItems ? transfers : null, Direction.unload);
+                if (_lastIncomplete != incomplete)
+                {
+                    _lastIncomplete = incomplete;
+                    Locale locale = LazyManager<LocaleManager>.Current.Locale;
+                    _loadedContainerTitle.text = locale.GetString("schedule_stopwatch/monthly_loaded_items").ToUpper() + (incomplete ? " (" + locale.GetString("schedule_stopwatch/partial").ToUpper() + ")" : "");
+                    _unloadedContainerTitle.text = locale.GetString("schedule_stopwatch/monthly_unloaded_items").ToUpper() + (incomplete ? " (" + locale.GetString("schedule_stopwatch/partial").ToUpper() + ")" : "");
+                }
             } else
             {
                 _loadedContainer.SetActive(false);
@@ -140,8 +149,10 @@ namespace ScheduleStopwatch.UI
 
         private Transform _loadedContainer, _loadedItemsContainer;
         private Transform _unloadedContainer, _unloadedItemsContainer;
+        private Text _loadedContainerTitle, _unloadedContainerTitle;
         private Transform _template;
         private float _offset;
+        private bool _lastIncomplete = false;
         private enum Direction {unload, load};
 
         #region HARMONY

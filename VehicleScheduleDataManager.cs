@@ -108,6 +108,10 @@ namespace ScheduleStopwatch
             isIncomplete = false;
             for (int i = 0; i < vehicles.Count; i++)
             {
+                if (!vehicles[i].IsEnabled)
+                {
+                    continue;
+                }
                 VehicleScheduleData scheduleData = this[vehicles[i]];
                 IReadOnlyDictionary<Item, int> transfers = scheduleData?.Capacity.GetTransfersPerStation()[station];
                 float? mult;
@@ -116,7 +120,7 @@ namespace ScheduleStopwatch
                     transfersSum.Add(transfers, mult);
                 } else
                 {
-                    isIncomplete = false;
+                    isIncomplete = true;
                 }
             }
             return transfersSum.Transfers;

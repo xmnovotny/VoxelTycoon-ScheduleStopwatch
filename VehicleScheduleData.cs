@@ -378,7 +378,7 @@ namespace ScheduleStopwatch
                 foreach (var travelChangedTask in comparsion.incomingRouteChange)
                 {
                     _travelData.Clear(travelChangedTask);
-                    if (_measurement is TravelMeasurement measurement && measurement.Task == travelChangedTask)
+                    if (_measurement is TravelMeasurement)
                     {
                         invalidateMeasurement = true;
                     }
