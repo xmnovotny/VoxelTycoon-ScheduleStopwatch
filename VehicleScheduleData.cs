@@ -21,11 +21,13 @@ namespace ScheduleStopwatch
         private Action<VehicleScheduleData> ownDataChanged; //called only for own data change (called before dataChanged and taskDataChanged)
         private Dictionary<RootTask, Action<VehicleScheduleData, RootTask>> _taskDataChanged = new Dictionary<RootTask, Action<VehicleScheduleData, RootTask>>(); //events for one task, called for both own data change data change from another vehicle in the route
         private bool _isDirty = true;
+        private bool _notificationPending = false;
         private TimeSpan? _totalTravelAverage;
         private TimeSpan? _totalStationLoadingAverage;
         private TimeSpan? _totalAverage;
         private Snapshot _lastSnapshot;
         private VehicleScheduleCapacity _capacity;
+        private bool _notificationsTurnedOff = false;
 
         public TimeSpan? ScheduleTravelAvereageDuration
         {
@@ -78,6 +80,27 @@ namespace ScheduleStopwatch
                 return _capacity;
             }
         }
+
+        /** turns off data change notifications */
+        public bool NotificationsTurnedOff
+        {
+            get
+            {
+                return _notificationsTurnedOff;
+            }
+            internal set
+            {
+                if (_notificationsTurnedOff != value)
+                {
+                    _notificationsTurnedOff = value;
+                    if (!value && _notificationPending)
+                    {
+                        OnDataChanged(null);
+                    }
+                }
+            }
+        }
+
 
         public TimeSpan? GetAverageTravelDuration(RootTask task)
         {
@@ -189,17 +212,17 @@ namespace ScheduleStopwatch
         private void OnDataChanged(RootTask task)
         {
             MarkDirty();
+            if (NotificationsTurnedOff)
+            {
+                _notificationPending = true;
+                return;
+            }
+            _notificationPending = false;
             ownDataChanged?.Invoke(this);
             VehicleRoute route = Vehicle.Route;
             if (route?.Vehicles.Count > 1)
             {
-                int? taskIndex = task?.GetIndex();
-                VehicleScheduleDataManager manager = Manager<VehicleScheduleDataManager>.Current;
-                foreach (Vehicle vehicle in route.Vehicles.ToArray())
-                {
-                    RootTask localTask = taskIndex != null ? vehicle.Schedule.GetTasks()[taskIndex.Value] : null;
-                    manager[vehicle]?.CallDataChangedEvents(localTask);
-                }
+                CallDataChangedEventsForRoute(task);
             }
             else
             {
@@ -219,6 +242,45 @@ namespace ScheduleStopwatch
             _stationLoadingData = new TaskDurationDataSet();
             _isDirty = true;
             _lastSnapshot = new Snapshot(vehicle.Schedule);
+        }
+
+
+        /* Add own average values to the provided vehicle data (skip when own data aren't complete) */
+        internal void AddAverageValuesToVehicleData(VehicleScheduleData data)
+        {
+            if (data.Vehicle.Route != Vehicle.Route)
+            {
+                throw new InvalidOperationException("Vehicles must have the same route for copy average values");
+            }
+            if (GetAverageTravelDuration() == null)
+            {
+                return;
+            }
+            _travelData.AddAverageValuesToDataSet(data._travelData, data.Vehicle);
+            _stationLoadingData.AddAverageValuesToDataSet(data._stationLoadingData, data.Vehicle);
+            data.OnDataChanged(null);
+        }
+
+        /** calculates the running average of all stored data and sets it as the new single record, marks it for overwrite with any new data and reduce number of elements for calculating running average */
+        internal void AdjustDataAfterCopy(int dataBufferSize = 10)
+        {
+            _travelData.AdjustDataAfterCopy(dataBufferSize);
+            _stationLoadingData.AdjustDataAfterCopy(dataBufferSize);
+            this.OnDataChanged(null);
+        }
+
+        internal void ChangeDataBufferSize(int dataBufferSize)
+        {
+            _travelData.ChangeBufferSize(dataBufferSize);
+            _stationLoadingData.ChangeBufferSize(dataBufferSize);
+            this.OnDataChanged(null);
+        }
+
+        internal void ClearAllData()
+        {
+            _travelData.Clear();
+            _stationLoadingData.Clear();
+            this.OnDataChanged(null);
         }
 
         private void OnTravelMeasurementFinish(TravelMeasurement measurement)
@@ -372,5 +434,6 @@ namespace ScheduleStopwatch
                 _capacity.OnVehicleEdited();
             }
         }
+
     }
 }

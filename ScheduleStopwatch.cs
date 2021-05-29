@@ -17,9 +17,9 @@ namespace ScheduleStopwatch
 
         protected override void Initialize()
         {
-            harmony = (Harmony)(object)new Harmony(harmonyID);
             Harmony.DEBUG = false;
-            FileLog.Reset();
+            harmony = (Harmony)(object)new Harmony(harmonyID);
+//            FileLog.Reset();
             Manager<VehicleScheduleDataManager>.Initialize();
             harmony.PatchAll();
         }
@@ -27,6 +27,7 @@ namespace ScheduleStopwatch
         protected override void OnGameStarted()
         {
             ModSettingsWindowManager.Current.Register<SettingsWindowPage>(this.GetType().Name, LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/settings_window_title"));
+            Manager<VehicleScheduleDataManager>.Current.StartMeasuring();
         }
 
         protected override void Deinitialize()

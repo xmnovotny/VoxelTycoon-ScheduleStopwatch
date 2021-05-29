@@ -117,8 +117,6 @@ namespace ScheduleStopwatch.UI
                     itemsLimit = _travelTimeText != null ? 4 : 8;
                 }
 
-                FileLog.Log("ItemsLimit: " + itemsLimit.ToString());
-
                 if (_unloadCapacityIndicator != null)
                 {
                     _unloadCapacityIndicator.UpdateItems(_lastTaskTransfers, _lastMonthMultiplier, routeTransfers, transfDirection: CargoCapacityIndicator.TransferDirection.unloading, itemsLimit);

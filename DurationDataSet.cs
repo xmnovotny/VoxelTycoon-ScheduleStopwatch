@@ -42,6 +42,29 @@ namespace ScheduleStopwatch
             _toOverride = true;
         }
 
+        /** calculates the running average of all stored data and sets it as the new single record */
+        public void ReduceDataToSingleValue()
+        {
+            if (_durationData.Size > 1)
+            {
+                TimeSpan? average = Average;
+                Clear();
+                Add(average.Value);
+            }
+        }
+
+        public void ChangeBufferSize(int bufferSize = DEFAULT_BUFFER_SIZE)
+        {
+            if (bufferSize != _durationData.Capacity)
+            {
+                while (bufferSize < _durationData.Size)
+                {
+                    _runningSum -= _durationData.Get();
+                }
+                _durationData.Capacity = bufferSize;
+            }
+        }
+
         private TimeSpan CalcSum()
         {
             TimeSpan sum = default;

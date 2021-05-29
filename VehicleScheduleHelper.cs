@@ -19,6 +19,7 @@ namespace ScheduleStopwatch
         public event Action<Vehicle> MeasurementInvalidated;
         public event Action<Vehicle, RootTask, bool> ScheduleChanged;
         public event Action<Vehicle, VehicleRoute, VehicleRoute> VehicleRouteChanged;  //vehicle, old route, new route
+        public event Action<Vehicle> VehicleIsEnabledChanged;
 
         private Func<RootTask, int> getRootTaskVersionFunc;
 
@@ -92,6 +93,11 @@ namespace ScheduleStopwatch
         private void OnVehicleRouteChanged(Vehicle vehicle, VehicleRoute oldRoute, VehicleRoute newRoute)
         {
             VehicleRouteChanged?.Invoke(vehicle, oldRoute, newRoute);
+        }
+
+        private void OnVehicleIsEnabledChanged(Vehicle vehicle)
+        {
+            VehicleIsEnabledChanged?.Invoke(vehicle);
         }
 
         #region Harmony
@@ -311,6 +317,14 @@ namespace ScheduleStopwatch
         {
             Current.OnVehicleRouteChanged(__instance, __state, route);
         }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Vehicle), "OnIsEnabledChanged")]
+        static private void Vehicle_OnIsEnabledChanged_pof(Vehicle __instance)
+        {
+            Current.OnVehicleIsEnabledChanged(__instance);
+        }
+
         #endregion
         #endregion
     }

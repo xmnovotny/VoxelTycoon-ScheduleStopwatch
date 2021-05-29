@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using VoxelTycoon;
 using VoxelTycoon.Serialization;
@@ -33,12 +34,23 @@ namespace ScheduleStopwatch
             }
         }
 
+        /** start listen events for measuring data */
+        public void StartMeasuring()
+        {
+            VehicleScheduleHelper.Current.DestinationReached -= OnDestinationReached;
+            VehicleScheduleHelper.Current.DestinationReached += OnDestinationReached;
+            VehicleScheduleHelper.Current.StationLeaved -= OnStationLeaved;
+            VehicleScheduleHelper.Current.StationLeaved += OnStationLeaved;
+            VehicleScheduleHelper.Current.MeasurementInvalidated -= OnMeasurementInvalidated;
+            VehicleScheduleHelper.Current.MeasurementInvalidated += OnMeasurementInvalidated;
+            VehicleScheduleHelper.Current.ScheduleChanged -= OnScheduleChanged;
+            VehicleScheduleHelper.Current.ScheduleChanged += OnScheduleChanged;
+            VehicleScheduleHelper.Current.VehicleRouteChanged -= OnVehicleRouteChanged;
+            VehicleScheduleHelper.Current.VehicleRouteChanged += OnVehicleRouteChanged;
+        }
+
         protected override void OnInitialize()
         {
-            VehicleScheduleHelper.Current.DestinationReached += OnDestinationReached;
-            VehicleScheduleHelper.Current.StationLeaved += OnStationLeaved;
-            VehicleScheduleHelper.Current.MeasurementInvalidated += OnMeasurementInvalidated;
-            VehicleScheduleHelper.Current.ScheduleChanged += OnScheduleChanged;
             LazyManager<VehicleManager>.Current.VehicleRemoved += OnRemoveVehicle;
             LazyManager<VehicleManager>.Current.VehicleEdited += OnVehicleEdited;
         }
@@ -50,6 +62,44 @@ namespace ScheduleStopwatch
                 _vehiclesData[vehicle] = new VehicleScheduleData(vehicle);
             }
             return _vehiclesData[vehicle];
+        }
+
+        /** copies average values of all vehicles in the route and add it as one-time data (will be overwriten when own data are available) */
+        public VehicleScheduleData ReplaceVehicleScheduleDataFromRouteCopy(Vehicle vehicle)
+        {
+            FileLog.Log("CreateVehicleScheduleDataAsRouteCopy");
+            if (vehicle.Route == null || vehicle.Route.Vehicles.Count <= 1)
+            {
+                throw new InvalidOperationException("Vehicle route is null or have only one vehicle");
+            }
+
+            VehicleScheduleData result = GetOrCreateVehicleScheduleData(vehicle);
+            result.NotificationsTurnedOff = true;
+            try
+            {
+                result.ClearAllData();
+                result.ChangeDataBufferSize(vehicle.Route.Vehicles.Count);
+
+                foreach (Vehicle currVehicle in vehicle.Route.Vehicles.ToList())
+                {
+                    if (currVehicle == vehicle)
+                        continue;
+
+                    if (!_vehiclesData.TryGetValue(currVehicle, out VehicleScheduleData currData))
+                    {
+                        continue;
+                    }
+
+                    currData.AddAverageValuesToVehicleData(result);
+                }
+                result.AdjustDataAfterCopy();
+            }
+            finally
+            {
+                result.NotificationsTurnedOff = false;
+            }
+
+            return result;
         }
 
         public IReadOnlyDictionary<Item, int> GetStationTaskTransfersSum(ImmutableList<Vehicle> vehicles, VehicleStation station, out bool isIncomplete)
@@ -89,6 +139,17 @@ namespace ScheduleStopwatch
         private void OnMeasurementInvalidated(Vehicle vehicle)
         {
             GetOrCreateVehicleScheduleData(vehicle).OnMeasurementInvalidated();
+        }
+
+        private void OnVehicleRouteChanged(Vehicle vehicle, VehicleRoute oldRoute, VehicleRoute newRoute)
+        {
+            FileLog.Log("OnVehicleRouteChangedTest");
+            if (newRoute != null && oldRoute != newRoute && newRoute.Vehicles.Count > 1)
+            {
+                FileLog.Log("OnVehicleRouteChanged");
+                VehicleScheduleData vehicleData = ReplaceVehicleScheduleDataFromRouteCopy(vehicle);
+                vehicleData.CallDataChangedEventsForRoute(null);
+            }
         }
 
         internal void OnRemoveVehicle(Vehicle vehicle)

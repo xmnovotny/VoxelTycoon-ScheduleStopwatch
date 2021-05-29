@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using VoxelTycoon;
 using VoxelTycoon.Tracks;
@@ -51,15 +52,29 @@ namespace ScheduleStopwatch
             }
         }
 
+        private void OnVehicleIsEnabledChanged(Vehicle vehicle)
+        {
+            FileLog.Log("OnVehicleIsEnabledChanged");
+            CacheData cacheData = null;
+            if (vehicle.Route != null && (cacheData = this[vehicle.Route]) != null)
+            {
+                cacheData.MarkDirty();
+                VehicleScheduleData data = Manager<VehicleScheduleDataManager>.Current.GetOrCreateVehicleScheduleData(vehicle);
+                data.CallDataChangedEventsForRoute(null);
+            }
+        }
         protected override void OnInitialize()
+
         {
             base.OnInitialize();
             VehicleScheduleHelper.Current.VehicleRouteChanged += OnVehicleRouteChange;
+            VehicleScheduleHelper.Current.VehicleIsEnabledChanged += OnVehicleIsEnabledChanged;
         }
 
         protected override void OnDeinitialize()
         {
             VehicleScheduleHelper.Current.VehicleRouteChanged -= OnVehicleRouteChange;
+            VehicleScheduleHelper.Current.VehicleIsEnabledChanged -= OnVehicleIsEnabledChanged;
             foreach (CacheData data in _cache.Values)
             {
                 data.OnRouteDataRemove();
