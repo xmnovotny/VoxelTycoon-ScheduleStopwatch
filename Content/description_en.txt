@@ -16,5 +16,6 @@ Version 1.1
 - the number of items displayed is now limited to prevent overflow
 - display estimated sum of deliveries/pickups from vehicles in the station window
 - when you copy a vehicle with a set route, or when you assign an existing route to a vehicle, the average route time data is copied to that vehicle (so that the total capacity of the route is recalculated and displayed immediately)
+- added dutch translation (thanks to Github user kevin4998)
 
 Source: https://github.com/xmnovotny/VoxelTycoon-ScheduleStopwatch

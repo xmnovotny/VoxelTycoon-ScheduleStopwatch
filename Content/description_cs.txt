@@ -16,5 +16,6 @@ Verze 1.1
 - poèet zobrazených položek je nyní omezen, aby se zabránilo jejich pøeteèení
 - zobrazení odhadovaného souètu nakládky/vykládky z vozidel v oknì stanice
 - pøi kopírování vozidla s nastavenou trasou nebo pøi pøiøazení existující trasy k vozidlu se údaje o prùmìrném èase trasy zkopírují do tohoto vozidla (takže celková kapacita trasy se okamžitì pøepoèítá a zobrazí)
+- pøidán nizozemský pøeklad (díky uživateli Githubu kevin4998)
 
 Zdrojový kód: https://github.com/xmnovotny/VoxelTycoon-ScheduleStopwatch
