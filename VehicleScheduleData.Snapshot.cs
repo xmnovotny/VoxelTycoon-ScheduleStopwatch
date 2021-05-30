@@ -177,7 +177,7 @@ namespace ScheduleStopwatch
                         }
                     }
 
-                    if (travelChanged && !result.incomingRouteChange.Contains(firstNonNonstopInOld))
+                    if (firstNonNonstopInOld != null && travelChanged && !result.incomingRouteChange.Contains(firstNonNonstopInOld))
                     {
                         result.incomingRouteChange.Add(firstNonNonstopInOld);
                     }
