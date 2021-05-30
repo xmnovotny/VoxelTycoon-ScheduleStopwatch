@@ -9,11 +9,16 @@
   "schedule_stopwatch/display_total_capacity": "Laat de totale maandelijkse transportcapaciteit in het voertuigvenster zien",
   "schedule_stopwatch/display_individual_unloading_capacity": "Laat de verwachte maandelijkse geloste vracht voor elke taak zien",
   "schedule_stopwatch/display_individual_loading_capacity": "Laat de verwachte maandelijkse geladen vracht voor elke taak zien",
+  "schedule_stopwatch/display_station_loading_capacity": "Laat de verwachte geladen vracht in het stationsvenster zien",
+  "schedule_stopwatch/display_station_unloading_capacity": "Laat de verwachte geloste vracht in het stationsvenster zien",
   "schedule_stopwatch/settings_window_title": "Instellingen voor het schatten van transportcapaciteit",
   "schedule_stopwatch/loaded_items_count": "Laden {0}",
   "schedule_stopwatch/unloaded_items_count": "Lossen {0}",
   "schedule_stopwatch/estim_monthly_transf": "Geschatte maandelijkse overdrachten",
   "schedule_stopwatch/estim_monthly_transf_hint": "(dit voertuig / alle routevoertuigen)",
   "schedule_stopwatch/total_transfer": "Totale overdrachten",
-  "schedule_stopwatch/task_times_hint": "Reistijd sinds de vorige taak / Tijd in het station"
+  "schedule_stopwatch/task_times_hint": "Reistijd sinds de vorige taak / Tijd in het station",
+  "schedule_stopwatch/monthly_unloaded_items": "Verwachte maandelijkse geloste vracht",
+  "schedule_stopwatch/monthly_loaded_items": "Verwachte maandelijkse geladen vracht",
+  "schedule_stopwatch/partial": "gedeeltelijk"
 }
