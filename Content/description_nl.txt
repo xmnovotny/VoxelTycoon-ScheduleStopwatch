@@ -1,0 +1,24 @@
+Voor het weergeven van de tijd die is besteed aan geplande taken, het reizen tussen de taken en het berekenen van de geschatte maandelijkse transportcapaciteit voor voertuigen.
+
+Kenmerken
+- Geeft de totale duur van één cyclus van het schema weer.
+- Geeft de duur van de taak in een station (bijv. laden/lossen) voor elke taak in het schema weer.
+- Geeft de reistijd tussen afzonderlijke taken (non-stop taken worden genegeerd) weer.
+- Geeft de geschatte som van leveringen/afhalingen van voertuigen weer in het stationsvenster.
+- Berekent de geschatte transportcapaciteit voor individuele en alle voertuigen met dezelfde route. En geeft dit weer als de som van het hele schema, de som per stations in het schema (via tooltip) en voor individuele taken.
+- Al deze weergaven opties zijn configureerbaar via de Spelinstellingen -> Mods.
+
+Veilig een mod toevoegen/verwijderen van bestaande games.
+
+Opmerking: Na het installeren van deze mod in een bestaand spel, duurt het enige tijd voordat de tijden beschikbaar zijn - alle voertuigen moeten één cyclus van het schema voltooien. Hetzelfde geldt wanneer een nieuw voertuig met een nieuwe route wordt toegevoegd.
+Om de som van de gegevens voor alle voertuigen op dezelfde route weer te geven, moeten alle voertuigen volledig geladen gegevens hebben.
+
+Wijzigingslog
+
+Versie 1.1
+- Het aantal weergegeven items is nu beperkt om tekst overloop te voorkomen.
+- Geeft de geschatte som van leveringen / pick-ups van voertuigen weer in het stationsvenster.
+- Wanneer u een voertuig met een ingestelde route kopieert, of wanneer u een bestaande route aan een voertuig toewijst, dan worden de gemiddelde routetijdgegevens naar dat voertuig gekopieerd (zodat de totale capaciteit van de route opnieuw wordt berekend en direct wordt weergegeven).
+- Nederlandse vertaling toegevoegd (met dank aan Github-gebruiker kevin4998).
+
+Bron: https://github.com/xmnovotny/VoxelTycoon-ScheduleStopwatch
