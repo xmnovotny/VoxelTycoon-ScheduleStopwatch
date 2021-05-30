@@ -429,6 +429,9 @@ namespace ScheduleStopwatch
 
         internal void OnVehicleEdited()
         {
+            this._travelData.MarkAllForOverwrite();
+            this._stationLoadingData.MarkAllForOverwrite();
+            MarkDirty();
             if (_capacity != null)
             {
                 _capacity.OnVehicleEdited();

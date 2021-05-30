@@ -1,6 +1,6 @@
 For displaying time spent on schedule tasks and travel between them and calculating estimated monthly transport capacity for vehicles
 
-Features:
+Features 
 - display total duration of one cycle of the schedule
 - display duration of the task in the station (eg. loading/unloading) for each task in the schedule
 - display travel time between individual tasks (non-stops tasks are ignored)
@@ -9,6 +9,9 @@ Features:
 - what is displayed is configurable via Game Settings -> Mods
 
 Safely add/remove a mod from existing games.
+
+Note: After installing a modification into an existing game, it takes some time before the timings are available - all vehicles must complete one cycle of the schedule. The same applies when a new vehicle with a new route is added. 
+In order to display the sum of data for all vehicles on the same route, all vehicles need to have fully loaded data.
 
 Changelog
 
