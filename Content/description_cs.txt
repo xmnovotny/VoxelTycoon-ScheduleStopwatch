@@ -1,0 +1,20 @@
+Pro zobrazení èasu stráveného plnìním položek jízdního øádu a cestami mezi nimi a pro výpoèet odhadované mìsíèní pøepravní kapacity vozidel.
+
+Funkce:
+- zobrazení celkové doby trvání jednoho cyklu jízdního øádu
+- zobrazení doby trvání úkolu ve stanici (napø. nakládka/vykládka) pro každý úkol v jízdním øádu
+- zobrazení doby jízdy mezi jednotlivými stanicemi (stanice, kde se nezastavuje se ignorují)
+- zobrazení odhadovaného souètu nakládky/vykládky z vozidel v oknì stanice
+- vypoèítá odhadovanou pøepravní kapacitu pro vozidlo a pro všechna vozidla, která mají stejnou trasu a zobrazí ji jako souèet pro celý jízdní øád, souèet pro jednotlivé stanice v jízdním øádu (prostøednictvím tooltipu) a pro jednotlivé úkoly
+- zobrazované položky lze konfigurovat v Nastavení hry -> Mody
+
+Mod je možné bezpeènì pøidat/odebrat do/z existujících uložených her.
+
+Changelog
+
+Verze 1.1
+- poèet zobrazených položek je nyní omezen, aby se zabránilo jejich pøeteèení
+- zobrazení odhadovaného souètu nakládky/vykládky z vozidel v oknì stanice
+- pøi kopírování vozidla s nastavenou trasou nebo pøi pøiøazení existující trasy k vozidlu se údaje o prùmìrném èase trasy zkopírují do tohoto vozidla (takže celková kapacita trasy se okamžitì pøepoèítá a zobrazí)
+
+Zdrojový kód: https://github.com/xmnovotny/VoxelTycoon-ScheduleStopwatch

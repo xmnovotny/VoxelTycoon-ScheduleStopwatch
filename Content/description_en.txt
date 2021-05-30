@@ -1,0 +1,20 @@
+For displaying time spent on schedule tasks and travel between them and calculating estimated monthly transport capacity for vehicles
+
+Features:
+- display total duration of one cycle of the schedule
+- display duration of the task in the station (eg. loading/unloading) for each task in the schedule
+- display travel time between individual tasks (non-stops tasks are ignored)
+- display estimated sum of deliveries/pickups from vehicles in the station window.
+- calculates estimated transport capacity for vehicle and for all vehicles having the same route and display it as sum for whole schedule, sum per stations in the schedule (via tooltip) and for individual tasks
+- what is displayed is configurable via Game Settings -> Mods
+
+Safely add/remove a mod from existing games.
+
+Changelog
+
+Version 1.1
+- the number of items displayed is now limited to prevent overflow
+- display estimated sum of deliveries/pickups from vehicles in the station window
+- when you copy a vehicle with a set route, or when you assign an existing route to a vehicle, the average route time data is copied to that vehicle (so that the total capacity of the route is recalculated and displayed immediately)
+
+Source: https://github.com/xmnovotny/VoxelTycoon-ScheduleStopwatch

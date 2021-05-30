@@ -1,0 +1,7 @@
+Version 1.1
+* The number of items displayed is now limited to prevent overflow
+* Display estimated sum of deliveries/pickups from vehicles in the station window.
+* When copying vehicle with route set or assinging existing route to the vehicle, average route time data is copyied to that vehicle (so total route capacities will by recalculated and displayed immediate)
+
+Version 1.0
+* First release
