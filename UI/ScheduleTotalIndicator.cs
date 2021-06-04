@@ -4,6 +4,8 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using VoxelTycoon;
+using VoxelTycoon.Game.UI;
+using VoxelTycoon.Game.UI.Formatting;
 using VoxelTycoon.Localization;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.Tracks.Tasks;
@@ -77,9 +79,7 @@ namespace ScheduleStopwatch.UI
                 Locale locale = LazyManager<LocaleManager>.Current.Locale;
                 Tooltip.For(
                     timeIndicator,
-                    () => _lastTotalTime.HasValue
-                        ? locale.GetString("schedule_stopwatch/times_per_month").Format((Convert.ToSingle((30 * 86400) / _lastTotalTime.Value.TotalSeconds)).ToString("N1", LazyManager<LocaleManager>.Current.Locale.CultureInfo))
-                        : locale.GetString("schedule_stopwatch/missing_time_segment"),
+                    GetTotalTimeTooltipText,
                     null
                 );
             } else
@@ -129,6 +129,29 @@ namespace ScheduleStopwatch.UI
             {
                 _lastTotalTransfers = data.Capacity.GetTotalTransfers();
                 _capacityIndicator.UpdateItems(_lastTotalTransfers, _lastMonthMultiplier, routeTotalTransfers, itemsLimit: itemsLimit);
+            }
+        }
+
+        private string GetTotalTimeTooltipText()
+        {
+            Locale locale = LazyManager<LocaleManager>.Current.Locale;
+            if (_lastTotalTime.HasValue)
+            {
+                string result = locale.GetString("schedule_stopwatch/times_per_month").Format((Convert.ToSingle((30 * 86400) / _lastTotalTime.Value.TotalSeconds)).ToString("N1", LazyManager<LocaleManager>.Current.Locale.CultureInfo));
+                float? speed = _scheduleData.AverageSpeed;
+                if (speed != null)
+                {
+                    result += "\n\n" + locale.GetString("schedule_stopwatch/average_schedule_speed").Format(StringHelper.Boldify(UIFormat.Units.FormatVelocity(speed.Value, true)), UIFormat.Units.VelocityUnits);
+                } else
+                {
+                    result += "\n\n" + locale.GetString("schedule_stopwatch/average_schedule_speed").Format(locale.GetString("schedule_stopwatch/unknown"), "");
+                }
+
+                result += "\n" + locale.GetString("schedule_stopwatch/ratio_loading_total").Format(StringHelper.Boldify((_scheduleData.ScheduleStationLoadingAvereageDuration.Value.TotalSeconds / _lastTotalTime.Value.TotalSeconds * 100).ToString("N0")));
+                return result;
+            } else
+            {
+                return locale.GetString("schedule_stopwatch/missing_time_segment");
             }
         }
 
@@ -194,7 +217,9 @@ namespace ScheduleStopwatch.UI
             _template = baseTemplate.gameObject.AddComponent<ScheduleTotalIndicator>();
             Transform totalLabel = timeContainer.Find("Text");
             totalLabel.name = "Label";
-            totalLabel.GetComponent<Text>().text = "∑";
+//            totalLabel.GetComponent<Text>().text = "∑";
+            totalLabel.GetComponent<Text>().text = "";
+            totalLabel.GetComponent<Text>().font = R.Fonts.FontAwesome5FreeSolid900;
 
             Transform textTransform2 = UnityEngine.Object.Instantiate<Transform>(totalLabel, totalLabel.parent);
             textTransform2.name = "TotalTimeText";

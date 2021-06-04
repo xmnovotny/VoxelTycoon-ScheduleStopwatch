@@ -33,7 +33,7 @@ namespace ScheduleStopwatch
                 _vehicleScheduleData = data;
             }
 
-            public void Finish()
+            public virtual void Finish()
             {
                 endTime = TimeManager.Current.DateTime;
                 IsFinished = true;
@@ -42,7 +42,7 @@ namespace ScheduleStopwatch
 
             public abstract void OnFinished();
 
-            internal void Write(StateBinaryWriter writer)
+            internal virtual void Write(StateBinaryWriter writer)
             {
                 writer.WriteInt(Task.GetIndex());
                 MeasurementSurrogate.Write(writer, this);
@@ -53,8 +53,13 @@ namespace ScheduleStopwatch
             {
                 RootTask task = schedule.GetTasks()[reader.ReadInt()];
                 Measurement result = MeasurementSurrogate.Read(reader, data, task);
-                result.startTime = new DateTime(reader.ReadLong());
+                result.DoRead(reader, schedule, data, version);
                 return result;
+            }
+
+            protected virtual void DoRead(StateBinaryReader reader, VehicleSchedule schedule, VehicleScheduleData data, byte version)
+            {
+                startTime = new DateTime(reader.ReadLong());
             }
 
         }
@@ -70,17 +75,44 @@ namespace ScheduleStopwatch
         }
         private class TravelMeasurement : Measurement
         {
-            public TravelMeasurement(VehicleScheduleData data, RootTask task) : base(data, task) { }
+            private float? _startDistance, _endDistance;
+            public float? Distance
+            {
+                get
+                {
+                    if (_startDistance != null && _endDistance != null)
+                    {
+                        return _endDistance.Value - _startDistance.Value;
+                    }
+                    return null;
+                }
+            }
+            public TravelMeasurement(VehicleScheduleData data, RootTask task) : base(data, task) {
+                _startDistance = _vehicleScheduleData.Vehicle.WorldTraveledDistanceCounter.Lifetime;
+            }
+
+            public override void Finish()
+            {
+                _endDistance = _vehicleScheduleData.Vehicle.WorldTraveledDistanceCounter.Lifetime;
+                base.Finish();
+            }
+
             public void Finish(RootTask task)
             {
                 this.Task = task; //set last RootTask of whole travel through nonstop waypoints
-                base.Finish();
+                Finish();
             }
 
             public override void OnFinished()
             {
                 _vehicleScheduleData?.OnTravelMeasurementFinish(this);
             }
+            protected override void DoRead(StateBinaryReader reader, VehicleSchedule schedule, VehicleScheduleData data, byte version)
+            {
+                base.DoRead(reader, schedule, data, version);
+                _startDistance = null;
+            }
+
         }
 
         private class MeasurementSurrogate

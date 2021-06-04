@@ -84,14 +84,6 @@ namespace ScheduleStopwatch
         public ImmutableList<RecipeItem> GetIngredients(Item item)
         {
             (List<RecipeItem> ingredients, Dictionary<Item, float> subItems) = FindIngredients(item);
-            foreach (RecipeItem item1 in ingredients)
-            {
-                FileLog.Log(item1.Item.DisplayName + ": " + item1.Count.ToString("N2"));
-            }
-            foreach(KeyValuePair<Item, float> subitem in subItems)
-            {
-                FileLog.Log(subitem.Key.DisplayName + ": " + subitem.Value.ToString("N2"));
-            }
             return ingredients.ToImmutableList<RecipeItem>();
         }
 

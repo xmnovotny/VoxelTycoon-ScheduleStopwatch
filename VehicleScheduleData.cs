@@ -4,6 +4,7 @@ using VoxelTycoon;
 using VoxelTycoon.Serialization;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.Tracks.Tasks;
+using XMNUtils;
 
 namespace ScheduleStopwatch
 {
@@ -15,7 +16,7 @@ namespace ScheduleStopwatch
         private Measurement _measurement;
         private bool _measurementInvalidated;
 
-        private TaskDurationDataSet _travelData;
+        private TaskTravelDurationDataSet _travelData;
         private TaskDurationDataSet _stationLoadingData;
         private Action<VehicleScheduleData, RootTask> dataChanged; //called for both own data change data change from another vehicle in the route
         private Action<VehicleScheduleData> ownDataChanged; //called only for own data change (called before dataChanged and taskDataChanged)
@@ -25,6 +26,7 @@ namespace ScheduleStopwatch
         private TimeSpan? _totalTravelAverage;
         private TimeSpan? _totalStationLoadingAverage;
         private TimeSpan? _totalAverage;
+        private float? _averageSpeed; //average speed in m/s
         private Snapshot _lastSnapshot;
         private VehicleScheduleCapacity _capacity;
         private bool _notificationsTurnedOff = false;
@@ -51,6 +53,15 @@ namespace ScheduleStopwatch
             {
                 Invalidate();
                 return _totalAverage;
+            }
+        }
+
+        public float? AverageSpeed
+        {
+            get
+            {
+                Invalidate();
+                return _averageSpeed;
             }
         }
 
@@ -173,6 +184,12 @@ namespace ScheduleStopwatch
                 _totalTravelAverage = _travelData.GetAverageDuration(_lastSnapshot.GetNonNonstopTasks());
                 _totalStationLoadingAverage = _stationLoadingData.GetAverageDuration(_lastSnapshot.GetNonNonstopTasks());
                 _totalAverage = _totalStationLoadingAverage.HasValue && _totalTravelAverage.HasValue ? _totalStationLoadingAverage + _totalTravelAverage : null;
+                _averageSpeed = null;
+                float? distance;
+                if (_totalTravelAverage != null && (distance = _travelData.GetTravelledDistance(_lastSnapshot.GetNonNonstopTasks())) != null)
+                {
+                    _averageSpeed = distance.Value / ((float)_totalTravelAverage.Value.TotalSeconds / TimeManager.GameSecondsPerSecond) * 5f;
+                }
                 _isDirty = false;
             }
         }
@@ -238,7 +255,7 @@ namespace ScheduleStopwatch
         internal VehicleScheduleData(Vehicle vehicle)
         {
             this.Vehicle = vehicle;
-            _travelData = new TaskDurationDataSet();
+            _travelData = new TaskTravelDurationDataSet();
             _stationLoadingData = new TaskDurationDataSet();
             _isDirty = true;
             _lastSnapshot = new Snapshot(vehicle.Schedule);
@@ -285,8 +302,8 @@ namespace ScheduleStopwatch
 
         private void OnTravelMeasurementFinish(TravelMeasurement measurement)
         {
-            _travelData.Add(measurement.Task, measurement.measuredTime);
-//            NotificationUtils.ShowVehicleHint(Vehicle, String.Format("End travel measurement, days: {0} ({1})", measurement.measuredTime.TotalDays.ToString("N1"), GetAverageTravelDuration(measurement.Task).Value.TotalDays.ToString("N1")));
+            _travelData.Add(measurement.Task, measurement.measuredTime, measurement.Distance);
+//            NotificationUtils.ShowVehicleHint(Vehicle, String.Format("End travel measurement, days: {0} ({1}), distance: {2}", measurement.measuredTime.TotalDays.ToString("N1"), GetAverageTravelDuration(measurement.Task).Value.TotalDays.ToString("N1"), measurement.Distance != null ? measurement.Distance.Value.ToString("N3") : ""));
             this.OnDataChanged(measurement.Task);
         }
 
@@ -412,7 +429,7 @@ namespace ScheduleStopwatch
         {
             VehicleScheduleData result = new VehicleScheduleData(vehicle)
             {
-                _travelData = TaskDurationDataSet.Read(reader, vehicle.Schedule, version),
+                _travelData = TaskTravelDurationDataSet.Read(reader, vehicle.Schedule, version),
                 _stationLoadingData = TaskDurationDataSet.Read(reader, vehicle.Schedule, version)
             };
             if (reader.ReadBool())
