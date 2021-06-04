@@ -4,12 +4,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using VoxelTycoon;
+using VoxelTycoon.Buildings;
 using VoxelTycoon.Recipes;
+using VoxelTycoon.Researches;
 
 namespace ScheduleStopwatch
 {
     class RecipeHelper: LazyManager<RecipeHelper>
     {
+        protected override void OnInitialize()
+        {
+            base.OnInitialize();
+            LazyManager<ResearchManager>.Current.ResearchCompleted += OnResearchCompleted;
+        }
+
+        private void OnResearchCompleted(Research research)
+        {
+            _minedItemsPerMonth = null;
+        }
 
         private (List<RecipeItem> rawItems, Dictionary<Item, float> subItems) FindIngredients(Item item, float? coeficient = null)
         {
@@ -148,6 +160,18 @@ namespace ScheduleStopwatch
             return result;
         }
 
+        public (int? count, Mine mine) GetMinedItemsPerMineAndMonth(Item item)
+        {
+            if (_minedItemsPerMonth == null)
+            {
+                CalculateMinedItemsPerMonth();
+            }
+            if (_minedItemsPerMonth.TryGetValue(item, out (int count, Mine mine) data)) {
+                return data;
+            }
+            return (null, null);
+        }
+
         private void AddRecipeItemToDict(Dictionary<Item, RecipeItem> dictionary, Item item, float count)
         {
             if (!dictionary.TryGetValue(item, out RecipeItem recipeItem))
@@ -170,11 +194,6 @@ namespace ScheduleStopwatch
             {
                 dictionary[item] = dictCount+count;
             }
-        }
-
-        private void DictionaryToUniqueList(Dictionary<Item, RecipeItem> dictionary, UniqueList<RecipeItem> list)
-        {
-            list.AddRange(dictionary.Values);
         }
 
         private (Recipe recipe, float outputCount) GetRecipe(Item item)
@@ -206,10 +225,45 @@ namespace ScheduleStopwatch
             return result;
         }
 
+        private void CalculateMinedItemsPerMonth()
+        {
+            List<Mine> mines = Manager<AssetLibrary>.Current.GetAll<Mine>();
+            BuildingRecipeManager buildMan = LazyManager<BuildingRecipeManager>.Current;
+            _minedItemsPerMonth = new Dictionary<Item, ValueTuple<int, Mine>>();
+            foreach (Mine mine in mines)
+            {
+                BuildingRecipe recipe = buildMan.Get(mine.AssetId);
+                if (recipe.Hidden == false && recipe.IsUnlocked == true)
+                {
+                    int itemsPerMonth = (int)Math.Round(1 / mine.SharedData.OutputInterval / TimeManager.GameMonthsPerSecond);
+                    var storages = LazyManager<StorageManager>.Current.GetStorages(mine.AssetId);
+                    if (storages != null)
+                    {
+                        foreach (Storage storage in storages.ToList())
+                        {
+                            bool noChange;
+                            if (noChange = _minedItemsPerMonth.TryGetValue(storage.Item, out (int count , Mine itemMine) itemData))
+                            {
+                                if (itemData.count < itemsPerMonth)
+                                {
+                                    noChange = false;
+                                }
+                            }
+                            if (!noChange)
+                            {
+                                _minedItemsPerMonth[storage.Item] = (itemsPerMonth, mine);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         private readonly Dictionary<Item, (Recipe recipe, float outputCount)> _itemToRecipe = new Dictionary<Item, (Recipe recipe, float outputCount)>();
         private ImmutableList<Recipe> _recipes = default;
         private readonly Dictionary<Item, List<RecipeItem>> _itemToIngredients = new Dictionary<Item, List<RecipeItem>>();
         private readonly Dictionary<Item, Dictionary<Item, float>> _itemToSubitems = new Dictionary<Item, Dictionary<Item, float>>();
+        private Dictionary<Item, ValueTuple<int, Mine>> _minedItemsPerMonth = null;
 
     }
 }

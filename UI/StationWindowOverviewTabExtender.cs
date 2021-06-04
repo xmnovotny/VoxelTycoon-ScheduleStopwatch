@@ -5,6 +5,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using VoxelTycoon;
+using VoxelTycoon.Buildings;
 using VoxelTycoon.Game.UI;
 using VoxelTycoon.Localization;
 using VoxelTycoon.Recipes;
@@ -119,6 +120,8 @@ namespace ScheduleStopwatch.UI
         private string GetEstimatatedNeededItemsTooltipText()
         {
             Dictionary<Item, float> neededItems = GetEstimatatedNeededItems();
+            RecipeHelper helper = LazyManager<RecipeHelper>.Current;
+            Locale locale = LazyManager<LocaleManager>.Current.Locale;
             if (neededItems.Count>0)
             {
                 StringBuilder sb = new StringBuilder();
@@ -128,7 +131,16 @@ namespace ScheduleStopwatch.UI
                 {
                     if (pair.Value > 0)
                     {
-                        sb.AppendLine().Append(StringHelper.FormatCountString(pair.Key.DisplayName, pair.Value.ToString("N0")));
+                        string text = pair.Value.ToString("N0");
+                        sb.AppendLine().Append(StringHelper.FormatCountString(pair.Key.DisplayName, text));
+                        if (!_lastTransfers.TryGetValue(pair.Key, out int transfCount) || transfCount > 0)
+                        {
+                            (int? itemCountPerMonth, Mine mine) = helper.GetMinedItemsPerMineAndMonth(pair.Key);
+                            if (itemCountPerMonth != null)
+                            {
+                                sb.Append(" (" + locale.GetString("schedule_stopwatch/number_of_mines").Format((pair.Value / itemCountPerMonth.Value).ToString("N1"), mine.DisplayName) + ")");
+                            }
+                        }
                     }
                 }
                 return sb.ToString();

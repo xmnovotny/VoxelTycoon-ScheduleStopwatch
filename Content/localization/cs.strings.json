@@ -21,6 +21,7 @@
   "schedule_stopwatch/monthly_unloaded_items": "Předpokládaná měsíční vykládka",
   "schedule_stopwatch/monthly_loaded_items": "Předpokládaná měsíční nakládka",
   "schedule_stopwatch/needed_items_to_produce": "Položky potřebné pro vyrobení předpokládané nakládky",
+  "schedule_stopwatch/number_of_mines": "{0}x {1}",
   "schedule_stopwatch/partial": "částečná"
 }
 
