@@ -17,7 +17,6 @@ namespace ScheduleStopwatch
             Dictionary<Item, float> cacheResultSubItemList;
             if (!this._itemToIngredients.TryGetValue(item, out cacheResultList))
             {
-                FileLog.Log("FindIngredients - NoCache: "+item.DisplayName);
                 Dictionary<Item, RecipeItem> dictItems = new Dictionary<Item, RecipeItem>();
                 cacheResultList = (this._itemToIngredients[item] = new List<RecipeItem>());
                 cacheResultSubItemList = this._itemToSubitems[item] = new Dictionary<Item, float>();
@@ -49,7 +48,6 @@ namespace ScheduleStopwatch
                 }
             } else
             {
-                FileLog.Log("FindIngredients - Cache:" +item.DisplayName);
                 cacheResultSubItemList = _itemToSubitems[item];
             }
             if (coeficient != null && coeficient.Value != 1)
@@ -74,12 +72,10 @@ namespace ScheduleStopwatch
         public ImmutableList<RecipeItem> GetIngredients(Item item)
         {
             (List<RecipeItem> ingredients, Dictionary<Item, float> subItems) = FindIngredients(item);
-            FileLog.Log("Ingredients of " + item.DisplayName);
             foreach (RecipeItem item1 in ingredients)
             {
                 FileLog.Log(item1.Item.DisplayName + ": " + item1.Count.ToString("N2"));
             }
-            FileLog.Log("Subitems of " + item.DisplayName);
             foreach(KeyValuePair<Item, float> subitem in subItems)
             {
                 FileLog.Log(subitem.Key.DisplayName + ": " + subitem.Value.ToString("N2"));
@@ -87,7 +83,7 @@ namespace ScheduleStopwatch
             return ingredients.ToImmutableList<RecipeItem>();
         }
 
-        public List<RecipeItem> GetIngredients(Item item, List<Item> finalItems)
+        public List<RecipeItem> GetIngredients(Item item, List<Item> finalItems, float? multiplier = null)
         {
             (List<RecipeItem> ingredients, Dictionary<Item, float> subItems) = FindIngredients(item);
             Dictionary<Item, float> tmpDict = new Dictionary<Item, float>();
@@ -137,12 +133,15 @@ namespace ScheduleStopwatch
             }
 
             List<RecipeItem> result = new List<RecipeItem>();
-            FileLog.Log("Finalingredients of " + item.DisplayName);
+            if (multiplier == null)
+            {
+                multiplier = 1;
+            }
             foreach (KeyValuePair<Item, float> pair in tmpDict)
             {
                 RecipeItem newItem = new RecipeItem();
                 newItem.Item = pair.Key;
-                newItem.Count = pair.Value;
+                newItem.Count = pair.Value * multiplier.Value;
                 result.Add(newItem);
                 FileLog.Log(pair.Key.DisplayName + ": " + pair.Value.ToString("N2"));
             }

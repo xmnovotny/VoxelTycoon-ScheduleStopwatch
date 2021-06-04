@@ -1,11 +1,13 @@
 ﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using VoxelTycoon;
 using VoxelTycoon.Game.UI;
 using VoxelTycoon.Localization;
+using VoxelTycoon.Recipes;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.Tracks.Tasks;
 using VoxelTycoon.UI;
@@ -33,10 +35,23 @@ namespace ScheduleStopwatch.UI
             _unloadedContainer.SetSiblingIndex(2);
             _unloadedItemsContainer = _unloadedContainer.Find("Content");
             _unloadedContainerTitle = _unloadedContainer.Find("Label").gameObject.GetComponent<Text>();
+
+            Tooltip.For(
+                _unloadedContainerTitle.transform,
+                () => GetEstimatatedNeededItemsTooltipText(),
+                null
+            );
+
             _loadedContainer = CreateContainer(content,locale.GetString("schedule_stopwatch/monthly_loaded_items").ToUpper());
             _loadedContainer.SetSiblingIndex(3);
             _loadedItemsContainer = _loadedContainer.Find("Content");
             _loadedContainerTitle = _loadedContainer.Find("Label").gameObject.GetComponent<Text>();
+
+            Tooltip.For(
+                _loadedContainerTitle.transform,
+                () => GetEstimatatedNeededItemsTooltipText(),
+                null
+            );
             this._offset = Time.unscaledTime;
         }
 
@@ -57,15 +72,93 @@ namespace ScheduleStopwatch.UI
             Invalidate();
         }
 
+        private Dictionary<Item, float> GetEstimatatedNeededItems()
+        {
+            if (_lastNeededItems == null)
+            {
+                Dictionary<Item, float> neededItems = _lastNeededItems = new Dictionary<Item, float>();
+                if (_lastTransfers == null || _lastTransfers.Count == 0)
+                {
+                    return neededItems;
+                }
+
+                List<Item> finalItems = new List<Item>();
+                foreach (KeyValuePair<Item, int> pair in _lastTransfers)
+                {
+                    if (pair.Value < 0)
+                    {
+                        finalItems.Add(pair.Key);
+                    }
+                }
+                RecipeHelper helper = LazyManager<RecipeHelper>.Current;
+
+                foreach (KeyValuePair<Item, int> pair in _lastTransfers)
+                {
+                    if (pair.Value > 0)
+                    {
+                        List<RecipeItem> ingredients = helper.GetIngredients(pair.Key, finalItems, pair.Value);
+                        if (ingredients.Count > 0)
+                        {
+                            AddIngredients(ingredients, neededItems);
+                        }
+                        else
+                        {
+                            //no ingredients = raw item, we add it to needed items
+                            if (!neededItems.TryGetValue(pair.Key, out float count))
+                            {
+                                count = 0;
+                            }
+                            neededItems[pair.Key] = count + pair.Value;
+                        }
+                    }
+                }
+            }
+            return _lastNeededItems;
+        }
+
+        private string GetEstimatatedNeededItemsTooltipText()
+        {
+            Dictionary<Item, float> neededItems = GetEstimatatedNeededItems();
+            if (neededItems.Count>0)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append(StringHelper.Boldify(LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/needed_items_to_produce").ToUpper()));
+
+                foreach (KeyValuePair<Item, float> pair in neededItems)
+                {
+                    if (pair.Value > 0)
+                    {
+                        sb.AppendLine().Append(StringHelper.FormatCountString(pair.Key.DisplayName, pair.Value.ToString("N0")));
+                    }
+                }
+                return sb.ToString();
+            }
+
+            return "";
+        }
+
+        private void AddIngredients(List<RecipeItem> itemsToAdd, Dictionary<Item, float> totalItems)
+        {
+            foreach(RecipeItem itemToAdd in itemsToAdd)
+            {
+                if (!totalItems.TryGetValue(itemToAdd.Item, out float count))
+                {
+                    count = 0;
+                } 
+                totalItems[itemToAdd.Item] = count + itemToAdd.Count;
+            }
+        }
+
         private void Invalidate()
         {
             Settings settings = Settings.Current;
+            _lastTransfers = null;
             if (settings.ShowStationLoadedItems || settings.ShowStationUnloadedItems)
             {
                 ImmutableList<Vehicle> vehicles = LazyManager<VehicleStationLocationManager>.Current.GetServicedVehicles(StationWindow.Location);
-                IReadOnlyDictionary<Item, int> transfers = Manager<VehicleScheduleDataManager>.Current.GetStationTaskTransfersSum(vehicles, StationWindow.Location.VehicleStation, out bool incomplete);
+                IReadOnlyDictionary<Item, int> transfers = _lastTransfers = Manager<VehicleScheduleDataManager>.Current.GetStationTaskTransfersSum(vehicles, StationWindow.Location.VehicleStation, out bool incomplete);
                 FillContainerWithItems(_loadedContainer, _loadedItemsContainer, settings.ShowStationLoadedItems ? transfers : null, Direction.load);
-                FillContainerWithItems(_unloadedContainer, _unloadedItemsContainer, settings.ShowStationUnloadedItems ? transfers : null, Direction.unload);
+                FillContainerWithItems(_unloadedContainer, _unloadedItemsContainer, settings.ShowStationUnloadedItems ? transfers : null, Direction.unload, GetEstimatatedNeededItems());
                 if (_lastIncomplete != incomplete)
                 {
                     _lastIncomplete = incomplete;
@@ -80,7 +173,7 @@ namespace ScheduleStopwatch.UI
             }
         }
 
-        private void FillContainerWithItems(Transform container, Transform itemContainer, IReadOnlyDictionary<Item, int> transfers, Direction direction)
+        private void FillContainerWithItems(Transform container, Transform itemContainer, IReadOnlyDictionary<Item, int> transfers, Direction direction, Dictionary<Item, float> neededItems = null)
         {
             int count = 0;
             if (transfers == null)
@@ -94,7 +187,31 @@ namespace ScheduleStopwatch.UI
             {
                 if ((pair.Value>0 && direction == Direction.load) || (pair.Value<0 && direction == Direction.unload))
                 {
-                    this.GetResourceView(resourceViews, count, itemContainer).ShowItem(pair.Key, null, Math.Abs(pair.Value));
+                    int value = Math.Abs(pair.Value);
+                    ResourceView view = this.GetResourceView(resourceViews, count, itemContainer);
+                    Panel renderer = view.gameObject.transform.Find("ValueContainer").GetComponent<Panel>();
+                    if (neededItems != null && neededItems.TryGetValue(pair.Key, out float neededCount))
+                    {
+                        view.Show(null, null, LazyManager<IconRenderer>.Current.GetItemIcon(pair.Key.AssetId), StringHelper.Simplify((double)value), StringHelper.FormatCountString(pair.Key.DisplayName, value.ToString("N0") + "/" + neededCount.ToString("N0")));
+                        float ratio = value / neededCount;
+                        if (ratio > 1.2f)
+                        {
+                            renderer.color = Color.blue;
+                        }
+                        else
+                        if (ratio < 0.9f)
+                        {
+                            renderer.color = Color.red;
+                        } else
+                        {
+                            renderer.color = new Color(0, 0.88f, 0);
+                        }
+                    }
+                    else
+                    {
+                        view.ShowItem(pair.Key, null, Math.Abs(pair.Value));
+                        renderer.color = _resourceViewOrigColor;
+                    }
                     count++;
                 }
             }
@@ -119,6 +236,7 @@ namespace ScheduleStopwatch.UI
         {
             _template = UnityEngine.Object.Instantiate<Transform>(R.Game.UI.StationWindow.StationWindowOverviewTab.transform.Find("Body/WindowScrollView").GetComponent<ScrollRect>().content.Find("Sources"));
             _template.gameObject.SetActive(false);
+            _resourceViewOrigColor = R.Game.UI.ResourceView.gameObject.transform.Find("ValueContainer").GetComponent<Panel>().color;
         }
 
         private Transform CreateContainer(Transform parent, string title)
@@ -153,6 +271,9 @@ namespace ScheduleStopwatch.UI
         private Transform _template;
         private float _offset;
         private bool _lastIncomplete = false;
+        private IReadOnlyDictionary<Item, int> _lastTransfers;
+        private Dictionary<Item, float> _lastNeededItems;
+        private Color _resourceViewOrigColor;
         private enum Direction {unload, load};
 
         #region HARMONY
