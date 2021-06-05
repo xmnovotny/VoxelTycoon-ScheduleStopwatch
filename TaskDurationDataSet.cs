@@ -255,11 +255,40 @@ namespace ScheduleStopwatch
             return result;
         }
 
+
+
         private void CopyDistanceData(TaskTravelDurationDataSet newDataSet, Vehicle newVehicle)
         {
             foreach (KeyValuePair<RootTask, float> pair in _distanceData)
             {
                 newDataSet._distanceData.Add(newVehicle.Schedule.GetTasks()[pair.Key.GetIndex()], pair.Value);
+            }
+        }
+
+        internal override void Write(StateBinaryWriter writer)
+        {
+            base.Write(writer);
+            writer.WriteInt(_distanceData.Count);
+            foreach (KeyValuePair<RootTask, float> pair in _distanceData)
+            {
+                writer.WriteInt(pair.Key.GetIndex());
+                writer.WriteFloat(pair.Value);
+            }
+        }
+
+        protected override void DoRead(StateBinaryReader reader, VehicleSchedule schedule, byte version)
+        {
+            base.DoRead(reader, schedule, version);
+            if (version >= 2)
+            {
+                int count = reader.ReadInt();
+
+                for (int i = 0; i < count; i++)
+                {
+                    int taskIndex = reader.ReadInt();
+                    RootTask task = schedule.GetTasks()[taskIndex];
+                    _distanceData.Add(task, reader.ReadFloat());
+                }
             }
         }
     }

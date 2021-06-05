@@ -111,8 +111,24 @@ namespace ScheduleStopwatch
             {
                 base.DoRead(reader, schedule, data, version);
                 _startDistance = null;
+                if (version >= 2)
+                {
+                    if (reader.ReadBool())
+                    {
+                        _startDistance = reader.ReadFloat();
+                    }
+                }
             }
 
+            internal override void Write(StateBinaryWriter writer)
+            {
+                base.Write(writer);
+                writer.WriteBool(_startDistance.HasValue);
+                if (_startDistance.HasValue)
+                {
+                    writer.WriteFloat(_startDistance.Value);
+                }
+            }
         }
 
         private class MeasurementSurrogate

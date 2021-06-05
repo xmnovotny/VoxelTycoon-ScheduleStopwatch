@@ -8,10 +8,10 @@ using VoxelTycoon.Localization;
 
 namespace ScheduleStopwatch
 {
-    [SchemaVersion(1)]
+    [SchemaVersion(2)]
     public class ScheduleStopwatch : Mod
     {
-        public const int SAVE_VERSION = 1;
+        public const int SAVE_VERSION = 2;
         private Harmony harmony;
         private const string harmonyID = "cz.xmnovotny.schedulestopwatch.patch";
 
