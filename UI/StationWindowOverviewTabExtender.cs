@@ -78,6 +78,7 @@ namespace ScheduleStopwatch.UI
             if (_lastNeededItems == null)
             {
                 Dictionary<Item, float> neededItems = _lastNeededItems = new Dictionary<Item, float>();
+                _neededItemsPerItem = new Dictionary<Item, Dictionary<Item, float>>();
                 if (_lastTransfers == null || _lastTransfers.Count == 0)
                 {
                     return neededItems;
@@ -97,10 +98,12 @@ namespace ScheduleStopwatch.UI
                 {
                     if (pair.Value > 0)
                     {
+                        Dictionary<Item, float> subNeededItems = _neededItemsPerItem[pair.Key] = new Dictionary<Item, float>();
                         List<RecipeItem> ingredients = helper.GetIngredients(pair.Key, finalItems, pair.Value);
                         if (ingredients.Count > 0)
                         {
                             AddIngredients(ingredients, neededItems);
+                            AddIngredients(ingredients, subNeededItems);
                         }
                         else
                         {
@@ -110,11 +113,25 @@ namespace ScheduleStopwatch.UI
                                 count = 0;
                             }
                             neededItems[pair.Key] = count + pair.Value;
+                            subNeededItems[pair.Key] = pair.Value;
                         }
                     }
                 }
             }
             return _lastNeededItems;
+        }
+
+        //needed items for specific item
+        private Dictionary<Item, float> GetEstimatatedNeededItems(Item item)
+        {
+            if (_neededItemsPerItem == null)
+            {
+                GetEstimatatedNeededItems();
+            }
+            if (_neededItemsPerItem.TryGetValue(item, out Dictionary<Item, float> result)) {
+                return result;
+            }
+            return null;
         }
 
         private string GetEstimatatedNeededItemsTooltipText()
@@ -126,6 +143,38 @@ namespace ScheduleStopwatch.UI
             {
                 StringBuilder sb = new StringBuilder();
                 sb.Append(StringHelper.Boldify(LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/needed_items_to_produce").ToUpper()));
+
+                foreach (KeyValuePair<Item, float> pair in neededItems)
+                {
+                    if (pair.Value > 0)
+                    {
+                        string text = pair.Value.ToString("N0");
+                        sb.AppendLine().Append(StringHelper.FormatCountString(pair.Key.DisplayName, text));
+                        if (!_lastTransfers.TryGetValue(pair.Key, out int transfCount) || transfCount > 0)
+                        {
+                            (int? itemCountPerMonth, Mine mine) = helper.GetMinedItemsPerMineAndMonth(pair.Key);
+                            if (itemCountPerMonth != null)
+                            {
+                                sb.Append(" (" + locale.GetString("schedule_stopwatch/number_of_mines").Format((pair.Value / itemCountPerMonth.Value).ToString("N1"), mine.DisplayName) + ")");
+                            }
+                        }
+                    }
+                }
+                return sb.ToString();
+            }
+
+            return "";
+        }
+        
+        private string GetEstimatedItemsForOneLoadItemTooltipText(Item item, int displayAmount)
+        {
+            Dictionary<Item, float> neededItems = GetEstimatatedNeededItems(item);
+            RecipeHelper helper = LazyManager<RecipeHelper>.Current;
+            Locale locale = LazyManager<LocaleManager>.Current.Locale;
+            StringBuilder sb = new StringBuilder(StringHelper.FormatCountString(item.DisplayName, displayAmount));
+            if (neededItems != null && neededItems.Count > 0)
+            {
+                sb.AppendLine().AppendLine().Append(StringHelper.Boldify(LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/needed_items_to_produce_this").ToUpper()));
 
                 foreach (KeyValuePair<Item, float> pair in neededItems)
                 {
@@ -165,11 +214,13 @@ namespace ScheduleStopwatch.UI
         {
             Settings settings = Settings.Current;
             _lastTransfers = null;
+            _lastNeededItems = null;
+            _neededItemsPerItem = null;
             if (settings.ShowStationLoadedItems || settings.ShowStationUnloadedItems)
             {
                 ImmutableList<Vehicle> vehicles = LazyManager<VehicleStationLocationManager>.Current.GetServicedVehicles(StationWindow.Location);
                 IReadOnlyDictionary<Item, int> transfers = _lastTransfers = Manager<VehicleScheduleDataManager>.Current.GetStationTaskTransfersSum(vehicles, StationWindow.Location.VehicleStation, out bool incomplete);
-                FillContainerWithItems(_loadedContainer, _loadedItemsContainer, settings.ShowStationLoadedItems ? transfers : null, Direction.load);
+                FillContainerWithItems(_loadedContainer, _loadedItemsContainer, settings.ShowStationLoadedItems ? transfers : null, Direction.load, itemTooltipTextFunc: GetEstimatedItemsForOneLoadItemTooltipText);
                 FillContainerWithItems(_unloadedContainer, _unloadedItemsContainer, settings.ShowStationUnloadedItems ? transfers : null, Direction.unload, GetEstimatatedNeededItems());
                 if (_lastIncomplete != incomplete)
                 {
@@ -185,7 +236,7 @@ namespace ScheduleStopwatch.UI
             }
         }
 
-        private void FillContainerWithItems(Transform container, Transform itemContainer, IReadOnlyDictionary<Item, int> transfers, Direction direction, Dictionary<Item, float> neededItems = null)
+        private void FillContainerWithItems(Transform container, Transform itemContainer, IReadOnlyDictionary<Item, int> transfers, Direction direction, Dictionary<Item, float> neededItems = null, Func<Item, int, string> itemTooltipTextFunc = null) 
         {
             int count = 0;
             if (transfers == null)
@@ -221,8 +272,12 @@ namespace ScheduleStopwatch.UI
                     }
                     else
                     {
-                        view.ShowItem(pair.Key, null, Math.Abs(pair.Value));
+                        view.ShowItem(pair.Key, null, value);
                         renderer.color = _resourceViewOrigColor;
+                    }
+                    if (itemTooltipTextFunc != null)
+                    {
+                        view.GetComponent<TooltipTarget>().DynamicText = delegate { return itemTooltipTextFunc.Invoke(pair.Key, pair.Value); };
                     }
                     count++;
                 }
@@ -285,6 +340,7 @@ namespace ScheduleStopwatch.UI
         private bool _lastIncomplete = false;
         private IReadOnlyDictionary<Item, int> _lastTransfers;
         private Dictionary<Item, float> _lastNeededItems;
+        private Dictionary<Item, Dictionary<Item, float>> _neededItemsPerItem;
         private Color _resourceViewOrigColor;
         private enum Direction {unload, load};
 
