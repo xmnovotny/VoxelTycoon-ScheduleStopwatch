@@ -1,3 +1,8 @@
+Version 1.2
+* Display average speed in total schedule time tooltip
+* Display loading time / total schedule time ratio in total schedule time tooltip
+* Calculate and display estimated required items for producing loaded items in the station (sum of all in section title tooltip, individual in expected loaded item tooltip)
+
 Version 1.1
 * The number of items displayed is now limited to prevent overflow
 * Display estimated sum of deliveries/pickups from vehicles in the station window.

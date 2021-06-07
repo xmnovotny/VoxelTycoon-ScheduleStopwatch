@@ -1,10 +1,12 @@
-For displaying time spent on schedule tasks and travel between them and calculating estimated monthly transport capacity for vehicles
+For displaying time spent on schedule tasks and travel between them and calculating estimated monthly transport capacity for vehicles and stations
 
 Features 
 - display total duration of one cycle of the schedule
 - display duration of the task in the station (eg. loading/unloading) for each task in the schedule
 - display travel time between individual tasks (non-stops tasks are ignored)
-- display estimated sum of deliveries/pickups from vehicles in the station window.
+- display estimated sum of deliveries/pickups from vehicles in the station window
+- display average vehicle speed and the ratio of the loading time to the total time of the timetable (using the total duration tooltip)
+- calculates and display the sum of items needed to produce estimated loaded items for the station (using the "esitmated un/loaded items" tooltip in the station window or individually using the tooltip for each loaded item)
 - calculates estimated transport capacity for vehicle and for all vehicles having the same route and display it as sum for whole schedule, sum per stations in the schedule (via tooltip) and for individual tasks
 - what is displayed is configurable via Game Settings -> Mods
 
@@ -14,6 +16,11 @@ Note: After installing a modification into an existing game, it takes some time 
 In order to display the sum of data for all vehicles on the same route, all vehicles need to have fully loaded data.
 
 Changelog
+
+Version 1.2
+- display average vehicle speed in total schedule time tooltip
+- display the ratio of the loading time to the total time of the timetable
+- calculates and display the sum of items needed to produce estimated loaded items for the station (using the "esitmated un/loaded items" tooltip in the station window or individually using the tooltip for each loaded item)
 
 Version 1.1
 - the number of items displayed is now limited to prevent overflow
