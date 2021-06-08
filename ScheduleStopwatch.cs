@@ -5,15 +5,27 @@ using ModSettings;
 using VoxelTycoon.Serialization;
 using VoxelTycoon;
 using VoxelTycoon.Localization;
+//using ICSharpCode.SharpZipLib.Checksum;
 
 namespace ScheduleStopwatch
 {
-    [SchemaVersion(2)]
+    [SchemaVersion(3)]
     public class ScheduleStopwatch : Mod
     {
         public const int SAVE_VERSION = 2;
         private Harmony harmony;
         private const string harmonyID = "cz.xmnovotny.schedulestopwatch.patch";
+        private static int? _readVersion = null;
+        public static Logger logger = new Logger("ScheduleStopwatch");
+
+        public static int GetSchemaVersion(Type type)
+        {
+            if (_readVersion != null)
+            {
+                return _readVersion.Value; //legacy version before using SchemaVersion()
+            }
+            return SaveSerializer.Current.SchemaVersions.Get(type);
+        }
 
         protected override void Initialize()
         {
@@ -38,22 +50,33 @@ namespace ScheduleStopwatch
 
         protected override void Write(StateBinaryWriter writer)
         {
-            writer.WriteByte(SAVE_VERSION);
+            if (SaveSerializer.Current.SchemaVersions.Get<ScheduleStopwatch>() < 3)
+            {
+                FileLog.Log("Neni schemaversion");
+                writer.WriteByte(SAVE_VERSION);
+            }
             VehicleScheduleDataManager.Current.Write(writer);
+
         }
 
         protected override void Read(StateBinaryReader reader)
         {
+            _readVersion = null;
             try
             {
-                byte version = reader.ReadByte();
-                VehicleScheduleDataManager.Current.Read(reader, version);
+                if (SaveSerializer.Current.SchemaVersions.Get<ScheduleStopwatch>() < 3)
+                {
+                    FileLog.Log("Neni schemaversion");
+                    _readVersion = reader.ReadByte();
+                }
+                VehicleScheduleDataManager.Current.Read(reader);
             }
             catch (Exception e)
             {
-                FileLog.Log(e.Message);
-                FileLog.Log(e.StackTrace.ToString());
+                logger.Log(UnityEngine.LogType.Error, "Error when loading ScheduleStopwatch data");
+                logger.LogException(e);
             }
+            _readVersion = null;
         }
     }
 }

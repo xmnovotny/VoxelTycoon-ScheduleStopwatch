@@ -9,7 +9,8 @@ using TaskTransfers = ScheduleStopwatch.VehicleScheduleCapacity.TaskTransfers;
 
 namespace ScheduleStopwatch
 {
-    class VehicleScheduleDataManager: Manager<VehicleScheduleDataManager>
+    [SchemaVersion(2)]
+    class VehicleScheduleDataManager : Manager<VehicleScheduleDataManager>
     {
         private Dictionary<Vehicle, VehicleScheduleData> _vehiclesData = new Dictionary<Vehicle, VehicleScheduleData>();
 
@@ -179,7 +180,7 @@ namespace ScheduleStopwatch
             }
         }
 
-        internal void Read(StateBinaryReader reader, byte version)
+        internal void Read(StateBinaryReader reader)
         {
             _vehiclesData.Clear();
             int count = reader.ReadInt();
@@ -187,7 +188,7 @@ namespace ScheduleStopwatch
             {
                 int vehicleId = reader.ReadInt();
                 Vehicle vehicle = LazyManager<VehicleManager>.Current.FindById(vehicleId);
-                _vehiclesData.Add(vehicle, VehicleScheduleData.Read(reader, vehicle, version));
+                _vehiclesData.Add(vehicle, VehicleScheduleData.Read(reader, vehicle));
             }
         }
 

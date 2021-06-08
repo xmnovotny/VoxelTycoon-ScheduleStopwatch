@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using VoxelTycoon.Serialization;
 using VoxelTycoon.Tracks;
@@ -6,6 +7,7 @@ using VoxelTycoon.Tracks.Tasks;
 
 namespace ScheduleStopwatch
 {
+    [SchemaVersion(2)]
     public class TaskDurationDataSet
     {
         private int _bufferSize;
@@ -150,7 +152,7 @@ namespace ScheduleStopwatch
             }
         }
 
-        public void Remove(RootTask task)
+        public virtual void Remove(RootTask task)
         {
             _data.Remove(task);
         }
@@ -164,14 +166,14 @@ namespace ScheduleStopwatch
                 pair.Value.Write(writer);
             }
         }
-        internal static TaskDurationDataSet Read(StateBinaryReader reader, VehicleSchedule schedule, byte version) 
+        internal static TaskDurationDataSet Read(StateBinaryReader reader, VehicleSchedule schedule) 
         {
             TaskDurationDataSet result = new TaskDurationDataSet();
-            result.DoRead(reader, schedule, version);
+            result.DoRead(reader, schedule);
             return result;
         }
 
-        protected virtual void DoRead(StateBinaryReader reader, VehicleSchedule schedule, byte version)
+        protected virtual void DoRead(StateBinaryReader reader, VehicleSchedule schedule)
         {
             int count = reader.ReadInt();
 
@@ -179,12 +181,13 @@ namespace ScheduleStopwatch
             {
                 int taskIndex = reader.ReadInt();
                 RootTask task = schedule.GetTasks()[taskIndex];
-                _data.Add(task, DurationDataSet.Read(reader, version));
+                _data.Add(task, DurationDataSet.Read(reader));
             }
         }
 
     }
 
+    [SchemaVersion(2)]
     public class TaskTravelDurationDataSet: TaskDurationDataSet
     {
         private readonly Dictionary<RootTask, float> _distanceData = new Dictionary<RootTask, float>();
@@ -248,10 +251,16 @@ namespace ScheduleStopwatch
             }
         }
 
-        internal new static TaskTravelDurationDataSet Read(StateBinaryReader reader, VehicleSchedule schedule, byte version)
+        public override void Remove(RootTask task)
+        {
+            base.Remove(task);
+            _distanceData.Remove(task);
+        }
+
+        internal new static TaskTravelDurationDataSet Read(StateBinaryReader reader, VehicleSchedule schedule)
         {
             TaskTravelDurationDataSet result = new TaskTravelDurationDataSet();
-            result.DoRead(reader, schedule, version);
+            result.DoRead(reader, schedule);
             return result;
         }
 
@@ -276,18 +285,25 @@ namespace ScheduleStopwatch
             }
         }
 
-        protected override void DoRead(StateBinaryReader reader, VehicleSchedule schedule, byte version)
+        protected override void DoRead(StateBinaryReader reader, VehicleSchedule schedule)
         {
-            base.DoRead(reader, schedule, version);
-            if (version >= 2)
+            base.DoRead(reader, schedule);
+            if (ScheduleStopwatch.GetSchemaVersion(typeof(TaskDurationDataSet)) >= 2)
             {
                 int count = reader.ReadInt();
 
                 for (int i = 0; i < count; i++)
                 {
                     int taskIndex = reader.ReadInt();
-                    RootTask task = schedule.GetTasks()[taskIndex];
-                    _distanceData.Add(task, reader.ReadFloat());
+                    if (taskIndex > -1)
+                    {
+                        RootTask task = schedule.GetTasks()[taskIndex];
+                        _distanceData.Add(task, reader.ReadFloat());
+                    } else
+                    {
+                        FileLog.Log("RootTask index = -1");
+                        reader.ReadFloat();
+                    }
                 }
             }
         }

@@ -8,6 +8,7 @@ using XMNUtils;
 
 namespace ScheduleStopwatch
 {
+    [SchemaVersion(2)]
     public partial class VehicleScheduleData
     {
 
@@ -425,16 +426,16 @@ namespace ScheduleStopwatch
             }
         }
 
-        internal static VehicleScheduleData Read(StateBinaryReader reader, Vehicle vehicle, byte version)
+        internal static VehicleScheduleData Read(StateBinaryReader reader, Vehicle vehicle)
         {
             VehicleScheduleData result = new VehicleScheduleData(vehicle)
             {
-                _travelData = TaskTravelDurationDataSet.Read(reader, vehicle.Schedule, version),
-                _stationLoadingData = TaskDurationDataSet.Read(reader, vehicle.Schedule, version)
+                _travelData = TaskTravelDurationDataSet.Read(reader, vehicle.Schedule),
+                _stationLoadingData = TaskDurationDataSet.Read(reader, vehicle.Schedule)
             };
             if (reader.ReadBool())
             {
-                result._measurement = Measurement.Read(reader, vehicle.Schedule, result, version);
+                result._measurement = Measurement.Read(reader, vehicle.Schedule, result);
             }
 
             return result;

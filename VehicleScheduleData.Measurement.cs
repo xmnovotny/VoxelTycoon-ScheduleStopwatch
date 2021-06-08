@@ -49,15 +49,15 @@ namespace ScheduleStopwatch
                 writer.WriteLong(startTime.Value.Ticks);
             }
 
-            internal static Measurement Read(StateBinaryReader reader, VehicleSchedule schedule, VehicleScheduleData data, byte version)
+            internal static Measurement Read(StateBinaryReader reader, VehicleSchedule schedule, VehicleScheduleData data)
             {
                 RootTask task = schedule.GetTasks()[reader.ReadInt()];
                 Measurement result = MeasurementSurrogate.Read(reader, data, task);
-                result.DoRead(reader, schedule, data, version);
+                result.DoRead(reader, schedule, data);
                 return result;
             }
 
-            protected virtual void DoRead(StateBinaryReader reader, VehicleSchedule schedule, VehicleScheduleData data, byte version)
+            protected virtual void DoRead(StateBinaryReader reader, VehicleSchedule schedule, VehicleScheduleData data)
             {
                 startTime = new DateTime(reader.ReadLong());
             }
@@ -107,11 +107,11 @@ namespace ScheduleStopwatch
             {
                 _vehicleScheduleData?.OnTravelMeasurementFinish(this);
             }
-            protected override void DoRead(StateBinaryReader reader, VehicleSchedule schedule, VehicleScheduleData data, byte version)
+            protected override void DoRead(StateBinaryReader reader, VehicleSchedule schedule, VehicleScheduleData data)
             {
-                base.DoRead(reader, schedule, data, version);
+                base.DoRead(reader, schedule, data);
                 _startDistance = null;
-                if (version >= 2)
+                if (ScheduleStopwatch.GetSchemaVersion(typeof(VehicleScheduleData)) >= 2)
                 {
                     if (reader.ReadBool())
                     {

@@ -5,6 +5,7 @@ using VoxelTycoon.Serialization;
 
 namespace ScheduleStopwatch
 {
+    [SchemaVersion(2)]
     public class DurationDataSet
     {
         public const int DEFAULT_BUFFER_SIZE = 10;
@@ -131,7 +132,7 @@ namespace ScheduleStopwatch
             writer.WriteLong(_totalSum.Ticks);
         }
 
-        internal static DurationDataSet Read(StateBinaryReader reader, byte version)
+        internal static DurationDataSet Read(StateBinaryReader reader)
         {
             DurationDataSet result = new DurationDataSet();
             int count = reader.ReadInt();
