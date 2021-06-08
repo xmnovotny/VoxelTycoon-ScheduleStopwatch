@@ -110,15 +110,16 @@ namespace ScheduleStopwatch
                 finished = true;
                 foreach (KeyValuePair<Item, float> pair in itemsToProcess.ToArray<KeyValuePair<Item, float>>())
                 {
-                    if (pair.Value != 0)
+                    float value = itemsToProcess[pair.Key];
+                    if (value != 0)
                     {
                         //subtract all ingredients of final item and add final item to result ingredients
-                        AddRecipeItemToDict(tmpDict, pair.Key, pair.Value);
+                        AddRecipeItemToDict(tmpDict, pair.Key, value);
                         itemsToProcess[pair.Key] = 0;
                         (List<RecipeItem> subIngredients, Dictionary<Item, float> subItems2) = FindIngredients(pair.Key);
                         foreach (RecipeItem ingrItem in subIngredients)
                         {
-                            AddRecipeItemToDict(tmpDict, ingrItem.Item, -ingrItem.Count*pair.Value);
+                            AddRecipeItemToDict(tmpDict, ingrItem.Item, -ingrItem.Count*value);
                         }
                         if (subItems2.Count>0)
                         {
@@ -147,7 +148,7 @@ namespace ScheduleStopwatch
                 newItem.Item = pair.Key;
                 newItem.Count = pair.Value * multiplier.Value;
                 result.Add(newItem);
-                FileLog.Log(pair.Key.DisplayName + ": " + pair.Value.ToString("N2"));
+//                FileLog.Log(pair.Key.DisplayName + ": " + pair.Value.ToString("N2"));
             }
             return result;
         }
