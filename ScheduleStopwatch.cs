@@ -52,7 +52,6 @@ namespace ScheduleStopwatch
         {
             if (SaveSerializer.Current.SchemaVersions.Get<ScheduleStopwatch>() < 3)
             {
-                FileLog.Log("Neni schemaversion");
                 writer.WriteByte(SAVE_VERSION);
             }
             VehicleScheduleDataManager.Current.Write(writer);
@@ -64,9 +63,9 @@ namespace ScheduleStopwatch
             _readVersion = null;
             try
             {
-                if (SaveSerializer.Current.SchemaVersions.Get<ScheduleStopwatch>() < 3)
+                int antVersion = SchemaVersion<ScheduleStopwatch>.Get();
+                if (antVersion < 3)
                 {
-                    FileLog.Log("Neni schemaversion");
                     _readVersion = reader.ReadByte();
                 }
                 VehicleScheduleDataManager.Current.Read(reader);
