@@ -117,7 +117,7 @@ namespace ScheduleStopwatch.UI
                 _lastTotalTime = data.ScheduleAvereageDuration;
                 if (_lastTotalTime.HasValue)
                 {
-                    _text.text = locale.GetString("schedule_stopwatch/days_hours").Format(_lastTotalTime.Value.TotalDays.ToString("N0"), _lastTotalTime.Value.Hours.ToString("N0"));
+                    _text.text = locale.GetString("schedule_stopwatch/days_hours").Format(((int)_lastTotalTime.Value.TotalDays).ToString("N0"), _lastTotalTime.Value.Hours.ToString("N0"));
                 }
                 else
                 {

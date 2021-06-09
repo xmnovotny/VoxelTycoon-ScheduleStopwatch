@@ -86,7 +86,7 @@ namespace ScheduleStopwatch.UI
                 TimeSpan? travel = data.GetAverageTravelDuration(Task);
                 if (travel.HasValue)
                 {
-                    _travelTimeText.text = locale.GetString("schedule_stopwatch/days_hours").Format(travel.Value.TotalDays.ToString("N0"), travel.Value.Hours.ToString("N0"));
+                    _travelTimeText.text = locale.GetString("schedule_stopwatch/days_hours").Format(((int)travel.Value.TotalDays).ToString("N0"), travel.Value.Hours.ToString("N0"));
                 }
                 else
                 {
@@ -95,7 +95,7 @@ namespace ScheduleStopwatch.UI
                 TimeSpan? loading = data.GetAverageStationLoadingDuration(Task);
                 if (loading.HasValue)
                 {
-                    _loadingTimeText.text = locale.GetString("schedule_stopwatch/hours_minutes").Format(loading.Value.TotalHours.ToString("N0"), loading.Value.Minutes.ToString("N0"));
+                    _loadingTimeText.text = locale.GetString("schedule_stopwatch/hours_minutes").Format(((int)loading.Value.TotalHours).ToString("N0"), loading.Value.Minutes.ToString("N0"));
                 }
                 else
                 {
