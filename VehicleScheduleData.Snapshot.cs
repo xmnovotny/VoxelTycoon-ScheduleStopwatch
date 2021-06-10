@@ -117,6 +117,14 @@ namespace ScheduleStopwatch
                 }
                 yield break;
             }
+            public IEnumerable<(VehicleStationLocation location, bool nonstop, RootTask task)> GetLocationsWithNonstopInfo()
+            {
+                foreach (TaskSnapshot snapshot in _taskSnapshots)
+                {
+                    yield return (snapshot.location, snapshot.nonstop, snapshot.task);
+                }
+                yield break;
+            }
 
             public SnapshotComparsion CompareWithNewer(Snapshot newSnapshot)
             {

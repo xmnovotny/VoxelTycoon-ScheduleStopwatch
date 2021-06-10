@@ -12,7 +12,10 @@ namespace ScheduleStopwatch
     [SchemaVersion(2)]
     class VehicleScheduleDataManager : Manager<VehicleScheduleDataManager>
     {
+        private const int DURATION_PER_STATION_RENEW_TIME_DAYS = 2;
         private Dictionary<Vehicle, VehicleScheduleData> _vehiclesData = new Dictionary<Vehicle, VehicleScheduleData>();
+        private DurationsPerStationsContainer _durationPerStation;
+        private DateTime? _actualTimeOfDurationPerSt;
 
         public VehicleScheduleData this[Vehicle vehicle] {
             get
@@ -125,6 +128,48 @@ namespace ScheduleStopwatch
                 }
             }
             return transfersSum.Transfers;
+        }
+
+        public TimeSpan? GetGlobalTravelDuration(VehicleStationLocation startStation, VehicleStationLocation endStation, List<VehicleStationLocation> nonstopStations = null)
+        {
+            InvalidateDurationPerStation();
+            TimeSpan? result = _durationPerStation.GetTravelTime(startStation, endStation, nonstopStations);
+            if (result == null)
+            {
+                InvalidateDurationPerStation(true);
+                result = _durationPerStation.GetTravelTime(startStation, endStation, nonstopStations);
+            }
+            return result;
+        }
+        public TimeSpan? GetGlobalStationDuration(VehicleStationLocation station)
+        {
+            InvalidateDurationPerStation();
+            TimeSpan? result = _durationPerStation.GetStationTime(station);
+            if (result == null)
+            {
+                InvalidateDurationPerStation(true);
+                result = _durationPerStation.GetStationTime(station);
+            }
+            return result;
+        }
+
+        internal void InvalidateDurationPerStation(bool forceReload = false)
+        {
+            DateTime actTime = TimeManager.Current.DateTime;
+            if (_durationPerStation == null || _actualTimeOfDurationPerSt == null || (actTime - _actualTimeOfDurationPerSt.Value).TotalDays > DURATION_PER_STATION_RENEW_TIME_DAYS
+                || (forceReload && actTime != _actualTimeOfDurationPerSt))
+            {
+                _actualTimeOfDurationPerSt = actTime;
+                if (_durationPerStation == null)
+                {
+                    _durationPerStation = new DurationsPerStationsContainer();
+                }
+                _durationPerStation.MarkForOverwrite();
+                foreach (VehicleScheduleData scheduleData in _vehiclesData.Values)
+                {
+                    _durationPerStation.AddTimes(scheduleData);
+                }
+            }
         }
 
         private void OnDestinationReached(Vehicle vehicle, VehicleStation station, RootTask task)

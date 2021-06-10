@@ -31,6 +31,7 @@ namespace ScheduleStopwatch
         private Snapshot _lastSnapshot;
         private VehicleScheduleCapacity _capacity;
         private bool _notificationsTurnedOff = false;
+        private DurationsPerStationsContainer _durationPerStation; //not for actual values, but for get initial values after schedule change (keeps old deleted values when there are no new data)
 
         public TimeSpan? ScheduleTravelAvereageDuration
         {
@@ -178,6 +179,11 @@ namespace ScheduleStopwatch
             ownDataChanged -= handler;
         }
 
+        public IEnumerable<(VehicleStationLocation location, bool nonstop, RootTask task)> GetSnapshotLocationsWithNonstopInfo()
+        {
+            return _lastSnapshot.GetLocationsWithNonstopInfo();
+        }
+
         private void Invalidate()
         {
             if (_isDirty)
@@ -209,6 +215,46 @@ namespace ScheduleStopwatch
                     manager[vehicle]?.CallDataChangedEvents(localTask);
                 }
             }
+        }
+        public IEnumerable<(RootTask endStationTask, VehicleStationLocation startStation, VehicleStationLocation endStation, List<VehicleStationLocation> nonstopStations)> GetNonNonstopScheduleParts()
+        {
+            List<VehicleStationLocation> firstNonstopList = new List<VehicleStationLocation>();
+            List<VehicleStationLocation> currentNonstopList = new List<VehicleStationLocation>();
+            VehicleStationLocation firstNonNonstop = null, lastNonNonstop = null;
+            RootTask firstNonNostopTask = null;
+            foreach (TaskSnapshot snapshot in _lastSnapshot.TaskSnapshots)
+            {
+                if (snapshot.nonstop)
+                {
+                    if (firstNonNonstop == null)
+                    {
+                        firstNonstopList.Add(snapshot.location);
+                    }
+                    else
+                    {
+                        currentNonstopList.Add(snapshot.location);
+                    }
+                }
+                else
+                {
+                    if (firstNonNonstop == null)
+                    {
+                        firstNonNonstop = snapshot.location;
+                        firstNonNostopTask = snapshot.task;
+                    }
+                    if (lastNonNonstop != null)
+                    {
+                        yield return (snapshot.task, lastNonNonstop, snapshot.location, currentNonstopList.Count > 0 ? new List<VehicleStationLocation>(currentNonstopList) : null);
+                    }
+                    currentNonstopList.Clear();
+                    lastNonNonstop = snapshot.location;
+                }
+            }
+            if (firstNonNonstop != null && lastNonNonstop != null)
+            {
+                yield return (firstNonNostopTask, lastNonNonstop, firstNonNonstop, currentNonstopList.Count > 0 ? new List<VehicleStationLocation>(currentNonstopList) : null);
+            }
+            yield break;
         }
 
         private void CallDataChangedEvents(RootTask task)
@@ -315,6 +361,41 @@ namespace ScheduleStopwatch
             this.OnDataChanged(measurement.Task);
         }
 
+        /** tries to fill unknown travel and station loading times from own old values / another schedule part or from global values based on station locations */
+        private void FillUnknownTimes()
+        {
+            foreach ((RootTask endStationTask, VehicleStationLocation startStation, VehicleStationLocation endStation, List<VehicleStationLocation> nonstopStations) in this.GetNonNonstopScheduleParts())
+            {
+                VehicleScheduleDataManager manager = Manager<VehicleScheduleDataManager>.Current;
+                if (GetAverageTravelDuration(endStationTask) == null)
+                {
+                    TimeSpan? duration = _durationPerStation?.GetTravelTime(startStation, endStation, nonstopStations);
+                    if (duration == null)
+                    {
+                        duration = manager.GetGlobalTravelDuration(startStation, endStation, nonstopStations);
+                    }
+                    if (duration != null)
+                    {
+                        _travelData.Add(endStationTask, duration.Value);
+                        _travelData.MarkForOverwrite(endStationTask);
+                    }
+                }
+                if (GetAverageStationLoadingDuration(endStationTask) == null)
+                {
+                    TimeSpan? duration = _durationPerStation?.GetStationTime(endStation);
+                    if (duration == null)
+                    {
+                        duration = manager.GetGlobalStationDuration(endStation);
+                    }
+                    if (duration != null)
+                    {
+                        _stationLoadingData.Add(endStationTask, duration.Value);
+                        _stationLoadingData.MarkForOverwrite(endStationTask);
+                    }
+                }
+            }
+        }
+
         //this is also called when train is stopped in the station and then started
         internal void OnDestinationReached(VehicleStation station, RootTask task)
         {
@@ -372,7 +453,22 @@ namespace ScheduleStopwatch
         internal void OnScheduleChanged(RootTask task, bool minorChange)
         {
             Snapshot newSnapshot = new Snapshot(Vehicle.Schedule);
-            var comparsion = _lastSnapshot.CompareWithNewer(newSnapshot);
+            SnapshotComparsion comparsion = _lastSnapshot.CompareWithNewer(newSnapshot);
+            bool isChanged = comparsion.IsDifference || _lastSnapshot.Count != newSnapshot.Count;
+
+            if (isChanged)
+            {
+                if (_durationPerStation == null)
+                {
+                    _durationPerStation = new DurationsPerStationsContainer(this);
+                }
+                else
+                {
+                    _durationPerStation.NewTimes(this);
+                }
+                Manager<VehicleScheduleDataManager>.Current.InvalidateDurationPerStation();
+            }
+
             if (comparsion.IsDifference) //in comparsion there aren't any new tasks, it is only difference in old tasks
             {
                 var invalidateMeasurement = false;
@@ -407,6 +503,10 @@ namespace ScheduleStopwatch
                 }
             }
             _lastSnapshot = newSnapshot;
+            if (isChanged)
+            {
+                FillUnknownTimes();
+            }
             _capacity?.MarkDirty();
             OnDataChanged(task);
         }
