@@ -105,7 +105,7 @@ namespace ScheduleStopwatch
             return result;
         }
 
-        public IReadOnlyDictionary<Item, int> GetStationTaskTransfersSum(ImmutableList<Vehicle> vehicles, VehicleStation station, out bool isIncomplete)
+        public IReadOnlyDictionary<Item, int> GetStationTaskTransfersSum(ImmutableList<Vehicle> vehicles, VehicleStationLocation station, out bool isIncomplete)
         {
             int count = vehicles.Count;
             TaskTransfers transfersSum = new TaskTransfers();
@@ -172,11 +172,11 @@ namespace ScheduleStopwatch
             }
         }
 
-        private void OnDestinationReached(Vehicle vehicle, VehicleStation station, RootTask task)
+        private void OnDestinationReached(Vehicle vehicle, VehicleStationLocation station, RootTask task)
         {
             GetOrCreateVehicleScheduleData(vehicle).OnDestinationReached(station, task);
         }
-        private void OnStationLeaved(Vehicle vehicle, VehicleStation station, RootTask task)
+        private void OnStationLeaved(Vehicle vehicle, VehicleStationLocation station, RootTask task)
         {
             GetOrCreateVehicleScheduleData(vehicle).OnStationLeaved(station, task);
         }

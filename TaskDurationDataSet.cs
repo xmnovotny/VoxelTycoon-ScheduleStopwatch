@@ -92,11 +92,11 @@ namespace ScheduleStopwatch
             }
         }
 
-        public virtual void OnStationRemoved(VehicleStation station)
+        public virtual void OnStationRemoved(VehicleStationLocation station)
         {
             foreach (RootTask task in _data.Keys)
             {
-                if (task.Destination.VehicleStationLocation.VehicleStation == station)
+                if (task.Destination.VehicleStationLocation == station)
                 {
                     _data.Remove(task);
                 }

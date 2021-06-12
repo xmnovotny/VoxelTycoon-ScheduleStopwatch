@@ -10,11 +10,11 @@ namespace ScheduleStopwatch
     {
         public class TransfersPerStationCont
         {
-            private readonly Dictionary<VehicleStation, TaskTransfers> _transfPerSt;
+            private readonly Dictionary<VehicleStationLocation, TaskTransfers> _transfPerSt;
             private readonly bool isReadonly = false;
 
             public TransfersPerStationCont() {
-                _transfPerSt = new Dictionary<VehicleStation, TaskTransfers>();
+                _transfPerSt = new Dictionary<VehicleStationLocation, TaskTransfers>();
             }
             private TransfersPerStationCont(TransfersPerStationCont asReadonly)
             {
@@ -26,7 +26,7 @@ namespace ScheduleStopwatch
             {
                 foreach (KeyValuePair<RootTask, TaskTransfers> pair in transfersPerTask)
                 {
-                    Add(pair.Key.Destination.VehicleStationLocation.VehicleStation, pair.Value);    
+                    Add(pair.Key.Destination.VehicleStationLocation, pair.Value);    
                 }
             }
 
@@ -35,7 +35,7 @@ namespace ScheduleStopwatch
                 return new TransfersPerStationCont(this);
             }
 
-            public void Add(VehicleStation station, TaskTransfers transfers, float? multiplier = null)
+            public void Add(VehicleStationLocation station, TaskTransfers transfers, float? multiplier = null)
             {
                 if (isReadonly)
                 {
@@ -52,13 +52,13 @@ namespace ScheduleStopwatch
 
             public void Add(TransfersPerStationCont transfPerStation, float? mutliplier)
             {
-                foreach (KeyValuePair<VehicleStation, TaskTransfers> pair in transfPerStation._transfPerSt)
+                foreach (KeyValuePair<VehicleStationLocation, TaskTransfers> pair in transfPerStation._transfPerSt)
                 {
                     Add(pair.Key, pair.Value, mutliplier);
                 }
             }
 
-            public IReadOnlyDictionary<Item, int> this[VehicleStation idx]
+            public IReadOnlyDictionary<Item, int> this[VehicleStationLocation idx]
             {
                 get
                 {
@@ -70,11 +70,11 @@ namespace ScheduleStopwatch
                 }
             }
 
-            public IEnumerator<KeyValuePair<VehicleStation, IReadOnlyDictionary<Item, int>>> GetEnumerator()
+            public IEnumerator<KeyValuePair<VehicleStationLocation, IReadOnlyDictionary<Item, int>>> GetEnumerator()
             {
-                foreach (KeyValuePair<VehicleStation, TaskTransfers> taskTransfer in _transfPerSt)
+                foreach (KeyValuePair<VehicleStationLocation, TaskTransfers> taskTransfer in _transfPerSt)
                 {
-                    yield return new KeyValuePair<VehicleStation, IReadOnlyDictionary<Item, int>>(taskTransfer.Key, taskTransfer.Value.Transfers);
+                    yield return new KeyValuePair<VehicleStationLocation, IReadOnlyDictionary<Item, int>>(taskTransfer.Key, taskTransfer.Value.Transfers);
                 }
                 yield break;
             }

@@ -397,7 +397,7 @@ namespace ScheduleStopwatch
         }
 
         //this is also called when train is stopped in the station and then started
-        internal void OnDestinationReached(VehicleStation station, RootTask task)
+        internal void OnDestinationReached(VehicleStationLocation station, RootTask task)
         {
             if (Vehicle.Schedule.TraverseOrder == VehicleScheduleTraverseOrder.BackAndForth)
             {
@@ -419,7 +419,7 @@ namespace ScheduleStopwatch
                 _measurementInvalidated = false;
         }
 
-        internal void OnStationLeaved(VehicleStation station, RootTask task)
+        internal void OnStationLeaved(VehicleStationLocation station, RootTask task)
         {
             if (Vehicle.Schedule.TraverseOrder == VehicleScheduleTraverseOrder.BackAndForth)
             {
@@ -444,7 +444,7 @@ namespace ScheduleStopwatch
             _measurementInvalidated = true;
         }
 
-        internal void OnStationRemoved(VehicleStation station)
+        internal void OnStationRemoved(VehicleStationLocation station)
         {
             _travelData.OnStationRemoved(station);
             _stationLoadingData.OnStationRemoved(station);

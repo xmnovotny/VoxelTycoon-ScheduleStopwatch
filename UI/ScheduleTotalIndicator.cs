@@ -176,10 +176,10 @@ namespace ScheduleStopwatch.UI
                     {
                         routeTransfPerst = RouteTransfersPerStation;
                     }
-                    foreach (KeyValuePair<VehicleStation, IReadOnlyDictionary<Item, int>> pair in transfPerSt)
+                    foreach (KeyValuePair<VehicleStationLocation, IReadOnlyDictionary<Item, int>> pair in transfPerSt)
                     {
                         StringBuilder stationSb = new StringBuilder();
-                        string stationName = StringHelper.Boldify(pair.Key.Location.Name);
+                        string stationName = StringHelper.Boldify(pair.Key.Name);
                         stationSb.Append(stationName);
                         IReadOnlyDictionary<Item, int> routeTransfers = routeTransfPerst?[pair.Key];
 

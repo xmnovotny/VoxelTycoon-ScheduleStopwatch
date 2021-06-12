@@ -58,12 +58,12 @@ namespace ScheduleStopwatch
             base.Clear(task);
             _distanceData.Remove(task);
         }
-        public override void OnStationRemoved(VehicleStation station)
+        public override void OnStationRemoved(VehicleStationLocation station)
         {
             base.OnStationRemoved(station);
             foreach (RootTask task in _distanceData.Keys)
             {
-                if (task.Destination.VehicleStationLocation.VehicleStation == station)
+                if (task.Destination.VehicleStationLocation == station)
                 {
                     _distanceData.Remove(task);
                 }
