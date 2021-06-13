@@ -23,6 +23,8 @@
   "schedule_stopwatch/needed_items_to_produce": "Items needed to produce expected loaded items",
   "schedule_stopwatch/needed_items_to_produce_this": "Items needed to produce this item",
   "schedule_stopwatch/number_of_mines": "{0} of {1}",
+  "schedule_stopwatch/no_transfers": "No transfers",
+  "schedule_stopwatch/no_transfers_data": "No transfers data",
   "schedule_stopwatch/average_schedule_speed": "Average speed: {0} {1}",
   "schedule_stopwatch/ratio_loading_total": "Ratio of loading time to total time: {0}%",
   "schedule_stopwatch/partial": "partial"

@@ -24,9 +24,12 @@ namespace ScheduleStopwatch
 
             public TransfersPerStationCont(Dictionary<RootTask, TaskTransfers> transfersPerTask) : this()
             {
-                foreach (KeyValuePair<RootTask, TaskTransfers> pair in transfersPerTask)
+                if (transfersPerTask != null)
                 {
-                    Add(pair.Key.Destination.VehicleStationLocation, pair.Value);    
+                    foreach (KeyValuePair<RootTask, TaskTransfers> pair in transfersPerTask)
+                    {
+                        Add(pair.Key.Destination.VehicleStationLocation, pair.Value);
+                    }
                 }
             }
 

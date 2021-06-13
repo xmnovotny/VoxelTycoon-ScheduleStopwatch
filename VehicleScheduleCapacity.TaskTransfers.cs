@@ -9,6 +9,7 @@ namespace ScheduleStopwatch
         {
             //transfer per Item ( >0 = loading, <0 = unloading)
             private readonly Dictionary<Item, int> _transfers = new Dictionary<Item, int>();
+            private List<TaskTransfers> _transfersPerUnit;  //list index = vehicle unit index
 
             public TaskTransfers() { }
             public TaskTransfers(TaskTransfers taskTransfers, float? multiplier = null)
@@ -24,7 +25,15 @@ namespace ScheduleStopwatch
                 }
             }
 
-            public void Add(Item item, int count)
+/*            public IReadOnlyList<Dictionary<Item, int>> TransfersPerUnit
+            {
+                get
+                {
+                    return _transfersPerUnit;
+                }
+            }*/
+
+            public void Add(Item item, int count, int? unitIndex = null)
             {
                 if (_transfers.ContainsKey(item))
                 {
@@ -33,6 +42,18 @@ namespace ScheduleStopwatch
                 else
                 {
                     _transfers.Add(item, count);
+                }
+                if (unitIndex != null)
+                {
+                    if (_transfersPerUnit == null)
+                    {
+                        _transfersPerUnit = new List<TaskTransfers>();
+                    }
+                    if (_transfersPerUnit.Count <= unitIndex || _transfersPerUnit[unitIndex.Value] == null)
+                    {
+                        _transfersPerUnit[unitIndex.Value] = new TaskTransfers();
+                    }
+                    _transfersPerUnit[unitIndex.Value].Add(item, count);
                 }
             }
 

@@ -10,7 +10,6 @@ using VoxelTycoon.Game.UI;
 using VoxelTycoon.Localization;
 using VoxelTycoon.Recipes;
 using VoxelTycoon.Tracks;
-using VoxelTycoon.Tracks.Tasks;
 using VoxelTycoon.UI;
 
 namespace ScheduleStopwatch.UI
@@ -219,7 +218,7 @@ namespace ScheduleStopwatch.UI
             if (settings.ShowStationLoadedItems || settings.ShowStationUnloadedItems)
             {
                 ImmutableList<Vehicle> vehicles = LazyManager<VehicleStationLocationManager>.Current.GetServicedVehicles(StationWindow.Location);
-                IReadOnlyDictionary<Item, int> transfers = _lastTransfers = Manager<VehicleScheduleDataManager>.Current.GetStationTaskTransfersSum(vehicles, StationWindow.Location.VehicleStation, out bool incomplete);
+                IReadOnlyDictionary<Item, int> transfers = _lastTransfers = Manager<VehicleScheduleDataManager>.Current.GetStationTaskTransfersSum(vehicles, StationWindow.Location, out bool incomplete);
                 FillContainerWithItems(_loadedContainer, _loadedItemsContainer, settings.ShowStationLoadedItems ? transfers : null, Direction.load, itemTooltipTextFunc: GetEstimatedItemsForOneLoadItemTooltipText);
                 FillContainerWithItems(_unloadedContainer, _unloadedItemsContainer, settings.ShowStationUnloadedItems ? transfers : null, Direction.unload, GetEstimatatedNeededItems());
                 if (_lastIncomplete != incomplete)
@@ -363,6 +362,7 @@ namespace ScheduleStopwatch.UI
                 tabExt.OnSelect();
             }
         }
+
         #endregion
     }
 }

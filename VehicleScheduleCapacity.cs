@@ -154,6 +154,24 @@ namespace ScheduleStopwatch
         {
             return TransfersPerStation.AsReadonly();
         }
+        public TransfersPerStationCont GetTransfersPerStation(int unitIndex)
+        {
+            Invalidate();
+            if (_transfPerStationPerUnit == null)
+            {
+                _transfPerStationPerUnit = new Dictionary<int, TransfersPerStationCont>();
+            }
+            if (!_transfPerStationPerUnit.TryGetValue(unitIndex, out TransfersPerStationCont result))
+            {
+                if (!TransfPerUnit.TryGetValue(unitIndex, out Dictionary<RootTask, TaskTransfers> transfers)) {
+                    transfers = null;
+                }
+                result = new TransfersPerStationCont(transfers);
+                _transfPerStationPerUnit.Add(unitIndex, result);
+            }
+            return result.AsReadonly();
+        }
+
 
         private struct StorageState
         {
@@ -183,6 +201,7 @@ namespace ScheduleStopwatch
             {
                 _totalTransfers = null;
                 _transfPerStation = null;
+                _storages = null;
                 BuildTaskTransfers();
                 _dirty = false;
             }
@@ -220,7 +239,7 @@ namespace ScheduleStopwatch
         /**
          * Simulate transfer task on provided storages.
          */
-        private bool Transfer(TransferTask transferTask, Dictionary<VehicleUnit, StorageState> storages, ref TaskTransfers taskTransfers, bool calculateTransfer = false)
+        private bool Transfer(TransferTask transferTask, Dictionary<VehicleUnit, StorageState> storages, ref TaskTransfers taskTransfers, ref TaskTransfers[] taskTransfersPerUnit, bool calculateTransfer = false, bool calculateTransferPerUnit = false)
         {
             ImmutableUniqueList<VehicleUnit> targetUnits = transferTask.GetTargetUnits();
             int targetUnitsCount = targetUnits.Count;
@@ -246,6 +265,18 @@ namespace ScheduleStopwatch
                             }
                             taskTransfers.Add(storage.storage.Item, newCount - storage.count);
                         }
+                        if (calculateTransferPerUnit)
+                        {
+                            int unitIndex = targetUnit.Vehicle.Units.IndexOf(targetUnit);
+                            if (taskTransfersPerUnit == null)
+                            {
+                                taskTransfersPerUnit = new TaskTransfers[targetUnit.Vehicle.Units.Count];
+                            }
+                            if (taskTransfersPerUnit[unitIndex] == null) {
+                                taskTransfersPerUnit[unitIndex] = new TaskTransfers();
+                            }
+                            taskTransfersPerUnit[unitIndex].Add(storage.storage.Item, newCount - storage.count);
+                        }
                         storage.count = newCount;
                         storages[targetUnit] = storage;
                     }
@@ -254,22 +285,27 @@ namespace ScheduleStopwatch
             return true;
         }
 
-        private Dictionary<VehicleUnit, StorageState> GetActualStorages()
+        private Dictionary<VehicleUnit, StorageState> ActualStorages
         {
-            Vehicle vehicle = VehicleSchedule.Vehicle;
-            ImmutableList<VehicleUnit> units = vehicle.Units;
-            int unitsCount = units.Count;
-
-            var storages = new Dictionary<VehicleUnit, StorageState>(unitsCount);
-            for (var i = 0; i < unitsCount; i++)
+            get
             {
-                storages.Add(units[i], new StorageState(units[i].Storage));
-            }
+                if (_storages == null)
+                {
+                    Vehicle vehicle = VehicleSchedule.Vehicle;
+                    ImmutableList<VehicleUnit> units = vehicle.Units;
+                    int unitsCount = units.Count;
 
-            return storages;
+                    _storages = new Dictionary<VehicleUnit, StorageState>(unitsCount);
+                    for (var i = 0; i < unitsCount; i++)
+                    {
+                        _storages.Add(units[i], new StorageState(units[i].Storage));
+                    }
+                }
+                return _storages;
+            }
         }
 
-        private bool ProcessSchedule(Dictionary<VehicleUnit, StorageState> storages, bool onlyRefit, Dictionary<RootTask, TaskTransfers> transfers = null)
+        private bool ProcessSchedule(Dictionary<VehicleUnit, StorageState> storages, bool onlyRefit, Dictionary<RootTask, TaskTransfers> transfers = null, Dictionary<int, Dictionary<RootTask, TaskTransfers>> transfersPerUnit = null)
         {
             ImmutableList<RootTask> tasks = VehicleSchedule.GetTasks();
             int tasksCount = tasks.Count;
@@ -279,6 +315,7 @@ namespace ScheduleStopwatch
                 ImmutableList<SubTask> subTasks = task.GetSubTasks();
                 int subTaskCount = subTasks.Count;
                 TaskTransfers transfer = null;
+                TaskTransfers[] transferPerUnit = null;
 
                 for (int j = 0; j < subTaskCount; j++)
                 {
@@ -292,7 +329,7 @@ namespace ScheduleStopwatch
                     } else
                     if (!onlyRefit && subTask is TransferTask transferTask)
                     {
-                        if (!Transfer(transferTask, storages, ref transfer, transfers != null))
+                        if (!Transfer(transferTask, storages, ref transfer, ref transferPerUnit, transfers != null, transfersPerUnit != null))
                         {
                             return false;
                         }
@@ -303,6 +340,28 @@ namespace ScheduleStopwatch
                 {
                     transfers.Add(task, transfer);
                 }
+                if (transferPerUnit != null && transferPerUnit.Length > 0)
+                {
+                    for(int j = 0; j < transferPerUnit.Length; j++)
+                    {
+                        TaskTransfers unitTransfer = transferPerUnit[j];
+                        if (unitTransfer != null)
+                        {
+                            if (!transfersPerUnit.TryGetValue(j, out Dictionary<RootTask, TaskTransfers> unitTransfers))
+                            {
+                                unitTransfers = new Dictionary<RootTask, TaskTransfers>();
+                                transfersPerUnit.Add(j, unitTransfers);
+                            }
+
+                            if (unitTransfers.TryGetValue(task, out TaskTransfers addedUnitTransfers)) {
+                                addedUnitTransfers.Add(unitTransfer);
+                            } else
+                            {
+                                unitTransfers.Add(task, unitTransfer);
+                            }
+                        }
+                    }
+                }
             }
             return true;
         }
@@ -311,7 +370,7 @@ namespace ScheduleStopwatch
         {
             _transfers.Clear();
             _hasValidData = false;
-            Dictionary<VehicleUnit, StorageState> storages = GetActualStorages();
+            Dictionary<VehicleUnit, StorageState> storages = ActualStorages;
             if (!ProcessSchedule(storages, true))  //find start state of storages
             {
                 return; //some refit is set to auto
@@ -320,6 +379,14 @@ namespace ScheduleStopwatch
                 return;  //some vehicle unit has stroage setted to auto and there is no refit in the schedule for set it to the specific item
             ProcessSchedule(storages, false, _transfers); //finally simulate counts loaded and unloaded for each task
             _hasValidData = true;
+        }
+        private void BuildTransfersPerUnit()
+        {
+            if (_hasValidData)
+            {
+                _transfPerUnit = new Dictionary<int, Dictionary<RootTask, TaskTransfers>>();
+                ProcessSchedule(ActualStorages, false, null, _transfPerUnit); //finally simulate counts loaded and unloaded for each task
+            }
         }
 
         private void OnVehicleUnitStorageChange(object _, Storage __, Storage ___)
@@ -372,9 +439,25 @@ namespace ScheduleStopwatch
             }
         }
 
+        private Dictionary<int, Dictionary<RootTask, TaskTransfers>> TransfPerUnit
+        {
+            get
+            {
+                Invalidate();
+                if (_hasValidData && _transfPerUnit == null)
+                {
+                    BuildTransfersPerUnit();
+                }
+                return _transfPerUnit;
+            }
+        }
+
         private readonly Dictionary<RootTask, TaskTransfers> _transfers = new Dictionary<RootTask, TaskTransfers>();
         private TaskTransfers _totalTransfers;
         private TransfersPerStationCont _transfPerStation;
+        private Dictionary<VehicleUnit, StorageState> _storages;
+        private Dictionary<int, Dictionary<RootTask, TaskTransfers>> _transfPerUnit; //key = vehicle unit index
+        private Dictionary<int, TransfersPerStationCont> _transfPerStationPerUnit; //key = vehicle unit index
 
         private bool _dirty = true;
         private bool _hasValidData = false;

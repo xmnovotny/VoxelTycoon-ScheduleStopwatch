@@ -23,6 +23,8 @@
   "schedule_stopwatch/needed_items_to_produce": "Suroviny potřebné pro výrobu položek očekávané nakládky",
   "schedule_stopwatch/needed_items_to_produce_this": "Suroviny potřebné pro výrobu této položky",
   "schedule_stopwatch/number_of_mines": "{0}x {1}",
+  "schedule_stopwatch/no_transfers": "Žádné přesuny",
+  "schedule_stopwatch/no_transfers_data": "Žádná data o přesunech",
   "schedule_stopwatch/average_schedule_speed": "Průměrná rychlost: {0} {1}",
   "schedule_stopwatch/ratio_loading_total": "Poměr doby nakládky k celkové době: {0}%",
   "schedule_stopwatch/partial": "částečná"

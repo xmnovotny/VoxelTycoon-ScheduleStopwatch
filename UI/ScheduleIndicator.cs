@@ -44,31 +44,5 @@ namespace ScheduleStopwatch.UI
             _baseTemplate.SetActive(false);
         }
 
-        protected bool TooltipTextForStation(IReadOnlyDictionary<Item, int> transfers, StringBuilder strBuilder, IReadOnlyDictionary<Item, int> routeTransfers, float monthMultiplier)
-        {
-            bool added = false;
-            Locale locale = LazyManager<LocaleManager>.Current.Locale;
-            foreach (KeyValuePair<Item, int> transfer in transfers)
-            {
-                string countStr = (Math.Abs(transfer.Value) * monthMultiplier).ToString("N0");
-                if (routeTransfers != null && routeTransfers.TryGetValue(transfer.Key, out int routeCount))
-                {
-                    countStr += "/" + Math.Abs(routeCount).ToString();
-                }
-                if (transfer.Value > 0)
-                {
-                    strBuilder.AppendLine().Append(StringHelper.Colorify(StringHelper.Format(locale.GetString("schedule_stopwatch/loaded_items_count"), StringHelper.FormatCountString(transfer.Key.DisplayName, countStr)), Color.blue * 0.8f));
-                    added = true;
-                }
-                else if (transfer.Value < 0)
-                {
-                    strBuilder.AppendLine().Append(StringHelper.Colorify(StringHelper.Format(locale.GetString("schedule_stopwatch/unloaded_items_count"), StringHelper.FormatCountString(transfer.Key.DisplayName, countStr)), Color.green * 0.9f));
-                    added = true;
-                }
-            }
-
-            return added;
-        }
-
     }
 }

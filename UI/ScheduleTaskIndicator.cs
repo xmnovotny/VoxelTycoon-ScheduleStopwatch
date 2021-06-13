@@ -150,7 +150,7 @@ namespace ScheduleStopwatch.UI
                     sb.AppendLine().Append(StringHelper.Colorify(locale.GetString("schedule_stopwatch/estim_monthly_transf_hint"), UIColors.Solid.Text * 0.5f));
                 }
 
-                TooltipTextForStation(_lastTaskTransfers, sb, routeTaskTransfers, _lastMonthMultiplier.Value);
+                ScheduleCapacityHelper.TooltipTextForStation(_lastTaskTransfers, sb, routeTaskTransfers, _lastMonthMultiplier.Value);
                 return sb.ToString();
             }
             return "";
