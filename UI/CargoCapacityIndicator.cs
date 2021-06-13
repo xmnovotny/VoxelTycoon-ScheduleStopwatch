@@ -6,12 +6,12 @@ using UnityEngine.UI;
 using VoxelTycoon;
 using VoxelTycoon.Game.UI.VehicleUnitPickerWindowViews;
 using VoxelTycoon.UI;
+using static ScheduleStopwatch.VehicleScheduleCapacity;
 
 namespace ScheduleStopwatch.UI
 {
     class CargoCapacityIndicator : MonoBehaviour
     {
-        public enum TransferDirection { both, loading, unloading };
         public int ItemsCount { get; private set; }
 
         private readonly List<CargoCapacityIndicatorItem> indicatorItems = new List<CargoCapacityIndicatorItem>();
@@ -20,7 +20,7 @@ namespace ScheduleStopwatch.UI
 
         private static CargoCapacityIndicator _template;
 
-        public void Initialize(IReadOnlyDictionary<Item, int> items, float? multiplier, IReadOnlyDictionary<Item, int> routeTotal = null, int itemsLimit = 0)
+        public void Initialize(IReadOnlyDictionary<Item, TransferData> items, float? multiplier, IReadOnlyDictionary<Item, TransferData> routeTotal = null, int itemsLimit = 0, TransferDirection transfDirection = TransferDirection.both)
         {
             foreach (CargoCapacityIndicatorItem indItem in indicatorItems)
             {
@@ -30,20 +30,20 @@ namespace ScheduleStopwatch.UI
             _overflowCont = transform.Find("OverflowText");
             _overFlowText = _overflowCont.GetComponentInChildren<Text>();
             indicatorItems.Clear();
-            UpdateItems(items, multiplier, routeTotal, itemsLimit: itemsLimit);
+            UpdateItems(items, multiplier, routeTotal, itemsLimit: itemsLimit, transfDirection: transfDirection);
         }
 
-        public void UpdateItems(IReadOnlyDictionary<Item, int> items, float? multiplier, IReadOnlyDictionary<Item, int> routeTotal = null, TransferDirection transfDirection = TransferDirection.both, int itemsLimit = 0)
+        public void UpdateItems(IReadOnlyDictionary<Item, TransferData> items, float? multiplier, IReadOnlyDictionary<Item, TransferData> routeTotal = null, TransferDirection transfDirection = TransferDirection.both, int itemsLimit = 0)
         {
             int origCount = indicatorItems.Count;
             int index = 0;
             int overflowCount = 0;
             if (items != null && multiplier != null)
             {
-                IReadOnlyDictionary<Item, int> itemsToDisplay = routeTotal ?? items;
-                foreach (KeyValuePair<Item, int> itemData in itemsToDisplay)
+                IReadOnlyDictionary<Item, TransferData> itemsToDisplay = routeTotal ?? items;
+                foreach (KeyValuePair<Item, TransferData> itemData in itemsToDisplay)
                 {
-                    if ((transfDirection == TransferDirection.loading && itemData.Value<0) || (transfDirection == TransferDirection.unloading && itemData.Value>0)) {
+                    if ((transfDirection == TransferDirection.loading && itemData.Value.load == 0) || (transfDirection == TransferDirection.unloading && itemData.Value.unload == 0)) {
                         continue;
                     }
 
@@ -51,14 +51,14 @@ namespace ScheduleStopwatch.UI
                     float itemsCountValue = 0;
                     if (routeTotal != null)
                     {
-                        routeTotalCount = Math.Abs(itemData.Value);
-                        if (items.TryGetValue(itemData.Key, out int i))
+                        routeTotalCount = itemData.Value.Get(transfDirection);
+                        if (items.TryGetValue(itemData.Key, out TransferData i))
                         {
-                            itemsCountValue = Math.Abs(i);
+                            itemsCountValue = i.Get(transfDirection);
                         } 
                     } else
                     {
-                        itemsCountValue = Math.Abs(itemData.Value);
+                        itemsCountValue = Math.Abs(itemData.Value.Get(transfDirection));
                     }
 
                     if (itemsCountValue == 0 && (routeTotalCount == null || routeTotalCount.Value == 0))

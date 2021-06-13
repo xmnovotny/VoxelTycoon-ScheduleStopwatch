@@ -5,6 +5,7 @@ using VoxelTycoon;
 using VoxelTycoon.Serialization;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.Tracks.Tasks;
+using static ScheduleStopwatch.VehicleScheduleCapacity;
 using TaskTransfers = ScheduleStopwatch.VehicleScheduleCapacity.TaskTransfers;
 
 namespace ScheduleStopwatch
@@ -105,7 +106,7 @@ namespace ScheduleStopwatch
             return result;
         }
 
-        public IReadOnlyDictionary<Item, int> GetStationTaskTransfersSum(ImmutableList<Vehicle> vehicles, VehicleStationLocation station, out bool isIncomplete)
+        public IReadOnlyDictionary<Item, TransferData> GetStationTaskTransfersSum(ImmutableList<Vehicle> vehicles, VehicleStationLocation station, out bool isIncomplete)
         {
             int count = vehicles.Count;
             TaskTransfers transfersSum = new TaskTransfers();
@@ -117,7 +118,7 @@ namespace ScheduleStopwatch
                     continue;
                 }
                 VehicleScheduleData scheduleData = this[vehicles[i]];
-                IReadOnlyDictionary<Item, int> transfers = scheduleData?.Capacity.GetTransfersPerStation()[station];
+                IReadOnlyDictionary<Item, TransferData> transfers = scheduleData?.Capacity.GetTransfersPerStation()[station];
                 float? mult;
                 if (transfers != null && (mult = scheduleData.ScheduleMonthlyMultiplier) != null)
                 {

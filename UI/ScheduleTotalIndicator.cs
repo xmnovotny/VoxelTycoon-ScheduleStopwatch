@@ -10,6 +10,7 @@ using VoxelTycoon.Localization;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.Tracks.Tasks;
 using VoxelTycoon.UI;
+using static ScheduleStopwatch.VehicleScheduleCapacity;
 using TransfersPerStationCont = ScheduleStopwatch.VehicleScheduleCapacity.TransfersPerStationCont;
 
 namespace ScheduleStopwatch.UI
@@ -19,7 +20,7 @@ namespace ScheduleStopwatch.UI
         private Text _text;
         private TimeSpan? _lastTotalTime;
         private float? _lastMonthMultiplier;
-        private IReadOnlyDictionary<Item, int> _lastTotalTransfers;
+        private IReadOnlyDictionary<Item, TransferData> _lastTotalTransfers;
         private TransfersPerStationCont _lastTransfersPerStation;
         private CargoCapacityIndicator _capacityIndicator;
         private VehicleScheduleData _scheduleData;
@@ -47,7 +48,7 @@ namespace ScheduleStopwatch.UI
             }
         }
 
-        private IReadOnlyDictionary<Item, int> RouteTotalTransfers
+        private IReadOnlyDictionary<Item, TransferData> RouteTotalTransfers
         {
             get
             {
@@ -105,7 +106,7 @@ namespace ScheduleStopwatch.UI
                 throw new ArgumentException("Schedule data is not for this ScheduleTotalIndicator");
 
             Locale locale = LazyManager<LocaleManager>.Current.Locale;
-            IReadOnlyDictionary<Item, int> routeTotalTransfers = RouteTotalTransfers;
+            IReadOnlyDictionary<Item, TransferData> routeTotalTransfers = RouteTotalTransfers;
             int itemsLimit = routeTotalTransfers != null ? 7 : 10;
             _lastTransfersPerStation = null;
             _lastMonthMultiplier = data.ScheduleMonthlyMultiplier;
@@ -126,7 +127,7 @@ namespace ScheduleStopwatch.UI
             if (_capacityIndicator != null)
             {
                 _lastTotalTransfers = data.Capacity.GetTotalTransfers();
-                _capacityIndicator.UpdateItems(_lastTotalTransfers, _lastMonthMultiplier, routeTotalTransfers, itemsLimit: itemsLimit);
+                _capacityIndicator.UpdateItems(_lastTotalTransfers, _lastMonthMultiplier, routeTotalTransfers, itemsLimit: itemsLimit, transfDirection: TransferDirection.unloading);
             }
         }
 

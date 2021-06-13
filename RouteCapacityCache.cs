@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using VoxelTycoon;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.Tracks.Tasks;
+using static ScheduleStopwatch.VehicleScheduleCapacity;
 
 namespace ScheduleStopwatch
 {
@@ -82,12 +83,12 @@ namespace ScheduleStopwatch
             base.OnDeinitialize();
         }
 
-        public IReadOnlyDictionary<Item, int> GetRouteTotalTransfers(VehicleRoute route)
+        public IReadOnlyDictionary<Item, TransferData> GetRouteTotalTransfers(VehicleRoute route)
         {
             return GetOrCreateCacheData(route).TotalTransfers;
         }
 
-        public IReadOnlyDictionary<Item, int> GetRouteTaskTransfers(VehicleRoute route, RootTask task)
+        public IReadOnlyDictionary<Item, TransferData> GetRouteTaskTransfers(VehicleRoute route, RootTask task)
         {
             return GetOrCreateCacheData(route).GetTransfers(task);
         }
@@ -108,9 +109,9 @@ namespace ScheduleStopwatch
         private class CacheData
         {
             public VehicleRoute route;
-            private IReadOnlyDictionary<Item, int> _totalTransfers;
+            private IReadOnlyDictionary<Item, TransferData> _totalTransfers;
             /** route transfers per task (by task index) */
-            private readonly Dictionary<int, IReadOnlyDictionary<Item, int>> _transfers = new Dictionary<int, IReadOnlyDictionary<Item, int>>();
+            private readonly Dictionary<int, IReadOnlyDictionary<Item, TransferData>> _transfers = new Dictionary<int, IReadOnlyDictionary<Item, TransferData>>();
             private TransfersPerStationCont _perStationTrasf;
             private bool _loadedTotalTransfers, _loadedPerStationTransf;
 
@@ -124,7 +125,7 @@ namespace ScheduleStopwatch
                 }
             }
 
-            public IReadOnlyDictionary<Item, int> TotalTransfers
+            public IReadOnlyDictionary<Item, TransferData> TotalTransfers
             {
                 get
                 {
@@ -160,13 +161,13 @@ namespace ScheduleStopwatch
                 }
             }
 
-            public IReadOnlyDictionary<Item, int> GetTransfers(RootTask task)
+            public IReadOnlyDictionary<Item, TransferData> GetTransfers(RootTask task)
             {
                 if (task.Vehicle.Route != route)
                 {
                     throw new ArgumentException("Wrong route in the tasks vehicle", "task");
                 }
-                IReadOnlyDictionary<Item, int> result;
+                IReadOnlyDictionary<Item, TransferData> result;
                 if (!_transfers.TryGetValue(task.GetIndex(), out result))
                 {
                     result = Manager<VehicleScheduleDataManager>.Current[task.Vehicle]?.Capacity.GetRouteTaskTransfers(task);

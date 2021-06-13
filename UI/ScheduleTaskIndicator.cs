@@ -8,6 +8,7 @@ using VoxelTycoon;
 using VoxelTycoon.Localization;
 using VoxelTycoon.Tracks.Tasks;
 using VoxelTycoon.UI;
+using static ScheduleStopwatch.VehicleScheduleCapacity;
 
 namespace ScheduleStopwatch.UI
 {
@@ -107,7 +108,7 @@ namespace ScheduleStopwatch.UI
             {
                 _lastMonthMultiplier = data.ScheduleMonthlyMultiplier;
                 _lastTaskTransfers = _scheduleData.Capacity.GetTransfers(Task);
-                IReadOnlyDictionary<Item, int> routeTransfers = RouteTaskTransfers;
+                IReadOnlyDictionary<Item, TransferData> routeTransfers = RouteTaskTransfers;
                 int itemsLimit;
                 if (routeTransfers != null && routeTransfers.Count>0)
                 {
@@ -119,7 +120,7 @@ namespace ScheduleStopwatch.UI
 
                 if (_unloadCapacityIndicator != null)
                 {
-                    _unloadCapacityIndicator.UpdateItems(_lastTaskTransfers, _lastMonthMultiplier, routeTransfers, transfDirection: CargoCapacityIndicator.TransferDirection.unloading, itemsLimit);
+                    _unloadCapacityIndicator.UpdateItems(_lastTaskTransfers, _lastMonthMultiplier, routeTransfers, transfDirection: TransferDirection.unloading, itemsLimit);
                     _unloadCapacityIndicator.gameObject.SetActive(_unloadCapacityIndicator.ItemsCount > 0);
                     _unloadingCapIcon.gameObject.SetActive(_unloadCapacityIndicator.ItemsCount > 0);
                     itemsLimit -= Math.Min(_unloadCapacityIndicator.ItemsCount, 1);
@@ -128,7 +129,7 @@ namespace ScheduleStopwatch.UI
 
                 if (_loadCapacityIndicator != null)
                 {
-                    _loadCapacityIndicator.UpdateItems(_lastTaskTransfers, _lastMonthMultiplier, routeTransfers, transfDirection: CargoCapacityIndicator.TransferDirection.loading, itemsLimit);
+                    _loadCapacityIndicator.UpdateItems(_lastTaskTransfers, _lastMonthMultiplier, routeTransfers, transfDirection: TransferDirection.loading, itemsLimit);
                     _loadCapacityIndicator.gameObject.SetActive(_loadCapacityIndicator.ItemsCount > 0);
                     _loadingCapIcon.gameObject.SetActive(_loadCapacityIndicator.ItemsCount > 0);
                 }
@@ -141,7 +142,7 @@ namespace ScheduleStopwatch.UI
             Locale locale = LazyManager<LocaleManager>.Current.Locale;
             if (_lastMonthMultiplier != null && _lastTaskTransfers != null && _lastTaskTransfers.Count > 0)
             {
-                IReadOnlyDictionary<Item, int> routeTaskTransfers = RouteTaskTransfers;
+                IReadOnlyDictionary<Item, TransferData> routeTaskTransfers = RouteTaskTransfers;
                 bool isRoute = routeTaskTransfers != null && routeTaskTransfers.Count > 0;
                 StringBuilder sb = new StringBuilder();
                 sb.Append(StringHelper.Boldify(locale.GetString("schedule_stopwatch/estim_monthly_transf").ToUpper()));
@@ -204,7 +205,7 @@ namespace ScheduleStopwatch.UI
             loadIndicator.transform.name = "CargoCapacityLoad";
         }
 
-        private IReadOnlyDictionary<Item, int> RouteTaskTransfers
+        private IReadOnlyDictionary<Item, TransferData> RouteTaskTransfers
         {
             get
             {
@@ -238,7 +239,7 @@ namespace ScheduleStopwatch.UI
 
         private Text _travelTimeText, _loadingTimeText;
         private float? _lastMonthMultiplier;
-        private IReadOnlyDictionary<Item, int> _lastTaskTransfers;
+        private IReadOnlyDictionary<Item, TransferData> _lastTaskTransfers;
         private static ScheduleTaskIndicator _template;
         private VehicleScheduleData _scheduleData;
         private CargoCapacityIndicator _loadCapacityIndicator, _unloadCapacityIndicator;

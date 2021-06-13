@@ -5,10 +5,37 @@ namespace ScheduleStopwatch
 {
     public partial class VehicleScheduleCapacity
     {
+        public enum TransferDirection { both, loading, unloading };
+        public struct TransferData
+        {
+            public int load, unload;
+            public int Total
+            {
+                get
+                {
+                    return load - unload;
+                }
+            }
+
+            public int Get(TransferDirection direction)
+            {
+                switch (direction)
+                {
+                    case TransferDirection.loading:
+                        return load;
+                    case TransferDirection.unloading:
+                        return unload;
+                    case TransferDirection.both:
+                        return Total;
+                }
+                return 0;
+            }
+        }
+
         public class TaskTransfers
         {
             //transfer per Item ( >0 = loading, <0 = unloading)
-            private readonly Dictionary<Item, int> _transfers = new Dictionary<Item, int>();
+            private readonly Dictionary<Item, TransferData> _transfers = new Dictionary<Item, TransferData>();
 
             public TaskTransfers() { }
             public TaskTransfers(TaskTransfers taskTransfers, float? multiplier = null)
@@ -16,7 +43,7 @@ namespace ScheduleStopwatch
                 Add(taskTransfers._transfers, multiplier);
             }
 
-            public IReadOnlyDictionary<Item, int> Transfers
+            public IReadOnlyDictionary<Item, TransferData> Transfers
             {
                 get
                 {
@@ -24,24 +51,26 @@ namespace ScheduleStopwatch
                 }
             }
 
-/*            public IReadOnlyList<Dictionary<Item, int>> TransfersPerUnit
-            {
-                get
-                {
-                    return _transfersPerUnit;
-                }
-            }*/
-
             public void Add(Item item, int count)
             {
-                if (_transfers.ContainsKey(item))
+                if (count > 0)
                 {
-                    _transfers[item] += count;
-                }
-                else
+                    Add(item, count, 0);
+                } else
                 {
-                    _transfers.Add(item, count);
+                    Add(item, 0, -count);
                 }
+            }
+
+            public void Add(Item item, int load, int unload)
+            {
+                if (!_transfers.TryGetValue(item, out TransferData data))
+                {
+                    data = default;
+                }
+                data.load += load;
+                data.unload += unload;
+                _transfers[item] = data;
             }
 
             public void Add(TaskTransfers transfers, float? multiplier = null)
@@ -49,12 +78,13 @@ namespace ScheduleStopwatch
                 Add(transfers._transfers, multiplier);
             }
 
-            public void Add(IReadOnlyDictionary<Item, int> transfers, float? multiplier=null)
+            public void Add(IReadOnlyDictionary<Item, TransferData> transfers, float? multiplier=null)
             {
-                foreach (KeyValuePair<Item, int> transfer in transfers)
+                foreach (KeyValuePair<Item, TransferData> transfer in transfers)
                 {
-                    int value = multiplier != null ? (transfer.Value * multiplier.Value).RoundToInt() : transfer.Value;
-                    this.Add(transfer.Key, value);
+                    int load = multiplier != null ? (transfer.Value.load * multiplier.Value).RoundToInt() : transfer.Value.load;
+                    int unload = multiplier != null ? (transfer.Value.unload * multiplier.Value).RoundToInt() : transfer.Value.unload;
+                    this.Add(transfer.Key, load, unload);
                 }
             }
         }

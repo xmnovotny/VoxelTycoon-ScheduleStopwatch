@@ -15,11 +15,11 @@ namespace ScheduleStopwatch
         {
             get
             {
-                if (!_hasValidData)
+                if (_hasValidData == null)
                 {
                     Invalidate();
                 }
-                return _hasValidData;
+                return _hasValidData.Value;
             }
         }
 
@@ -33,10 +33,10 @@ namespace ScheduleStopwatch
         public void MarkDirty()
         {
             _dirty = true;
-            _hasValidData = false;
+            _hasValidData = null;
         }
 
-        public IReadOnlyDictionary<Item, int> GetTransfers(RootTask task)
+        public IReadOnlyDictionary<Item, TransferData> GetTransfers(RootTask task)
         {
             Invalidate();
             if (_transfers.TryGetValue(task, out TaskTransfers transfer))
@@ -47,7 +47,7 @@ namespace ScheduleStopwatch
         }
 
         /* Returns total of transferred items per schedule (=sum of unloaded items) */
-        public IReadOnlyDictionary<Item, int> GetTotalTransfers()
+        public IReadOnlyDictionary<Item, TransferData> GetTotalTransfers()
         {
             return TotalTransfers?.Transfers;
         }
@@ -59,7 +59,7 @@ namespace ScheduleStopwatch
             OnDataChanged();
         }
 
-        public IReadOnlyDictionary<Item, int> GetRouteTotalTransfers(bool skipForOnlyOneVehicle=true) {
+        public IReadOnlyDictionary<Item, TransferData> GetRouteTotalTransfers(bool skipForOnlyOneVehicle=true) {
             if (!HasValidData || VehicleSchedule.Vehicle.Route != null)
             {
                 TaskTransfers totalTransfers = new TaskTransfers();
@@ -116,7 +116,7 @@ namespace ScheduleStopwatch
             return null;
         }
 
-        public IReadOnlyDictionary<Item, int> GetRouteTaskTransfers(RootTask task, bool skipForOnlyOneVehicle = true)
+        public IReadOnlyDictionary<Item, TransferData> GetRouteTaskTransfers(RootTask task, bool skipForOnlyOneVehicle = true)
         {
             if (task == null)
             {
@@ -382,7 +382,7 @@ namespace ScheduleStopwatch
         }
         private void BuildTransfersPerUnit()
         {
-            if (_hasValidData)
+            if (_hasValidData == true)
             {
                 _transfPerUnit = new Dictionary<int, Dictionary<RootTask, TaskTransfers>>();
                 ProcessSchedule(ActualStorages, false, null, _transfPerUnit); //finally simulate counts loaded and unloaded for each task
@@ -413,13 +413,7 @@ namespace ScheduleStopwatch
                     _totalTransfers = new TaskTransfers();
                     foreach (TaskTransfers taskTransfers in _transfers.Values)
                     {
-                        foreach (KeyValuePair<Item, int> transfer in taskTransfers.Transfers)
-                        {
-                            if (transfer.Value < 0)
-                            {
-                                _totalTransfers.Add(transfer.Key, 0 - transfer.Value);
-                            }
-                        }
+                        _totalTransfers.Add(taskTransfers);
                     }
                 }
                 return _totalTransfers;
@@ -444,7 +438,7 @@ namespace ScheduleStopwatch
             get
             {
                 Invalidate();
-                if (_hasValidData && _transfPerUnit == null)
+                if (_hasValidData == true && _transfPerUnit == null)
                 {
                     BuildTransfersPerUnit();
                 }
@@ -460,7 +454,7 @@ namespace ScheduleStopwatch
         private Dictionary<int, TransfersPerStationCont> _transfPerStationPerUnit; //key = vehicle unit index
 
         private bool _dirty = true;
-        private bool _hasValidData = false;
+        private bool? _hasValidData = null;  //null = data must be invalidated, false = there are no valid data after invalidating (cannot calculate it)
 
     }
 }

@@ -11,6 +11,7 @@ using VoxelTycoon.Localization;
 using VoxelTycoon.Recipes;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.UI;
+using static ScheduleStopwatch.VehicleScheduleCapacity;
 
 namespace ScheduleStopwatch.UI
 {
@@ -84,35 +85,40 @@ namespace ScheduleStopwatch.UI
                 }
 
                 List<Item> finalItems = new List<Item>();
-                foreach (KeyValuePair<Item, int> pair in _lastTransfers)
+                foreach (KeyValuePair<Item, TransferData> pair in _lastTransfers)
                 {
-                    if (pair.Value < 0)
+                    if (pair.Value.unload > 0)
                     {
                         finalItems.Add(pair.Key);
                     }
                 }
                 RecipeHelper helper = LazyManager<RecipeHelper>.Current;
 
-                foreach (KeyValuePair<Item, int> pair in _lastTransfers)
+                foreach (KeyValuePair<Item, TransferData> pair in _lastTransfers)
                 {
-                    if (pair.Value > 0)
+                    if (pair.Value.load > 0)
                     {
                         Dictionary<Item, float> subNeededItems = _neededItemsPerItem[pair.Key] = new Dictionary<Item, float>();
-                        List<RecipeItem> ingredients = helper.GetIngredients(pair.Key, finalItems, pair.Value);
-                        if (ingredients.Count > 0)
+                        List<RecipeItem> ingredients = null;
+                        if (pair.Value.unload == 0)
+                        {
+                            //calculate ingredients only for items thah are not unloaded at the station
+                            ingredients = helper.GetIngredients(pair.Key, finalItems, pair.Value.load);
+                        }
+                        if (ingredients != null && ingredients.Count > 0)
                         {
                             AddIngredients(ingredients, neededItems);
                             AddIngredients(ingredients, subNeededItems);
                         }
                         else
                         {
-                            //no ingredients = raw item, we add it to needed items
+                            //no ingredients = raw item or item is transferred (unloaded and loaded), we add it to needed items
                             if (!neededItems.TryGetValue(pair.Key, out float count))
                             {
                                 count = 0;
                             }
-                            neededItems[pair.Key] = count + pair.Value;
-                            subNeededItems[pair.Key] = pair.Value;
+                            neededItems[pair.Key] = count + pair.Value.load;
+                            subNeededItems[pair.Key] = pair.Value.load;
                         }
                     }
                 }
@@ -149,7 +155,7 @@ namespace ScheduleStopwatch.UI
                     {
                         string text = pair.Value.ToString("N0");
                         sb.AppendLine().Append(StringHelper.FormatCountString(pair.Key.DisplayName, text));
-                        if (!_lastTransfers.TryGetValue(pair.Key, out int transfCount) || transfCount > 0)
+                        if (!_lastTransfers.TryGetValue(pair.Key, out TransferData transfCount) || transfCount.load > 0)
                         {
                             (int? itemCountPerMonth, Mine mine) = helper.GetMinedItemsPerMineAndMonth(pair.Key);
                             if (itemCountPerMonth != null)
@@ -181,7 +187,7 @@ namespace ScheduleStopwatch.UI
                     {
                         string text = pair.Value.ToString("N0");
                         sb.AppendLine().Append(StringHelper.FormatCountString(pair.Key.DisplayName, text));
-                        if (!_lastTransfers.TryGetValue(pair.Key, out int transfCount) || transfCount > 0)
+                        if (!_lastTransfers.TryGetValue(pair.Key, out TransferData transfCount) || transfCount.load > 0)
                         {
                             (int? itemCountPerMonth, Mine mine) = helper.GetMinedItemsPerMineAndMonth(pair.Key);
                             if (itemCountPerMonth != null)
@@ -218,9 +224,9 @@ namespace ScheduleStopwatch.UI
             if (settings.ShowStationLoadedItems || settings.ShowStationUnloadedItems)
             {
                 ImmutableList<Vehicle> vehicles = LazyManager<VehicleStationLocationManager>.Current.GetServicedVehicles(StationWindow.Location);
-                IReadOnlyDictionary<Item, int> transfers = _lastTransfers = Manager<VehicleScheduleDataManager>.Current.GetStationTaskTransfersSum(vehicles, StationWindow.Location, out bool incomplete);
-                FillContainerWithItems(_loadedContainer, _loadedItemsContainer, settings.ShowStationLoadedItems ? transfers : null, Direction.load, itemTooltipTextFunc: GetEstimatedItemsForOneLoadItemTooltipText);
-                FillContainerWithItems(_unloadedContainer, _unloadedItemsContainer, settings.ShowStationUnloadedItems ? transfers : null, Direction.unload, GetEstimatatedNeededItems());
+                IReadOnlyDictionary<Item, TransferData> transfers = _lastTransfers = Manager<VehicleScheduleDataManager>.Current.GetStationTaskTransfersSum(vehicles, StationWindow.Location, out bool incomplete);
+                FillContainerWithItems(_loadedContainer, _loadedItemsContainer, settings.ShowStationLoadedItems ? transfers : null, TransferDirection.loading, itemTooltipTextFunc: GetEstimatedItemsForOneLoadItemTooltipText);
+                FillContainerWithItems(_unloadedContainer, _unloadedItemsContainer, settings.ShowStationUnloadedItems ? transfers : null, TransferDirection.unloading, GetEstimatatedNeededItems());
                 if (_lastIncomplete != incomplete)
                 {
                     _lastIncomplete = incomplete;
@@ -235,7 +241,7 @@ namespace ScheduleStopwatch.UI
             }
         }
 
-        private void FillContainerWithItems(Transform container, Transform itemContainer, IReadOnlyDictionary<Item, int> transfers, Direction direction, Dictionary<Item, float> neededItems = null, Func<Item, int, string> itemTooltipTextFunc = null) 
+        private void FillContainerWithItems(Transform container, Transform itemContainer, IReadOnlyDictionary<Item, TransferData> transfers, TransferDirection direction, Dictionary<Item, float> neededItems = null, Func<Item, int, string> itemTooltipTextFunc = null) 
         {
             int count = 0;
             if (transfers == null)
@@ -245,11 +251,11 @@ namespace ScheduleStopwatch.UI
             }
             List<ResourceView> resourceViews = new List<ResourceView>();
             itemContainer.transform.GetComponentsInChildren<ResourceView>(resourceViews);
-            foreach (KeyValuePair<Item, int> pair in transfers)
+            foreach (KeyValuePair<Item, TransferData> pair in transfers)
             {
-                if ((pair.Value>0 && direction == Direction.load) || (pair.Value<0 && direction == Direction.unload))
+                int value = pair.Value.Get(direction);
+                if (value > 0)
                 {
-                    int value = Math.Abs(pair.Value);
                     ResourceView view = this.GetResourceView(resourceViews, count, itemContainer);
                     Panel renderer = view.gameObject.transform.Find("ValueContainer").GetComponent<Panel>();
                     if (neededItems != null && neededItems.TryGetValue(pair.Key, out float neededCount))
@@ -276,7 +282,7 @@ namespace ScheduleStopwatch.UI
                     }
                     if (itemTooltipTextFunc != null)
                     {
-                        view.GetComponent<TooltipTarget>().DynamicText = delegate { return itemTooltipTextFunc.Invoke(pair.Key, pair.Value); };
+                        view.GetComponent<TooltipTarget>().DynamicText = delegate { return itemTooltipTextFunc.Invoke(pair.Key, value); };
                     }
                     count++;
                 }
@@ -337,11 +343,11 @@ namespace ScheduleStopwatch.UI
         private Transform _template;
         private float _offset;
         private bool _lastIncomplete = false;
-        private IReadOnlyDictionary<Item, int> _lastTransfers;
+        private IReadOnlyDictionary<Item, TransferData> _lastTransfers;
         private Dictionary<Item, float> _lastNeededItems;
         private Dictionary<Item, Dictionary<Item, float>> _neededItemsPerItem;
         private Color _resourceViewOrigColor;
-        private enum Direction {unload, load};
+//        private enum Direction {unload, load};
 
         #region HARMONY
         [HarmonyPrefix]
