@@ -7,10 +7,11 @@ using VoxelTycoon;
 using VoxelTycoon.Buildings;
 using VoxelTycoon.Recipes;
 using VoxelTycoon.Researches;
+using static ScheduleStopwatch.VehicleScheduleCapacity;
 
 namespace ScheduleStopwatch
 {
-    class RecipeHelper: LazyManager<RecipeHelper>
+    class RecipeHelper : LazyManager<RecipeHelper>
     {
         protected override void OnInitialize()
         {
@@ -79,6 +80,29 @@ namespace ScheduleStopwatch
                 return (resultList, resultSubItemList);
             }
             return (cacheResultList, cacheResultSubItemList);
+        }
+
+        public static void AddItem(Dictionary<Item, int> items, Item item, int count)
+        {
+            if (items.TryGetValue(item, out int oldCount))
+            {
+                items[item] = oldCount + count;
+            }
+            else
+            {
+                items.Add(item, count);
+            }
+        }
+        public static void AddItems(Dictionary<Item, int> items, IReadOnlyDictionary<Item, TransferData> itemsToAdd, TransferDirection direction)
+        {
+            foreach (KeyValuePair<Item, TransferData> pair in itemsToAdd)
+            {
+                int count = pair.Value.Get(direction);
+                if (count != 0)
+                {
+                    AddItem(items, pair.Key, count);
+                }
+            }
         }
 
         public ImmutableList<RecipeItem> GetIngredients(Item item)

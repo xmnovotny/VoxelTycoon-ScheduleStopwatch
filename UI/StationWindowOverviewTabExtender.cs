@@ -94,32 +94,41 @@ namespace ScheduleStopwatch.UI
                 }
                 RecipeHelper helper = LazyManager<RecipeHelper>.Current;
 
-                foreach (KeyValuePair<Item, TransferData> pair in _lastTransfers)
+                Dictionary<Item, int> demandedItems = new Dictionary<Item, int>();
+                Dictionary<Item, int> unservicedDemands = new Dictionary<Item, int>();
+
+                RecipeHelper.AddItems(demandedItems, _lastTransfers, TransferDirection.loading);
+
+                if (StationWindow.Location.VehicleStation != null)
                 {
-                    if (pair.Value.load > 0)
+                    DemandHelper.GetStationDemands(StationWindow.Location.VehicleStation, demandedItems, unservicedDemands);
+                }
+
+                foreach (KeyValuePair<Item, int> pair in demandedItems)
+                {
+                    Dictionary<Item, float> subNeededItems = _neededItemsPerItem[pair.Key] = new Dictionary<Item, float>();
+                    List<RecipeItem> ingredients = null;
+                    bool isUnserviced = unservicedDemands.TryGetValue(pair.Key, out int unservicedCount) && unservicedCount == pair.Value;
+
+                    if (!isUnserviced && (!_lastTransfers.TryGetValue(pair.Key, out TransferData transfData) || transfData.unload == 0))
                     {
-                        Dictionary<Item, float> subNeededItems = _neededItemsPerItem[pair.Key] = new Dictionary<Item, float>();
-                        List<RecipeItem> ingredients = null;
-                        if (pair.Value.unload == 0)
+                        //calculate ingredients only for items that are not unloaded at the station
+                        ingredients = helper.GetIngredients(pair.Key, finalItems, pair.Value);
+                    }
+                    if (ingredients != null && ingredients.Count > 0)
+                    {
+                        AddIngredients(ingredients, neededItems);
+                        AddIngredients(ingredients, subNeededItems);
+                    }
+                    else
+                    {
+                        //no ingredients = raw item / item is transferred (unloaded and loaded) / unserviced demand, we add it to needed items
+                        if (!neededItems.TryGetValue(pair.Key, out float count))
                         {
-                            //calculate ingredients only for items thah are not unloaded at the station
-                            ingredients = helper.GetIngredients(pair.Key, finalItems, pair.Value.load);
+                            count = 0;
                         }
-                        if (ingredients != null && ingredients.Count > 0)
-                        {
-                            AddIngredients(ingredients, neededItems);
-                            AddIngredients(ingredients, subNeededItems);
-                        }
-                        else
-                        {
-                            //no ingredients = raw item or item is transferred (unloaded and loaded), we add it to needed items
-                            if (!neededItems.TryGetValue(pair.Key, out float count))
-                            {
-                                count = 0;
-                            }
-                            neededItems[pair.Key] = count + pair.Value.load;
-                            subNeededItems[pair.Key] = pair.Value.load;
-                        }
+                        neededItems[pair.Key] = count + pair.Value;
+                        subNeededItems[pair.Key] = pair.Value;
                     }
                 }
             }
@@ -221,6 +230,7 @@ namespace ScheduleStopwatch.UI
             _lastTransfers = null;
             _lastNeededItems = null;
             _neededItemsPerItem = null;
+            _lastDemands = null;
             if (settings.ShowStationLoadedItems || settings.ShowStationUnloadedItems)
             {
                 ImmutableList<Vehicle> vehicles = LazyManager<VehicleStationLocationManager>.Current.GetServicedVehicles(StationWindow.Location);
@@ -346,6 +356,7 @@ namespace ScheduleStopwatch.UI
         private IReadOnlyDictionary<Item, TransferData> _lastTransfers;
         private Dictionary<Item, float> _lastNeededItems;
         private Dictionary<Item, Dictionary<Item, float>> _neededItemsPerItem;
+        private Dictionary<Item, int> _lastDemands;
         private Color _resourceViewOrigColor;
 //        private enum Direction {unload, load};
 
