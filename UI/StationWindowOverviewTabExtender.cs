@@ -78,14 +78,15 @@ namespace ScheduleStopwatch.UI
             if (_lastNeededItems == null)
             {
                 Dictionary<Item, float> neededItems = _lastNeededItems = new Dictionary<Item, float>();
+                IReadOnlyDictionary<Item, TransferData> lastTransfers = LastTransfers;
                 _neededItemsPerItem = new Dictionary<Item, Dictionary<Item, float>>();
-                if (_lastTransfers == null || _lastTransfers.Count == 0)
+                if (lastTransfers.Count == 0)
                 {
                     return neededItems;
                 }
 
                 List<Item> finalItems = new List<Item>();
-                foreach (KeyValuePair<Item, TransferData> pair in _lastTransfers)
+                foreach (KeyValuePair<Item, TransferData> pair in lastTransfers)
                 {
                     if (pair.Value.unload > 0)
                     {
@@ -94,23 +95,28 @@ namespace ScheduleStopwatch.UI
                 }
                 RecipeHelper helper = LazyManager<RecipeHelper>.Current;
 
-                Dictionary<Item, int> demandedItems = new Dictionary<Item, int>();
+                Dictionary<Item, int> itemsForCalculation = new Dictionary<Item, int>();
                 Dictionary<Item, int> unservicedDemands = new Dictionary<Item, int>();
 
-                RecipeHelper.AddItems(demandedItems, _lastTransfers, TransferDirection.loading);
+                RecipeHelper.AddItems(itemsForCalculation, lastTransfers, TransferDirection.loading);
 
                 if (StationWindow.Location.VehicleStation != null)
                 {
-                    DemandHelper.GetStationDemands(StationWindow.Location.VehicleStation, demandedItems, unservicedDemands);
+                    _lastDemands = new Dictionary<Item, int>();
+                    DemandHelper.GetStationDemands(StationWindow.Location.VehicleStation, _lastDemands, unservicedDemands);
+                    if (_lastDemands.Count>0)
+                    {
+                        RecipeHelper.AddItems(itemsForCalculation, _lastDemands);
+                    }
                 }
 
-                foreach (KeyValuePair<Item, int> pair in demandedItems)
+                foreach (KeyValuePair<Item, int> pair in itemsForCalculation)
                 {
                     Dictionary<Item, float> subNeededItems = _neededItemsPerItem[pair.Key] = new Dictionary<Item, float>();
                     List<RecipeItem> ingredients = null;
                     bool isUnserviced = unservicedDemands.TryGetValue(pair.Key, out int unservicedCount) && unservicedCount == pair.Value;
 
-                    if (!isUnserviced && (!_lastTransfers.TryGetValue(pair.Key, out TransferData transfData) || transfData.unload == 0))
+                    if (!isUnserviced && (!lastTransfers.TryGetValue(pair.Key, out TransferData transfData) || transfData.unload == 0))
                     {
                         //calculate ingredients only for items that are not unloaded at the station
                         ingredients = helper.GetIngredients(pair.Key, finalItems, pair.Value);
@@ -164,7 +170,7 @@ namespace ScheduleStopwatch.UI
                     {
                         string text = pair.Value.ToString("N0");
                         sb.AppendLine().Append(StringHelper.FormatCountString(pair.Key.DisplayName, text));
-                        if (!_lastTransfers.TryGetValue(pair.Key, out TransferData transfCount) || transfCount.load > 0)
+                        if (!LastTransfers.TryGetValue(pair.Key, out TransferData transfCount) || transfCount.load > 0)
                         {
                             (int? itemCountPerMonth, Mine mine) = helper.GetMinedItemsPerMineAndMonth(pair.Key);
                             if (itemCountPerMonth != null)
@@ -196,7 +202,7 @@ namespace ScheduleStopwatch.UI
                     {
                         string text = pair.Value.ToString("N0");
                         sb.AppendLine().Append(StringHelper.FormatCountString(pair.Key.DisplayName, text));
-                        if (!_lastTransfers.TryGetValue(pair.Key, out TransferData transfCount) || transfCount.load > 0)
+                        if (!LastTransfers.TryGetValue(pair.Key, out TransferData transfCount) || transfCount.load > 0)
                         {
                             (int? itemCountPerMonth, Mine mine) = helper.GetMinedItemsPerMineAndMonth(pair.Key);
                             if (itemCountPerMonth != null)
@@ -234,9 +240,10 @@ namespace ScheduleStopwatch.UI
             if (settings.ShowStationLoadedItems || settings.ShowStationUnloadedItems)
             {
                 ImmutableList<Vehicle> vehicles = LazyManager<VehicleStationLocationManager>.Current.GetServicedVehicles(StationWindow.Location);
-                IReadOnlyDictionary<Item, TransferData> transfers = _lastTransfers = Manager<VehicleScheduleDataManager>.Current.GetStationTaskTransfersSum(vehicles, StationWindow.Location, out bool incomplete);
+                IReadOnlyDictionary<Item, TransferData> transfers = LastTransfers;
                 FillContainerWithItems(_loadedContainer, _loadedItemsContainer, settings.ShowStationLoadedItems ? transfers : null, TransferDirection.loading, itemTooltipTextFunc: GetEstimatedItemsForOneLoadItemTooltipText);
                 FillContainerWithItems(_unloadedContainer, _unloadedItemsContainer, settings.ShowStationUnloadedItems ? transfers : null, TransferDirection.unloading, GetEstimatatedNeededItems());
+                bool incomplete = IncompleteTransfers;
                 if (_lastIncomplete != incomplete)
                 {
                     _lastIncomplete = incomplete;
@@ -347,17 +354,58 @@ namespace ScheduleStopwatch.UI
             Settings.Current.Unsubscribe(OnSettingsChanged);
         }
 
+        private Dictionary<Item, int> DemandedItems
+        {
+            get
+            {
+                if (_neededItemsPerItem == null)
+                {
+                    GetEstimatatedNeededItems();
+                }
+                return _lastDemands;
+            }
+        }
+
+        private IReadOnlyDictionary<Item, TransferData> LastTransfers
+        {
+            get
+            {
+                if (_lastTransfers == null)
+                {
+                    ImmutableList<Vehicle> vehicles = LazyManager<VehicleStationLocationManager>.Current.GetServicedVehicles(StationWindow.Location);
+                    _lastTransfers = Manager<VehicleScheduleDataManager>.Current.GetStationTaskTransfersSum(vehicles, StationWindow.Location, out bool incompleteTransfers);
+                    _incompleteTransfers = incompleteTransfers;
+                }
+                return _lastTransfers;
+            }
+        }
+
+        private bool IncompleteTransfers
+        {
+            get
+            {
+                if (_incompleteTransfers == null)
+                {
+                    IReadOnlyDictionary<Item, TransferData> _ = LastTransfers;
+                }
+                return _incompleteTransfers.Value;
+            }
+        }
+
         private Transform _loadedContainer, _loadedItemsContainer;
         private Transform _unloadedContainer, _unloadedItemsContainer;
         private Text _loadedContainerTitle, _unloadedContainerTitle;
         private Transform _template;
         private float _offset;
         private bool _lastIncomplete = false;
+        private bool? _incompleteTransfers = null;
         private IReadOnlyDictionary<Item, TransferData> _lastTransfers;
         private Dictionary<Item, float> _lastNeededItems;
         private Dictionary<Item, Dictionary<Item, float>> _neededItemsPerItem;
         private Dictionary<Item, int> _lastDemands;
         private Color _resourceViewOrigColor;
+
+        private static Transform _actualTargetItemsContainer;
 //        private enum Direction {unload, load};
 
         #region HARMONY
@@ -367,6 +415,13 @@ namespace ScheduleStopwatch.UI
         {
             StationWindowOverviewTabExtender tabExt = __instance.gameObject.AddComponent<StationWindowOverviewTabExtender>();
             tabExt.Initialize(window);
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(StationWindowOverviewTab), "Initialize")]
+        private static void VehicleWindowScheduleTab_Initialize_pof(VehicleWindowScheduleTab __instance, Transform ____targetsContainer)
+        {
+            ____targetsContainer.Find<Text>("Label").text += " " + LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/monthly_demand").ToUpper();
         }
 
         [HarmonyPostfix]
@@ -380,6 +435,38 @@ namespace ScheduleStopwatch.UI
             }
         }
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(StationWindowOverviewTab), "InvalidateSourcesAndTargets")]
+        private static void StationWindowOverviewTab_InvalidateSourcesAndTargets_prf(Transform ____targetsItemsContainer)
+        {
+            _actualTargetItemsContainer = ____targetsItemsContainer;
+        }
+
+        [HarmonyFinalizer]
+        [HarmonyPatch(typeof(StationWindowOverviewTab), "InvalidateSourcesAndTargets")]
+        private static void StationWindowOverviewTab_InvalidateSourcesAndTargets_fin()
+        {
+            _actualTargetItemsContainer = null;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ResourceView), "ShowItem")]
+        [HarmonyPatch(new Type[] { typeof(Item) })]
+        private static void ResourceView_ShowItem_pof(ResourceView __instance, Item item)
+        {
+            if (__instance.transform.parent == _actualTargetItemsContainer)
+            {
+                StationWindowOverviewTabExtender tabExt = __instance.transform.GetComponentInParent<StationWindowOverviewTabExtender>();
+                if (tabExt)
+                {
+                    Dictionary<Item, int> demandedItems = tabExt.DemandedItems;
+                    if (demandedItems != null && demandedItems.TryGetValue(item, out int count))
+                    {
+                        __instance.ShowItem(item, count);
+                    }
+                }
+            }
+        }
         #endregion
     }
 }

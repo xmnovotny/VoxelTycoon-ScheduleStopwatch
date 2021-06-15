@@ -27,6 +27,7 @@
   "schedule_stopwatch/no_transfers_data": "Žádná data o přesunech",
   "schedule_stopwatch/average_schedule_speed": "Průměrná rychlost: {0} {1}",
   "schedule_stopwatch/ratio_loading_total": "Poměr doby nakládky k celkové době: {0}%",
-  "schedule_stopwatch/partial": "částečná"
+  "schedule_stopwatch/partial": "částečná",
+  "schedule_stopwatch/monthly_demand": "(měsíční poptávka)"
 }
 

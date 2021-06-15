@@ -104,6 +104,13 @@ namespace ScheduleStopwatch
                 }
             }
         }
+        public static void AddItems(Dictionary<Item, int> items, IReadOnlyDictionary<Item, int> itemsToAdd)
+        {
+            foreach (KeyValuePair<Item, int> pair in itemsToAdd)
+            {
+                AddItem(items, pair.Key, pair.Value);
+            }
+        }
 
         public ImmutableList<RecipeItem> GetIngredients(Item item)
         {
