@@ -274,28 +274,33 @@ namespace ScheduleStopwatch.UI
                 if (value > 0)
                 {
                     ResourceView view = this.GetResourceView(resourceViews, count, itemContainer);
-                    Panel renderer = view.gameObject.transform.Find("ValueContainer").GetComponent<Panel>();
+                    Panel panel = view.gameObject.transform.Find("ValueContainer").GetComponent<Panel>();
+                    Transform demandCont = view.transform.Find("DemandContainer");
                     if (neededItems != null && neededItems.TryGetValue(pair.Key, out float neededCount))
                     {
                         view.Show(null, null, LazyManager<IconRenderer>.Current.GetItemIcon(pair.Key.AssetId), StringHelper.Simplify((double)value), StringHelper.FormatCountString(pair.Key.DisplayName, value.ToString("N0") + "/" + neededCount.ToString("N0")));
+
+                        demandCont.Find<Text>("Value").text = StringHelper.Simplify(neededCount);
+                        demandCont.gameObject.SetActive(true);
                         float ratio = value / neededCount;
                         if (ratio > 1.2f)
                         {
-                            renderer.color = Color.blue;
+                            panel.color = Color.blue;
                         }
                         else
                         if (ratio < 0.9f)
                         {
-                            renderer.color = Color.red;
+                            panel.color = Color.red;
                         } else
                         {
-                            renderer.color = new Color(0, 0.88f, 0);
+                            panel.color = new Color(0, 0.88f, 0);
                         }
                     }
                     else
                     {
                         view.ShowItem(pair.Key, null, value);
-                        renderer.color = _resourceViewOrigColor;
+                        panel.color = _resourceViewOrigColor;
+                        demandCont.gameObject.SetActive(false);
                     }
                     if (itemTooltipTextFunc != null)
                     {
@@ -318,13 +323,43 @@ namespace ScheduleStopwatch.UI
             {
                 return resourceViews[i];
             }
-            return UnityEngine.Object.Instantiate<ResourceView>(R.Game.UI.ResourceView, parent);
+            if (_resourceViewTemplate == null)
+            {
+                CreateResourceViewTemplate();
+            }
+            ResourceView result = UnityEngine.Object.Instantiate<ResourceView>(_resourceViewTemplate, parent);
+            return result;
+        }
+
+        private void CreateResourceViewTemplate()
+        {
+            _resourceViewTemplate = UnityEngine.Object.Instantiate<ResourceView>(R.Game.UI.ResourceView, null);
+            RectTransform valueContainer = _resourceViewTemplate.transform.Find<RectTransform>("ValueContainer");
+            RectTransform newContainer = UnityEngine.Object.Instantiate<RectTransform>(valueContainer, _resourceViewTemplate.transform);
+            newContainer.SetAsFirstSibling();
+            newContainer.name = "DemandContainer";
+            newContainer.SetActive(false);
+            newContainer.GetComponent<Panel>().color = Color.grey;
+            Vector2 pos = newContainer.anchoredPosition;
+            pos.y = 33;
+            newContainer.anchoredPosition = pos;
         }
 
         private void CreateTemplate()
         {
             _template = UnityEngine.Object.Instantiate<Transform>(R.Game.UI.StationWindow.StationWindowOverviewTab.transform.Find("Body/WindowScrollView").GetComponent<ScrollRect>().content.Find("Sources"));
             _template.gameObject.SetActive(false);
+            GridLayoutGroup group = _template.Find<GridLayoutGroup>("Content");
+
+            RectOffset padding = group.padding;
+            padding.top = 5;
+            padding.bottom = 0;
+            group.padding = padding;
+
+            Vector2 spacing = group.spacing;
+            spacing.y = 26;
+            group.spacing = spacing;
+
             _resourceViewOrigColor = R.Game.UI.ResourceView.gameObject.transform.Find("ValueContainer").GetComponent<Panel>().color;
         }
 
@@ -395,7 +430,8 @@ namespace ScheduleStopwatch.UI
         private Transform _loadedContainer, _loadedItemsContainer;
         private Transform _unloadedContainer, _unloadedItemsContainer;
         private Text _loadedContainerTitle, _unloadedContainerTitle;
-        private Transform _template;
+        private static Transform _template;
+        private static ResourceView _resourceViewTemplate;
         private float _offset;
         private bool _lastIncomplete = false;
         private bool? _incompleteTransfers = null;
@@ -403,10 +439,9 @@ namespace ScheduleStopwatch.UI
         private Dictionary<Item, float> _lastNeededItems;
         private Dictionary<Item, Dictionary<Item, float>> _neededItemsPerItem;
         private Dictionary<Item, int> _lastDemands;
-        private Color _resourceViewOrigColor;
+        private static Color _resourceViewOrigColor;
 
         private static Transform _actualTargetItemsContainer;
-//        private enum Direction {unload, load};
 
         #region HARMONY
         [HarmonyPrefix]
