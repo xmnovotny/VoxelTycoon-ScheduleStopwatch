@@ -106,7 +106,12 @@ namespace ScheduleStopwatch.UI
                 throw new ArgumentException("Schedule data is not for this ScheduleTotalIndicator");
 
             Locale locale = LazyManager<LocaleManager>.Current.Locale;
-            IReadOnlyDictionary<Item, TransferData> routeTotalTransfers = RouteTotalTransfers;
+            IReadOnlyDictionary<Item, TransferData> routeTotalTransfers = null;
+            if (_capacityIndicator != null)
+            {
+                _lastTotalTransfers = data.Capacity.GetTotalTransfers();
+                routeTotalTransfers = RouteTotalTransfers;
+            }
             int itemsLimit = routeTotalTransfers != null ? 7 : 10;
             _lastTransfersPerStation = null;
             _lastMonthMultiplier = data.ScheduleMonthlyMultiplier;

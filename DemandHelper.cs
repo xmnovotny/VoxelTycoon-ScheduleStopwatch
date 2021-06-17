@@ -42,7 +42,7 @@ namespace ScheduleStopwatch
                     AddCityDemand(store.Demand, unservicedDemands);
                 }
             }
-            if (node.Building is Lab lab && lab.enabled && lab.Research != null)
+            if (node.Building is Lab lab && lab.IsEnabled && lab.Research != null && !LazyManager<ResearchManager>.Current.IsCompleted(lab.Research))
             {
                 AddLab(lab, demands);
             }

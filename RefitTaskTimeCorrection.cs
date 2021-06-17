@@ -12,10 +12,8 @@ namespace ScheduleStopwatch
         [HarmonyPatch(typeof(RefitTaskDelayedAction), "GetStorageToSet")]
         private static void RefitTaskDelayedAction_GetStorageToSet_pof(RefitTaskDelayedAction __instance, ref Storage __result, VehicleUnit unit)
         {
-            FileLog.Log("Refit");
             if (__result != null && unit.Storage != null && __result.Item == unit.Storage.Item)
             {
-                FileLog.Log("Refit: null");
                 //same strorage = no need to refit
                 __result = null;
             }

@@ -26,7 +26,8 @@ namespace ScheduleStopwatch
         public VehicleScheduleCapacity(VehicleSchedule vehicleSchedule)
         {
             VehicleSchedule = vehicleSchedule ?? throw new ArgumentNullException(nameof(vehicleSchedule));
-            _hasValidData = false;
+            _hasValidData = null;
+            _dirty = true;
             SubscribeUnitStorageChange();
         }
 
@@ -152,7 +153,7 @@ namespace ScheduleStopwatch
 
         public TransfersPerStationCont GetTransfersPerStation()
         {
-            return TransfersPerStation.AsReadonly();
+            return TransfersPerStation?.AsReadonly();
         }
         public TransfersPerStationCont GetTransfersPerStation(int unitIndex)
         {
@@ -201,6 +202,8 @@ namespace ScheduleStopwatch
             {
                 _totalTransfers = null;
                 _transfPerStation = null;
+                _transfPerUnit = null;
+                _transfPerStationPerUnit = null;
                 _storages = null;
                 BuildTaskTransfers();
                 _dirty = false;
@@ -227,7 +230,7 @@ namespace ScheduleStopwatch
             {
                 VehicleUnit targetUnit = targetUnits[k];
                 storageManager.TryGetStorage(targetUnit.SharedData.AssetId, item, out Storage newStorage);
-                if (newStorage != null && storages.ContainsKey(targetUnit) && storages[targetUnit].storage.Item != newStorage.Item)
+                if (newStorage != null && storages.ContainsKey(targetUnit) && (storages[targetUnit].storage == null || storages[targetUnit].storage.Item != newStorage.Item))
                 {
                     storages[targetUnit] = new StorageState(newStorage);
                 }

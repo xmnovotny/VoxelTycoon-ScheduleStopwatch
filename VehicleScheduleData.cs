@@ -273,7 +273,7 @@ namespace ScheduleStopwatch
             }
         }
 
-        private void OnDataChanged(RootTask task)
+        private void OnDataChanged(RootTask task, bool notifyRoute = true)
         {
             MarkDirty();
             if (NotificationsTurnedOff)
@@ -284,7 +284,7 @@ namespace ScheduleStopwatch
             _notificationPending = false;
             ownDataChanged?.Invoke(this);
             VehicleRoute route = Vehicle.Route;
-            if (route?.Vehicles.Count > 1)
+            if (notifyRoute && route?.Vehicles.Count > 1)
             {
                 CallDataChangedEventsForRoute(task);
             }
@@ -508,7 +508,7 @@ namespace ScheduleStopwatch
                 FillUnknownTimes();
             }
             _capacity?.MarkDirty();
-            OnDataChanged(task);
+            OnDataChanged(task, false); //do not notify route - when schedule is changed, OnScheduleChanged event will be called for each vehicle in the route
         }
 
         public void MarkDirty()
