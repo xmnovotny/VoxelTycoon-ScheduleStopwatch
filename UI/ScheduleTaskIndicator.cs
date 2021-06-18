@@ -8,6 +8,7 @@ using VoxelTycoon;
 using VoxelTycoon.Localization;
 using VoxelTycoon.Tracks.Tasks;
 using VoxelTycoon.UI;
+using static ScheduleStopwatch.TaskDurationDataSet;
 using static ScheduleStopwatch.VehicleScheduleCapacity;
 
 namespace ScheduleStopwatch.UI
@@ -84,19 +85,33 @@ namespace ScheduleStopwatch.UI
 
             if (_travelTimeText != null)
             {
-                TimeSpan? travel = data.GetAverageTravelDuration(Task);
-                if (travel.HasValue)
+                DurationData travel = data.GetAverageTravelDuration(Task);
+                if (travel != null)
                 {
-                    _travelTimeText.text = locale.GetString("schedule_stopwatch/days_hours").Format(((int)travel.Value.TotalDays).ToString("N0"), travel.Value.Hours.ToString("N0"));
+                    _travelTimeText.text = locale.GetString("schedule_stopwatch/days_hours").Format(((int)travel.Duration.TotalDays).ToString("N0"), travel.Duration.Hours.ToString("N0"));
+                    if (travel.Estimated)
+                    {
+                        _travelTimeText.color = Color.gray;
+                    } else
+                    {
+                        _travelTimeText.color = Color.black;
+                    }
                 }
                 else
                 {
                     _travelTimeText.text = locale.GetString("schedule_stopwatch/unknown").ToUpper();
                 }
-                TimeSpan? loading = data.GetAverageStationLoadingDuration(Task);
-                if (loading.HasValue)
+                DurationData loading = data.GetAverageStationLoadingDuration(Task);
+                if (loading != null)
                 {
-                    _loadingTimeText.text = locale.GetString("schedule_stopwatch/hours_minutes").Format(((int)loading.Value.TotalHours).ToString("N0"), loading.Value.Minutes.ToString("N0"));
+                    _loadingTimeText.text = locale.GetString("schedule_stopwatch/hours_minutes").Format(((int)loading.Duration.TotalHours).ToString("N0"), loading.Duration.Minutes.ToString("N0"));
+                    if (loading.Estimated)
+                    {
+                        _loadingTimeText.color = Color.grey;
+                    } else
+                    {
+                        _loadingTimeText.color = Color.black;
+                    }
                 }
                 else
                 {

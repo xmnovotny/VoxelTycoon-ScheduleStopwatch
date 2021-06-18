@@ -10,6 +10,7 @@ using VoxelTycoon.Localization;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.Tracks.Tasks;
 using VoxelTycoon.UI;
+using static ScheduleStopwatch.TaskDurationDataSet;
 using static ScheduleStopwatch.VehicleScheduleCapacity;
 using TransfersPerStationCont = ScheduleStopwatch.VehicleScheduleCapacity.TransfersPerStationCont;
 
@@ -18,7 +19,7 @@ namespace ScheduleStopwatch.UI
     class ScheduleTotalIndicator: ScheduleIndicator
     {
         private Text _text;
-        private TimeSpan? _lastTotalTime;
+        private DurationData _lastTotalTime;
         private float? _lastMonthMultiplier;
         private IReadOnlyDictionary<Item, TransferData> _lastTotalTransfers;
         private TransfersPerStationCont _lastTransfersPerStation;
@@ -119,9 +120,16 @@ namespace ScheduleStopwatch.UI
             {
                 itemsLimit = routeTotalTransfers != null ? 3 : 5;
                 _lastTotalTime = data.ScheduleAvereageDuration;
-                if (_lastTotalTime.HasValue)
+                if (_lastTotalTime != null)
                 {
-                    _text.text = locale.GetString("schedule_stopwatch/days_hours").Format(((int)_lastTotalTime.Value.TotalDays).ToString("N0"), _lastTotalTime.Value.Hours.ToString("N0"));
+                    _text.text = locale.GetString("schedule_stopwatch/days_hours").Format(((int)_lastTotalTime.Duration.TotalDays).ToString("N0"), _lastTotalTime.Duration.Hours.ToString("N0"));
+                    if (_lastTotalTime.Estimated)
+                    {
+                        _text.color = Color.gray;
+                    } else
+                    {
+                        _text.color = Color.black;
+                    }
                 }
                 else
                 {
@@ -139,9 +147,9 @@ namespace ScheduleStopwatch.UI
         private string GetTotalTimeTooltipText()
         {
             Locale locale = LazyManager<LocaleManager>.Current.Locale;
-            if (_lastTotalTime.HasValue)
+            if (_lastTotalTime != null)
             {
-                string result = locale.GetString("schedule_stopwatch/times_per_month").Format((Convert.ToSingle((30 * 86400) / _lastTotalTime.Value.TotalSeconds)).ToString("N1", LazyManager<LocaleManager>.Current.Locale.CultureInfo));
+                string result = locale.GetString("schedule_stopwatch/times_per_month").Format((Convert.ToSingle((30 * 86400) / _lastTotalTime.Duration.TotalSeconds)).ToString("N1", LazyManager<LocaleManager>.Current.Locale.CultureInfo));
                 float? speed = _scheduleData.AverageSpeed;
                 if (speed != null)
                 {
@@ -151,7 +159,7 @@ namespace ScheduleStopwatch.UI
                     result += "\n\n" + locale.GetString("schedule_stopwatch/average_schedule_speed").Format(locale.GetString("schedule_stopwatch/unknown"), "");
                 }
 
-                result += "\n" + locale.GetString("schedule_stopwatch/ratio_loading_total").Format(StringHelper.Boldify((_scheduleData.ScheduleStationLoadingAvereageDuration.Value.TotalSeconds / _lastTotalTime.Value.TotalSeconds * 100).ToString("N0")));
+                result += "\n" + locale.GetString("schedule_stopwatch/ratio_loading_total").Format(StringHelper.Boldify((_scheduleData.ScheduleStationLoadingAvereageDuration.Duration.TotalSeconds / _lastTotalTime.Duration.TotalSeconds * 100).ToString("N0")));
                 return result;
             } else
             {

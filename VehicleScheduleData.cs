@@ -5,13 +5,13 @@ using VoxelTycoon.Serialization;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.Tracks.Tasks;
 using XMNUtils;
+using static ScheduleStopwatch.TaskDurationDataSet;
 
 namespace ScheduleStopwatch
 {
     [SchemaVersion(2)]
     public partial class VehicleScheduleData
     {
-
         public Vehicle Vehicle { get; private set; }
 
         private Measurement _measurement;
@@ -24,16 +24,16 @@ namespace ScheduleStopwatch
         private Dictionary<RootTask, Action<VehicleScheduleData, RootTask>> _taskDataChanged = new Dictionary<RootTask, Action<VehicleScheduleData, RootTask>>(); //events for one task, called for both own data change data change from another vehicle in the route
         private bool _isDirty = true;
         private bool _notificationPending = false;
-        private TimeSpan? _totalTravelAverage;
-        private TimeSpan? _totalStationLoadingAverage;
-        private TimeSpan? _totalAverage;
+        private DurationData _totalTravelAverage;
+        private DurationData _totalStationLoadingAverage;
+        private DurationData _totalAverage;
         private float? _averageSpeed; //average speed in m/s
         private Snapshot _lastSnapshot;
         private VehicleScheduleCapacity _capacity;
         private bool _notificationsTurnedOff = false;
         private DurationsPerStationsContainer _durationPerStation; //not for actual values, but for get initial values after schedule change (keeps old deleted values when there are no new data)
 
-        public TimeSpan? ScheduleTravelAvereageDuration
+        public DurationData ScheduleTravelAvereageDuration
         {
             get
             {
@@ -41,7 +41,7 @@ namespace ScheduleStopwatch
                 return _totalTravelAverage;
             }
         }
-        public TimeSpan? ScheduleStationLoadingAvereageDuration
+        public DurationData ScheduleStationLoadingAvereageDuration
         {
             get
             {
@@ -49,7 +49,7 @@ namespace ScheduleStopwatch
                 return _totalStationLoadingAverage;
             }
         }
-        public TimeSpan? ScheduleAvereageDuration
+        public DurationData ScheduleAvereageDuration
         {
             get
             {
@@ -74,7 +74,7 @@ namespace ScheduleStopwatch
                 Invalidate();
                 if (_totalAverage != null)
                 {
-                    return (Convert.ToSingle((30 * 86400) / _totalAverage.Value.TotalSeconds));
+                    return (Convert.ToSingle((30 * 86400) / _totalAverage.Duration.TotalSeconds));
                 }
 
                 return null;
@@ -115,18 +115,18 @@ namespace ScheduleStopwatch
         }
 
 
-        public TimeSpan? GetAverageTravelDuration(RootTask task)
+        public DurationData GetAverageTravelDuration(RootTask task)
         {
             return _travelData.GetAverageDuration(task);
         }
 
         //gets average travel duration for all tasks, returns null when data for some task is missing
-        public TimeSpan? GetAverageTravelDuration()
+        public DurationData GetAverageTravelDuration()
         {
             return _travelData.GetAverageDuration(_lastSnapshot.GetNonNonstopTasks());
         }
 
-        public TimeSpan? GetAverageStationLoadingDuration(RootTask task)
+        public DurationData GetAverageStationLoadingDuration(RootTask task)
         {
             return _stationLoadingData.GetAverageDuration(task);
         }
@@ -190,12 +190,12 @@ namespace ScheduleStopwatch
             {
                 _totalTravelAverage = _travelData.GetAverageDuration(_lastSnapshot.GetNonNonstopTasks());
                 _totalStationLoadingAverage = _stationLoadingData.GetAverageDuration(_lastSnapshot.GetNonNonstopTasks());
-                _totalAverage = _totalStationLoadingAverage.HasValue && _totalTravelAverage.HasValue ? _totalStationLoadingAverage + _totalTravelAverage : null;
+                _totalAverage = _totalStationLoadingAverage != null && _totalTravelAverage != null ? _totalStationLoadingAverage + _totalTravelAverage : null;
                 _averageSpeed = null;
                 float? distance;
                 if (_totalTravelAverage != null && (distance = _travelData.GetTravelledDistance(_lastSnapshot.GetNonNonstopTasks())) != null)
                 {
-                    _averageSpeed = distance.Value / ((float)_totalTravelAverage.Value.TotalSeconds / TimeManager.GameSecondsPerSecond) * 5f;
+                    _averageSpeed = distance.Value / ((float)_totalTravelAverage.Duration.TotalSeconds / TimeManager.GameSecondsPerSecond) * 5f;
                 }
                 _isDirty = false;
             }

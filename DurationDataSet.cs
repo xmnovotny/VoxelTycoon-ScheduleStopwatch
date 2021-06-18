@@ -14,7 +14,7 @@ namespace ScheduleStopwatch
         private TimeSpan _totalSum = default;
         private TimeSpan _runningSum = default;
         private int _totalCount;
-        private bool _toOverride;
+        private bool _toOverwrite;
 
         private CircularBuffer<TimeSpan> _durationData;
         public DurationDataSet(int bufferSize = DEFAULT_BUFFER_SIZE)
@@ -33,14 +33,22 @@ namespace ScheduleStopwatch
             _totalSum = default;
             _totalCount = 0;
             _runningSum = default;
-            _toOverride = false;
+            _toOverwrite = false;
             MarkDirty();
         }
 
         /** marks task data for overwrite with next new data (all old data will be discarded when new data are added) */
         public void MarkForOverwrite()
         {
-            _toOverride = true;
+            _toOverwrite = true;
+        }
+
+        public bool Estimated
+        {
+            get
+            {
+                return _durationData.Size == 0 || _toOverwrite == true;
+            }
         }
 
         /** calculates the running average of all stored data and sets it as the new single record */
@@ -77,7 +85,7 @@ namespace ScheduleStopwatch
 
         public void Add(TimeSpan duration)
         {
-            if (_toOverride)
+            if (_toOverwrite)
             {
                 Clear();
             } else

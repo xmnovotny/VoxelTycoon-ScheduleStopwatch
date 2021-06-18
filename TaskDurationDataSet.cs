@@ -10,6 +10,45 @@ namespace ScheduleStopwatch
     [SchemaVersion(2)]
     public class TaskDurationDataSet
     {
+        public class DurationData
+        {
+            public TimeSpan Duration { get; private set; }
+            public bool Estimated { get; private set; }  //data is not from exact measuring, but are estimated from others vehicles data
+            public DurationData(TimeSpan duration, bool estimated)
+            {
+                Duration = duration;
+                Estimated = estimated;
+            }
+
+            public static DurationData operator +(DurationData a, DurationData b)
+            {
+                return new DurationData(a.Duration + b.Duration, a.Estimated || b.Estimated);
+            }
+
+            public static implicit operator TimeSpan?(DurationData data)
+            {
+                if (data == null)
+                {
+                    return null;
+                } else
+                {
+                    return data.Duration;
+                }
+            }
+
+            public static implicit operator TimeSpan(DurationData data)
+            {
+                if (data == null)
+                {
+                    throw new ArgumentNullException("data");
+                }
+                else
+                {
+                    return data.Duration;
+                }
+            }
+        }
+
         private int _bufferSize;
         private readonly Dictionary<RootTask, DurationDataSet> _data = new Dictionary<RootTask, DurationDataSet>();
 
@@ -19,7 +58,6 @@ namespace ScheduleStopwatch
             {
                 _data.Add(task, new DurationDataSet(_bufferSize));
             }
-
             return _data[task];
         }
 
@@ -34,30 +72,38 @@ namespace ScheduleStopwatch
             dataSet.Add(duration);
         }
 
-        public TimeSpan? GetAverageDuration(RootTask task)
+        public DurationData GetAverageDuration(RootTask task)
         {
             if (!_data.TryGetValue(task, out DurationDataSet dataSet))
             {
                 return null;
             }
+            TimeSpan? average = dataSet.Average;
+            if (!average.HasValue)
+            {
+                return null;
+            }
+            DurationData durationData = new DurationData(average.Value, dataSet.Estimated);
 
-            return dataSet.Average;
+            return durationData;
         }
         //Gets sum of average duration for all tasks in the list. If some task is missing data, returns null
-        public TimeSpan? GetAverageDuration(IEnumerable<RootTask> tasks)
+        public DurationData GetAverageDuration(IEnumerable<RootTask> tasks)
         {
             TimeSpan result = default;
+            bool estimated = false;
             foreach (RootTask task in tasks)
             {
-                TimeSpan? duration = GetAverageDuration(task);
-                if (!duration.HasValue)
+                DurationData duration = GetAverageDuration(task);
+                if (duration == null)
                 {
                     return null;
                 }
-                result += duration.Value;
+                result += duration.Duration;
+                estimated |= duration.Estimated;
             }
 
-            return result;
+            return new DurationData(result, estimated);
         }
 
         protected void CopyAverageValues(TaskDurationDataSet newDataSet, Vehicle newVehicle)
