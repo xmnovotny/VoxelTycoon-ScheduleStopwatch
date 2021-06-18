@@ -58,6 +58,15 @@ namespace ScheduleStopwatch
             }
         }
 
+        public bool IsInacurate
+        {
+            get
+            {
+                DurationData scheduleAvereageDuration = ScheduleAvereageDuration;
+                return scheduleAvereageDuration==null || scheduleAvereageDuration.Estimated;
+            }
+        }
+
         public float? AverageSpeed
         {
             get

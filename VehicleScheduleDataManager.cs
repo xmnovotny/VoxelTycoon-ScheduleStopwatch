@@ -106,11 +106,12 @@ namespace ScheduleStopwatch
             return result;
         }
 
-        public IReadOnlyDictionary<Item, TransferData> GetStationTaskTransfersSum(ImmutableList<Vehicle> vehicles, VehicleStationLocation station, out bool isIncomplete)
+        public IReadOnlyDictionary<Item, TransferData> GetStationTaskTransfersSum(ImmutableList<Vehicle> vehicles, VehicleStationLocation station, out bool isIncomplete, out bool isEstimated)
         {
             int count = vehicles.Count;
             TaskTransfers transfersSum = new TaskTransfers();
             isIncomplete = false;
+            isEstimated = false;
             for (int i = 0; i < vehicles.Count; i++)
             {
                 if (!vehicles[i].IsEnabled)
@@ -122,7 +123,8 @@ namespace ScheduleStopwatch
                 float? mult;
                 if (transfers != null && (mult = scheduleData.ScheduleMonthlyMultiplier) != null)
                 {
-                    transfersSum.Add(transfers, mult);
+                    isEstimated |= scheduleData.ScheduleAvereageDuration.Estimated;
+                    transfersSum.Add(transfers, mult, scheduleData.ScheduleAvereageDuration.Estimated);
                 } else
                 {
                     isIncomplete = true;

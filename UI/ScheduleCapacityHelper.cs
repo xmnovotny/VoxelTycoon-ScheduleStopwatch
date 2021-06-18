@@ -41,17 +41,21 @@ namespace ScheduleStopwatch.UI
             return added;
         }
 
-        public static string GetCapacityTooltipText(float? monthMultiplier, IReadOnlyDictionary<Item, TransferData> totalTransfers, TransfersPerStationCont transfPerSt, IReadOnlyDictionary<Item, TransferData> routeToatlTransfers = null, TransfersPerStationCont routeTransfPerStation = null)
+        public static string GetCapacityTooltipText(float? monthMultiplier, IReadOnlyDictionary<Item, TransferData> totalTransfers, TransfersPerStationCont transfPerSt, bool isInaccurate, IReadOnlyDictionary<Item, TransferData> routeTotalTransfers = null, TransfersPerStationCont routeTransfPerStation = null)
         {
             Locale locale = LazyManager<LocaleManager>.Current.Locale;
             if (monthMultiplier != null && ((totalTransfers != null && totalTransfers.Count > 0) || (transfPerSt != null && transfPerSt.Count > 0)))
             {
-                bool isRoute = routeToatlTransfers != null && routeToatlTransfers.Count > 0;
+                bool isRoute = routeTotalTransfers != null && routeTotalTransfers.Count > 0;
                 StringBuilder sb = new StringBuilder();
                 sb.Append(StringHelper.Boldify(locale.GetString("schedule_stopwatch/estim_monthly_transf").ToUpper()));
                 if (isRoute)
                 {
                     sb.AppendLine().Append(StringHelper.Colorify(locale.GetString("schedule_stopwatch/estim_monthly_transf_hint"), UIColors.Solid.Text * 0.5f));
+                }
+                if (isInaccurate)
+                {
+                    sb.AppendLine().Append(StringHelper.Colorify(locale.GetString("schedule_stopwatch/inaccurate"), UIColors.Solid.Text * 0.5f));
                 }
                 if (transfPerSt != null && transfPerSt.Count > 0)
                 {
@@ -74,7 +78,7 @@ namespace ScheduleStopwatch.UI
                     foreach (KeyValuePair<Item, TransferData> transfer in totalTransfers)
                     {
                         string countStr = (transfer.Value.unload * monthMultiplier.Value).ToString("N0");
-                        if (isRoute && routeToatlTransfers.TryGetValue(transfer.Key, out TransferData routeCount))
+                        if (isRoute && routeTotalTransfers.TryGetValue(transfer.Key, out TransferData routeCount))
                         {
                             countStr += "/" + routeCount.unload.ToString();
                         }

@@ -237,6 +237,8 @@ namespace ScheduleStopwatch.UI
             _lastNeededItems = null;
             _neededItemsPerItem = null;
             _lastDemands = null;
+            _estimatedTransfers = null;
+            _incompleteTransfers = null;
             if (settings.ShowStationLoadedItems || settings.ShowStationUnloadedItems)
             {
                 ImmutableList<Vehicle> vehicles = LazyManager<VehicleStationLocationManager>.Current.GetServicedVehicles(StationWindow.Location);
@@ -244,12 +246,16 @@ namespace ScheduleStopwatch.UI
                 FillContainerWithItems(_loadedContainer, _loadedItemsContainer, settings.ShowStationLoadedItems ? transfers : null, TransferDirection.loading, itemTooltipTextFunc: GetEstimatedItemsForOneLoadItemTooltipText);
                 FillContainerWithItems(_unloadedContainer, _unloadedItemsContainer, settings.ShowStationUnloadedItems ? transfers : null, TransferDirection.unloading, GetEstimatatedNeededItems());
                 bool incomplete = IncompleteTransfers;
-                if (_lastIncomplete != incomplete)
+                bool estimated = EstimatedTransfers;
+                if (_lastIncomplete != incomplete || _lastEstimated != estimated)
                 {
                     _lastIncomplete = incomplete;
+                    _lastEstimated = estimated;
                     Locale locale = LazyManager<LocaleManager>.Current.Locale;
-                    _loadedContainerTitle.text = locale.GetString("schedule_stopwatch/monthly_loaded_items").ToUpper() + (incomplete ? " (" + locale.GetString("schedule_stopwatch/partial").ToUpper() + ")" : "");
-                    _unloadedContainerTitle.text = locale.GetString("schedule_stopwatch/monthly_unloaded_items").ToUpper() + (incomplete ? " (" + locale.GetString("schedule_stopwatch/partial").ToUpper() + ")" : "");
+                    string additionText = (incomplete ? " (" + locale.GetString("schedule_stopwatch/partial").ToUpper() + ")" : "")
+                        + (estimated ? " " + locale.GetString("schedule_stopwatch/inaccurate").ToUpper() : "");
+                    _loadedContainerTitle.text = locale.GetString("schedule_stopwatch/monthly_loaded_items").ToUpper() + additionText;
+                    _unloadedContainerTitle.text = locale.GetString("schedule_stopwatch/monthly_unloaded_items").ToUpper() + additionText;
                 }
             } else
             {
@@ -408,8 +414,9 @@ namespace ScheduleStopwatch.UI
                 if (_lastTransfers == null)
                 {
                     ImmutableList<Vehicle> vehicles = LazyManager<VehicleStationLocationManager>.Current.GetServicedVehicles(StationWindow.Location);
-                    _lastTransfers = Manager<VehicleScheduleDataManager>.Current.GetStationTaskTransfersSum(vehicles, StationWindow.Location, out bool incompleteTransfers);
+                    _lastTransfers = Manager<VehicleScheduleDataManager>.Current.GetStationTaskTransfersSum(vehicles, StationWindow.Location, out bool incompleteTransfers, out bool isEstimated);
                     _incompleteTransfers = incompleteTransfers;
+                    _estimatedTransfers = isEstimated; 
                 }
                 return _lastTransfers;
             }
@@ -427,14 +434,27 @@ namespace ScheduleStopwatch.UI
             }
         }
 
+        private bool EstimatedTransfers
+        {
+            get
+            {
+                if (_estimatedTransfers == null)
+                {
+                    IReadOnlyDictionary<Item, TransferData> _ = LastTransfers;
+                }
+                return _estimatedTransfers.Value;
+            }
+        }
+
         private Transform _loadedContainer, _loadedItemsContainer;
         private Transform _unloadedContainer, _unloadedItemsContainer;
         private Text _loadedContainerTitle, _unloadedContainerTitle;
         private static Transform _template;
         private static ResourceView _resourceViewTemplate;
         private float _offset;
-        private bool _lastIncomplete = false;
+        private bool _lastIncomplete = false, _lastEstimated = false;
         private bool? _incompleteTransfers = null;
+        private bool? _estimatedTransfers = null;
         private IReadOnlyDictionary<Item, TransferData> _lastTransfers;
         private Dictionary<Item, float> _lastNeededItems;
         private Dictionary<Item, Dictionary<Item, float>> _neededItemsPerItem;

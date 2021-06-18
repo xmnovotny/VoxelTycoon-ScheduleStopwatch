@@ -17,7 +17,7 @@
   "schedule_stopwatch/estim_monthly_transf": "Estimated monthly transfers",
   "schedule_stopwatch/estim_monthly_transf_hint": "(this vehicle/all route vehicles)",
   "schedule_stopwatch/total_transfer": "Total transfers",
-  "schedule_stopwatch/task_times_hint": "Travel time since the previous task/Task time in the station",
+  "schedule_stopwatch/task_times_hint": "Travel time since the previous task/Task time in the station\nGray color indicates that the time is estimated",
   "schedule_stopwatch/monthly_unloaded_items": "Expected monthly unloaded items",
   "schedule_stopwatch/monthly_loaded_items": "Expected monthly loaded items",
   "schedule_stopwatch/needed_items_to_produce": "Items needed to produce expected loaded items",
@@ -28,5 +28,7 @@
   "schedule_stopwatch/average_schedule_speed": "Average speed: {0} {1}",
   "schedule_stopwatch/ratio_loading_total": "Ratio of loading time to total time: {0}%",
   "schedule_stopwatch/partial": "partial",
-  "schedule_stopwatch/monthly_demand": "(monthly demand)"
+  "schedule_stopwatch/monthly_demand": "(monthly demand)",
+  "schedule_stopwatch/estimated": "(estimated)",
+  "schedule_stopwatch/inaccurate": "(inaccurate)"
 }

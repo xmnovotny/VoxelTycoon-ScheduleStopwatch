@@ -21,6 +21,7 @@ namespace ScheduleStopwatch.UI
         private Text _text;
         private DurationData _lastTotalTime;
         private float? _lastMonthMultiplier;
+        private bool _lastInaccurate;
         private IReadOnlyDictionary<Item, TransferData> _lastTotalTransfers;
         private TransfersPerStationCont _lastTransfersPerStation;
         private CargoCapacityIndicator _capacityIndicator;
@@ -116,6 +117,7 @@ namespace ScheduleStopwatch.UI
             int itemsLimit = routeTotalTransfers != null ? 7 : 10;
             _lastTransfersPerStation = null;
             _lastMonthMultiplier = data.ScheduleMonthlyMultiplier;
+            _lastInaccurate = data.ScheduleAvereageDuration.Estimated;
             if (_text != null)
             {
                 itemsLimit = routeTotalTransfers != null ? 3 : 5;
@@ -150,6 +152,10 @@ namespace ScheduleStopwatch.UI
             if (_lastTotalTime != null)
             {
                 string result = locale.GetString("schedule_stopwatch/times_per_month").Format((Convert.ToSingle((30 * 86400) / _lastTotalTime.Duration.TotalSeconds)).ToString("N1", LazyManager<LocaleManager>.Current.Locale.CultureInfo));
+                if (_lastTotalTime.Estimated)
+                {
+                    result += " " + locale.GetString("schedule_stopwatch/estimated");
+                }
                 float? speed = _scheduleData.AverageSpeed;
                 if (speed != null)
                 {
@@ -169,7 +175,7 @@ namespace ScheduleStopwatch.UI
 
         private string GetCapacityTooltipText()
         {
-            return ScheduleCapacityHelper.GetCapacityTooltipText(_lastMonthMultiplier, _lastTotalTransfers, LastTransfersPerStation, RouteTotalTransfers, RouteTransfersPerStation);
+            return ScheduleCapacityHelper.GetCapacityTooltipText(_lastMonthMultiplier, _lastTotalTransfers, LastTransfersPerStation, _lastInaccurate, RouteTotalTransfers, RouteTransfersPerStation);
         }
 
         private static void CreateTemplate()

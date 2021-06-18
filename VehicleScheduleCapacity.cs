@@ -79,7 +79,7 @@ namespace ScheduleStopwatch
                         {
                             return null;
                         }
-                        totalTransfers.Add(vehicleData.Capacity.TotalTransfers, mult);
+                        totalTransfers.Add(vehicleData.Capacity.TotalTransfers, mult, vehicleData.ScheduleAvereageDuration.Estimated);
                     }
                 }
 
@@ -108,7 +108,7 @@ namespace ScheduleStopwatch
                         {
                             return null;
                         }
-                        totalTransfers.Add(vehicleData.Capacity.GetTransfersPerStation(), mult);
+                        totalTransfers.Add(vehicleData.Capacity.GetTransfersPerStation(), mult, vehicleData.ScheduleAvereageDuration.Estimated);
                     }
                 }
 
@@ -142,7 +142,7 @@ namespace ScheduleStopwatch
                         {
                             return null;
                         }
-                        routeTransfers.Add(vehicleData.Capacity.GetTransfers(vehicle.Schedule.GetTasks()[taskIndex]), mult);
+                        routeTransfers.Add(vehicleData.Capacity.GetTransfers(vehicle.Schedule.GetTasks()[taskIndex]), mult, vehicleData.ScheduleAvereageDuration.Estimated);
                     }
                 }
 

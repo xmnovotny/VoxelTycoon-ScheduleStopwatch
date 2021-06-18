@@ -85,7 +85,7 @@ namespace ScheduleStopwatch.UI
 
             if (_travelTimeText != null)
             {
-                DurationData travel = data.GetAverageTravelDuration(Task);
+                DurationData travel = _lastTravelData = data.GetAverageTravelDuration(Task);
                 if (travel != null)
                 {
                     _travelTimeText.text = locale.GetString("schedule_stopwatch/days_hours").Format(((int)travel.Duration.TotalDays).ToString("N0"), travel.Duration.Hours.ToString("N0"));
@@ -101,7 +101,7 @@ namespace ScheduleStopwatch.UI
                 {
                     _travelTimeText.text = locale.GetString("schedule_stopwatch/unknown").ToUpper();
                 }
-                DurationData loading = data.GetAverageStationLoadingDuration(Task);
+                DurationData loading = _lastStationLoadingData = data.GetAverageStationLoadingDuration(Task);
                 if (loading != null)
                 {
                     _loadingTimeText.text = locale.GetString("schedule_stopwatch/hours_minutes").Format(((int)loading.Duration.TotalHours).ToString("N0"), loading.Duration.Minutes.ToString("N0"));
@@ -165,7 +165,10 @@ namespace ScheduleStopwatch.UI
                 {
                     sb.AppendLine().Append(StringHelper.Colorify(locale.GetString("schedule_stopwatch/estim_monthly_transf_hint"), UIColors.Solid.Text * 0.5f));
                 }
-
+                if (_lastTravelData?.Estimated == true || _lastStationLoadingData?.Estimated == true)
+                {
+                    sb.AppendLine().Append(StringHelper.Colorify(locale.GetString("schedule_stopwatch/inaccurate"), UIColors.Solid.Text * 0.5f));
+                }
                 ScheduleCapacityHelper.TooltipTextForStation(_lastTaskTransfers, sb, routeTaskTransfers, _lastMonthMultiplier.Value);
                 return sb.ToString();
             }
@@ -173,7 +176,7 @@ namespace ScheduleStopwatch.UI
         }
 
         private static void CreateTemplate()
-        {
+        { 
             var baseTemplate = UnityEngine.Object.Instantiate<Transform>(ScheduleIndicator.BaseTemplate);
             baseTemplate.gameObject.SetActive(false);
             _template = baseTemplate.gameObject.AddComponent<ScheduleTaskIndicator>();
@@ -254,6 +257,8 @@ namespace ScheduleStopwatch.UI
 
         private Text _travelTimeText, _loadingTimeText;
         private float? _lastMonthMultiplier;
+        private DurationData _lastTravelData;
+        private DurationData _lastStationLoadingData;
         private IReadOnlyDictionary<Item, TransferData> _lastTaskTransfers;
         private static ScheduleTaskIndicator _template;
         private VehicleScheduleData _scheduleData;

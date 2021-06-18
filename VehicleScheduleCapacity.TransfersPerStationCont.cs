@@ -38,7 +38,7 @@ namespace ScheduleStopwatch
                 return new TransfersPerStationCont(this);
             }
 
-            public void Add(VehicleStationLocation station, TaskTransfers transfers, float? multiplier = null)
+            public void Add(VehicleStationLocation station, TaskTransfers transfers, float? multiplier = null, bool estimated = false)
             {
                 if (isReadonly)
                 {
@@ -46,18 +46,18 @@ namespace ScheduleStopwatch
                 }
                 if (_transfPerSt.TryGetValue(station, out TaskTransfers taskTransf))
                 {
-                    taskTransf.Add(transfers, multiplier);
+                    taskTransf.Add(transfers, multiplier, estimated);
                 } else
                 {
-                    _transfPerSt.Add(station, new TaskTransfers(transfers, multiplier));
+                    _transfPerSt.Add(station, new TaskTransfers(transfers, multiplier, estimated));
                 }
             }
 
-            public void Add(TransfersPerStationCont transfPerStation, float? mutliplier)
+            public void Add(TransfersPerStationCont transfPerStation, float? mutliplier, bool estimated = false)
             {
                 foreach (KeyValuePair<VehicleStationLocation, TaskTransfers> pair in transfPerStation._transfPerSt)
                 {
-                    Add(pair.Key, pair.Value, mutliplier);
+                    Add(pair.Key, pair.Value, mutliplier, estimated);
                 }
             }
 

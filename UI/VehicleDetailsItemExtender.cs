@@ -16,7 +16,7 @@ namespace ScheduleStopwatch.UI
             Locale locale = LazyManager<LocaleManager>.Current.Locale;
             if (scheduleData != null)
             {
-                string result = ScheduleCapacityHelper.GetCapacityTooltipText(scheduleData.ScheduleMonthlyMultiplier, null, scheduleData.Capacity.GetTransfersPerStation(unitIndex));
+                string result = ScheduleCapacityHelper.GetCapacityTooltipText(scheduleData.ScheduleMonthlyMultiplier, null, scheduleData.Capacity.GetTransfersPerStation(unitIndex), scheduleData.IsInacurate);
                 if (result == "")
                 {
                     if (scheduleData.ScheduleMonthlyMultiplier != null)
