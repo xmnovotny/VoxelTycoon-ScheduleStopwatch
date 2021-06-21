@@ -14,7 +14,20 @@ namespace ScheduleStopwatch
     [HarmonyPatch]
     public class DemandHelper
     {
-        public static IEnumerable<IStorageNetworkNode> GetStationDemandNodes(VehicleStation station, bool additionalDemands = true)
+        public static bool IsInBasicDemand(VehicleStation station, IStorageNetworkNode node)
+        {
+            return GetBasicStationDemand(station).Contains(node);
+        }
+
+        public static List<IStorageNetworkNode> GetBasicStationDemand(VehicleStation station)
+        {
+            List<IStorageNetworkNode> targetNodes = new List<IStorageNetworkNode>();
+            List<IStorageNetworkNode> sourceNodes = new List<IStorageNetworkNode>();
+            station.GetConnectedNodes(targetNodes, sourceNodes);
+            return targetNodes;
+        }
+
+        public static IEnumerable<IStorageNetworkNode> GetStationDemandNodes(VehicleStation station, bool additionalDemands = true, bool includeDisabled = false)
         {
             List<IStorageNetworkNode> targetNodes = new List<IStorageNetworkNode>();
             List<IStorageNetworkNode> sourceNodes = new List<IStorageNetworkNode>();
@@ -22,7 +35,7 @@ namespace ScheduleStopwatch
             StorageNetworkManager manager = LazyManager<StorageNetworkManager>.Current;
             foreach (IStorageNetworkNode node in targetNodes)
             {
-                if (manager.GetIsEnabled(station, node) && (node is Store || node is Lab))
+                if (includeDisabled || manager.GetIsEnabled(station, node) && (node is Store || node is Lab))
                 {
                     yield return node;
                 }
@@ -35,6 +48,11 @@ namespace ScheduleStopwatch
                 }
             }
             yield break;
+        }
+
+        public static HashSet<IStorageNetworkNode> GetStationDemandNodesHashSet(VehicleStation station, bool additionalDemands = true, bool includeDisabled = false)
+        {
+            return new HashSet<IStorageNetworkNode>(GetStationDemandNodes(station, additionalDemands, includeDisabled));
         }
 
         public static Dictionary<Item, int> GetStationDemands(VehicleStation station, Dictionary<Item, int> demandsList = null, Dictionary<Item, int> unservicedDemands = null, bool additionalDemands = true)

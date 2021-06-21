@@ -105,11 +105,16 @@ namespace ScheduleStopwatch
 
             return result;
         }
-
         public IReadOnlyDictionary<Item, TransferData> GetStationTaskTransfersSum(ImmutableList<Vehicle> vehicles, VehicleStationLocation station, out bool isIncomplete, out bool isEstimated)
         {
-            int count = vehicles.Count;
             TaskTransfers transfersSum = new TaskTransfers();
+            GetStationTaskTransfersSum(vehicles, station, out isIncomplete, out isEstimated, transfersSum);
+            return transfersSum.Transfers;
+        }
+
+        public void GetStationTaskTransfersSum(ImmutableList<Vehicle> vehicles, VehicleStationLocation station, out bool isIncomplete, out bool isEstimated, TaskTransfers transfersSum)
+        {
+            int count = vehicles.Count;
             isIncomplete = false;
             isEstimated = false;
             for (int i = 0; i < vehicles.Count; i++)
@@ -130,7 +135,6 @@ namespace ScheduleStopwatch
                     isIncomplete = true;
                 }
             }
-            return transfersSum.Transfers;
         }
 
         public TimeSpan? GetGlobalTravelDuration(VehicleStationLocation startStation, VehicleStationLocation endStation, List<VehicleStationLocation> nonstopStations = null)

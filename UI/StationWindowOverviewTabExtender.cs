@@ -244,7 +244,6 @@ namespace ScheduleStopwatch.UI
             _incompleteTransfers = null;
             if (settings.ShowStationLoadedItems || settings.ShowStationUnloadedItems)
             {
-                ImmutableList<Vehicle> vehicles = LazyManager<VehicleStationLocationManager>.Current.GetServicedVehicles(StationWindow.Location);
                 IReadOnlyDictionary<Item, TransferData> transfers = LastTransfers;
                 FillContainerWithItems(_loadedContainer, _loadedItemsContainer, settings.ShowStationLoadedItems ? transfers : null, TransferDirection.loading, itemTooltipTextFunc: GetEstimatedItemsForOneLoadItemTooltipText);
                 FillContainerWithItems(_unloadedContainer, _unloadedItemsContainer, settings.ShowStationUnloadedItems ? transfers : null, TransferDirection.unloading, GetEstimatatedNeededItems());
@@ -416,6 +415,8 @@ namespace ScheduleStopwatch.UI
             {
                 if (_lastTransfers == null)
                 {
+                    TaskTransfers transfersSum = new TaskTransfers();
+
                     ImmutableList<Vehicle> vehicles = LazyManager<VehicleStationLocationManager>.Current.GetServicedVehicles(StationWindow.Location);
                     _lastTransfers = Manager<VehicleScheduleDataManager>.Current.GetStationTaskTransfersSum(vehicles, StationWindow.Location, out bool incompleteTransfers, out bool isEstimated);
                     _incompleteTransfers = incompleteTransfers;

@@ -34,7 +34,8 @@ namespace ScheduleStopwatch.UI
 					{
 						FileLog.Log("Building picked " + building.DisplayName);
 						OnDemandPicked(building);
-					}
+					},
+					DisabledNodes = DemandHelper.GetStationDemandNodesHashSet(station, true, true)
 				}, false);
 			});
 			Tooltip.For(_addDemandButton, "Add a new building with demand (Lab or Store)");
@@ -51,7 +52,8 @@ namespace ScheduleStopwatch.UI
 					{
 						FileLog.Log("Station picked " + stationToAdd.name);
 						OnStationPicked(stationToAdd);
-					}
+					},
+					DisabledStations = LazyManager<StationDemandManager>.Current.GetConnectedStationsHashset(station.Location, true)
 				}, false);
 			});
 		}

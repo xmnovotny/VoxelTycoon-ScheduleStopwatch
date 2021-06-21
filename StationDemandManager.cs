@@ -43,6 +43,24 @@ namespace ScheduleStopwatch
             return null;
         }
 
+        public HashSet<VehicleStationLocation> GetConnectedStationsHashset(VehicleStationLocation location, bool includeOwnStation = true)
+        {
+            HashSet<VehicleStationLocation> result = new HashSet<VehicleStationLocation>();
+            if (includeOwnStation)
+            {
+                result.Add(location);
+            }
+            if (_connectedStations.TryGetValue(location, out UniqueList<VehicleStationLocation> stations))
+            {
+                for(int i = 0; i < stations.Count; i++)
+                {
+                    result.Add(stations[i]);
+                }
+            }
+            return result;
+
+        }
+
         public IEnumerable<VehicleStationLocation> GetConnectedStationsEnum(VehicleStationLocation location)
         {
             if (_connectedStations.TryGetValue(location, out UniqueList<VehicleStationLocation> stations))
@@ -59,6 +77,10 @@ namespace ScheduleStopwatch
         {
             if (demand is Store || demand is Lab)
             {
+                if (DemandHelper.IsInBasicDemand(location.VehicleStation, demand))
+                {
+                    return false;
+                }
                 bool result = GetOrCreateDemandsList(location).Add(demand);
                 if (result)
                 {
@@ -87,12 +109,16 @@ namespace ScheduleStopwatch
 
         public bool AddConnectedStation(VehicleStationLocation location, VehicleStationLocation stationToAdd)
         {
-            bool result = GetOrCreateConnectedStationsList(location).Add(stationToAdd);
-            if (result)
+            if (stationToAdd != location)
             {
-                ConnectedStationChange?.Invoke(location);
+                bool result = GetOrCreateConnectedStationsList(location).Add(stationToAdd);
+                if (result)
+                {
+                    ConnectedStationChange?.Invoke(location);
+                }
+                return result;
             }
-            return result;
+            return false;
         }
 
         public bool RemoveConnectedStation(VehicleStationLocation location, VehicleStationLocation stationToRemove)

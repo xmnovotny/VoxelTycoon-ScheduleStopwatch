@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using VoxelTycoon;
 using VoxelTycoon.Audio;
@@ -15,6 +16,7 @@ namespace ScheduleStopwatch.UI
 	class StationPickerTool : ITool
 	{
 		public Action<VehicleStation> OnStationPicked { get; set; }
+		public HashSet<VehicleStationLocation> DisabledStations { get; set; }
 
 		public void Activate()
 		{
@@ -55,35 +57,48 @@ namespace ScheduleStopwatch.UI
 			}
 			if (station != null)
 			{
-				if (this._building != station)
+				if (this._station != station)
 				{
-					if (this._building != null)
+					if (this._station != null)
 					{
-						this._building.SetTint(null);
+						this._station.SetTint(null);
 					}
-					this._building = station;
-					this._tooltip.Background = new PanelColor(ReadyToPickTooltipColor, 0f);
-					this._tooltip.Text = "Add connected station";
+					this._station = station;
+					this._canPick = this.CanPick(station);
+					if (_canPick)
+					{
+						this._tooltip.Background = new PanelColor(ReadyToPickTooltipColor, 0f);
+						this._tooltip.Text = "Add connected station";
+					}
+					else
+					{
+						this._tooltip.Background = new PanelColor(WrongReadyToPickHighlightColor, 0f);
+						this._tooltip.Text = "Already added";
+						station.SetTint(new Color?(WrongReadyToPickHighlightColor));
+					}
 				}
-				UIManager.Current.SetCursor(Cursors.Pointer);
-				if (InputHelper.WorldMouseDown)
+				if (_canPick)
 				{
-
-					this.OnStationPicked?.Invoke(station);
-					Manager<SoundManager>.Current.PlayOnce(R.Audio.Click, null);
-					if (!key)
+					UIManager.Current.SetCursor(Cursors.Pointer);
+					if (InputHelper.WorldMouseDown)
 					{
-						return true;
+
+						this.OnStationPicked?.Invoke(station);
+						Manager<SoundManager>.Current.PlayOnce(R.Audio.Click, null);
+						if (!key)
+						{
+							return true;
+						}
+						this._deactivate = true;
 					}
-					this._deactivate = true;
 				}
 			}
 			else
 			{
-				if (this._building != null)
+				if (this._station != null)
 				{
-					this._building.SetTint(null);
-					this._building = null;
+					this._station.SetTint(null);
+					this._station = null;
 				}
 				this._tooltip.Background = new PanelColor(PickingTooltipColor, 0f);
 				this._tooltip.Text = "Pick station";
@@ -92,6 +107,12 @@ namespace ScheduleStopwatch.UI
 			this._tooltip.ClampPositionToScreen();
 			return InputHelper.MouseDown && !key;
 		}
+
+		private bool CanPick(VehicleStation station)
+		{
+			return DisabledStations?.Contains(station.Location) == false;
+		}
+
 
 		private static Color ReadyToPickTooltipColor
 		{
@@ -122,15 +143,20 @@ namespace ScheduleStopwatch.UI
 			ImmutableList<VehicleStation> allStations = LazyManager<BuildingManager>.Current.GetAll<VehicleStation>();
 			for (int i = 0; i < allStations.Count; i++)
 			{
-				VehicleStation store = allStations[i];
-				LazyManager<BuildingTintManager>.Current.SetDefaultColor(store, on ? new Color?(GameColors.WhiteModeCompanyTintColor) : null);
-				store.SetTint(null);
+				VehicleStation station = allStations[i];
+				if (DisabledStations?.Contains(station.Location) == true)
+                {
+					continue;
+                }
+				LazyManager<BuildingTintManager>.Current.SetDefaultColor(station, on ? new Color?(GameColors.WhiteModeCompanyTintColor) : null);
+				station.SetTint(null);
 			}
 		}
 
 		// Token: 0x04001211 RID: 4625
 		private Tooltip _tooltip;
 		private bool _deactivate;
-		private Building _building;
+		private bool _canPick;
+		private Building _station;
 	}
 }

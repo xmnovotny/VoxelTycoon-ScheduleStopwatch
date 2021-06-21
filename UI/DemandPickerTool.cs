@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using VoxelTycoon;
 using VoxelTycoon.Audio;
@@ -14,6 +15,7 @@ namespace ScheduleStopwatch.UI
     class DemandPickerTool: ITool
     {
 		public Action<Building> OnBuildingPicked { get; set; }
+		public HashSet<IStorageNetworkNode> DisabledNodes { get; set; }
 
 		public void Activate()
 		{
@@ -61,20 +63,33 @@ namespace ScheduleStopwatch.UI
 						this._building.SetTint(null);
 					}
 					this._building = building;
-					this._tooltip.Background = new PanelColor(DemandPickerTool.ReadyToPickTooltipColor, 0f);
-					this._tooltip.Text = "Add building for station demand";
-				}
-				UIManager.Current.SetCursor(Cursors.Pointer);
-				if (InputHelper.WorldMouseDown)
-				{
-					
-					this.OnBuildingPicked?.Invoke(building);
-					Manager<SoundManager>.Current.PlayOnce(R.Audio.Click, null);
-					if (!key)
-					{
-						return true;
+					this._canPick = this.CanPick(building);
+					if (_canPick)
+                    {
+						this._tooltip.Background = new PanelColor(DemandPickerTool.ReadyToPickTooltipColor, 0f);
+						this._tooltip.Text = "Add building for station demand";
 					}
-					this._deactivate = true;
+					else
+                    {
+						this._tooltip.Background = new PanelColor(DemandPickerTool.WrongReadyToPickHighlightColor, 0f);
+						this._tooltip.Text = "Already added";
+						building.SetTint(new Color?(WrongReadyToPickHighlightColor));
+					}
+				}
+				if (_canPick)
+				{
+					UIManager.Current.SetCursor(Cursors.Pointer);
+					if (InputHelper.WorldMouseDown)
+					{
+
+						this.OnBuildingPicked?.Invoke(building);
+						Manager<SoundManager>.Current.PlayOnce(R.Audio.Click, null);
+						if (!key)
+						{
+							return true;
+						}
+						this._deactivate = true;
+					}
 				}
 			}
 			else
@@ -116,12 +131,25 @@ namespace ScheduleStopwatch.UI
 			}
 		}
 
+		private bool CanPick(Building building)
+        {
+			if (building is IStorageNetworkNode node)
+            {
+				return DisabledNodes?.Contains(node) == false;
+            }
+			return false;
+        }
+
 		private void ToggleDefaultTint(bool on)
 		{
 			ImmutableList<Store> allStores = LazyManager<BuildingManager>.Current.GetAll<Store>();
 			for (int i = 0; i < allStores.Count; i++)
 			{
 				Store store = allStores[i];
+				if (DisabledNodes?.Contains(store) == true)
+                {
+					continue;
+                }
 				LazyManager<BuildingTintManager>.Current.SetDefaultColor(store, on ? new Color?(GameColors.WhiteModeCompanyTintColor) : null);
 				store.SetTint(null);
 			}
@@ -129,15 +157,20 @@ namespace ScheduleStopwatch.UI
 			ImmutableList<Lab> allLabs = LazyManager<BuildingManager>.Current.GetAll<Lab>();
 			for (int i = 0; i < allLabs.Count; i++)
 			{
-				Lab store = allLabs[i];
-				LazyManager<BuildingTintManager>.Current.SetDefaultColor(store, on ? new Color?(GameColors.WhiteModeCompanyTintColor) : null);
-				store.SetTint(null);
+				Lab lab = allLabs[i];
+				if (DisabledNodes?.Contains(lab) == true)
+				{
+					continue;
+				}
+				LazyManager<BuildingTintManager>.Current.SetDefaultColor(lab, on ? new Color?(GameColors.WhiteModeCompanyTintColor) : null);
+				lab.SetTint(null);
 			}
 		}
 
 		// Token: 0x04001211 RID: 4625
 		private Tooltip _tooltip;
         private bool _deactivate;
+		private bool _canPick;
 		private Building _building;
     }
 }
