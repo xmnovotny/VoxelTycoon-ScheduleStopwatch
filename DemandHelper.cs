@@ -55,6 +55,14 @@ namespace ScheduleStopwatch
             return new HashSet<IStorageNetworkNode>(GetStationDemandNodes(station, additionalDemands, includeDisabled));
         }
 
+        public static void GetStationDemandNodesHashSet(HashSet<IStorageNetworkNode> demandNodes, VehicleStation station, bool additionalDemands = true, bool includeDisabled = false)
+        {
+            foreach (IStorageNetworkNode node in GetStationDemandNodes(station, additionalDemands, includeDisabled))
+            {
+                demandNodes.Add(node);
+            }
+        }
+
         public static Dictionary<Item, int> GetStationDemands(VehicleStation station, Dictionary<Item, int> demandsList = null, Dictionary<Item, int> unservicedDemands = null, bool additionalDemands = true)
         {
             Dictionary<Item, int> result = demandsList ?? new Dictionary<Item, int>();

@@ -1,9 +1,12 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using VoxelTycoon;
 using VoxelTycoon.Audio;
 using VoxelTycoon.Buildings;
+using VoxelTycoon.Cities;
 using VoxelTycoon.Game;
 using VoxelTycoon.Game.UI;
 using VoxelTycoon.Researches;
@@ -51,8 +54,24 @@ namespace ScheduleStopwatch.UI
 			}
 			Building building = null;
 			if (!InputHelper.OverUI)
-            {
+			{
 				building = ObjectRaycaster.Get<Building>((Component comp) => comp is Store || comp is Lab);
+			}
+			else
+			{
+				GameObject gameObject = InputHelper.GetUIGameObjectUnderPointer();
+				if (gameObject != null)
+				{
+					DemandIndicator demandInd;
+					if ((demandInd = gameObject.GetComponent<DemandIndicator>()) != null)
+					{
+						CityDemand demand = Traverse.Create(demandInd).Field<CityDemand>("_demand").Value;
+						if (demand != null && demand.Store)
+						{
+							building = demand.Store;
+						}
+					}
+				}
 			}
 			if (building != null)
 			{
@@ -79,7 +98,7 @@ namespace ScheduleStopwatch.UI
 				if (_canPick)
 				{
 					UIManager.Current.SetCursor(Cursors.Pointer);
-					if (InputHelper.WorldMouseDown)
+					if (InputHelper.MouseDown)
 					{
 
 						this.OnBuildingPicked?.Invoke(building);
@@ -88,6 +107,9 @@ namespace ScheduleStopwatch.UI
 						{
 							return true;
 						}
+						DisabledNodes?.Add(building as IStorageNetworkNode);
+						LazyManager<BuildingTintManager>.Current.SetDefaultColor(building, null);
+						building.SetTint(null);
 						this._deactivate = true;
 					}
 				}
@@ -146,7 +168,7 @@ namespace ScheduleStopwatch.UI
 			for (int i = 0; i < allStores.Count; i++)
 			{
 				Store store = allStores[i];
-				if (DisabledNodes?.Contains(store) == true)
+				if (on && DisabledNodes?.Contains(store) == true)
                 {
 					continue;
                 }
@@ -158,7 +180,7 @@ namespace ScheduleStopwatch.UI
 			for (int i = 0; i < allLabs.Count; i++)
 			{
 				Lab lab = allLabs[i];
-				if (DisabledNodes?.Contains(lab) == true)
+				if (on && DisabledNodes?.Contains(lab) == true)
 				{
 					continue;
 				}

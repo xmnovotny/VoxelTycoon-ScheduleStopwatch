@@ -14,19 +14,19 @@ namespace ScheduleStopwatch.UI
 {
 	class StationWindowLogisticTabConnectedStationItem : MonoBehaviour, IPointerEnterHandler, IEventSystemHandler, IPointerExitHandler
 	{
-		public void Initialize(VehicleStation station, VehicleStationLocation connectedStation)
+		public void Initialize(VehicleStation station, VehicleStation connectedStation)
 		{
 			this._station = station;
 			this._connectedStation = connectedStation;
 			base.transform.Find<Image>("Thumb").sprite = this.GetThumbIcon();
 			base.transform.GetComponent<Button>().onClick.AddListener(delegate ()
 			{
-				GameCameraViewHelper.TryGoTo(this._connectedStation.VehicleStation, 70f);
+				GameCameraViewHelper.TryGoTo(this._connectedStation, 70f);
 			});
 			this._settingsCog = base.transform.Find<Button>("ConnectionCog");
 			VoxelTycoon.UI.ContextMenu.For(this._settingsCog, PickerBehavior.OverlayToRight, new Action<VoxelTycoon.UI.ContextMenu>(this.SetupContextMenu));
 			this.SetSettingsCogVisibility(true);
-			Tooltip.For(this, null, BuildingHelper.GetBuildingName(connectedStation.VehicleStation), "", 0);
+			Tooltip.For(this, null, BuildingHelper.GetBuildingName(connectedStation), "", 0);
 		}
 
 		public void OnPointerEnter(PointerEventData eventData)
@@ -45,12 +45,12 @@ namespace ScheduleStopwatch.UI
 
 		private void RemoveItem()
 		{
-			LazyManager<StationDemandManager>.Current.RemoveConnectedStation(_station.Location, _connectedStation);
+			LazyManager<StationDemandManager>.Current.RemoveConnectedStation(_station, _connectedStation);
 		}
 
 		private Sprite GetThumbIcon()
 		{
-			int assetId = this._connectedStation.VehicleStation.SharedData.AssetId;
+			int assetId = this._connectedStation.SharedData.AssetId;
 			BuildingRecipe recipe;
 			if (LazyManager<BuildingRecipeManager>.Current.TryGet(assetId, out recipe))
 			{
@@ -64,7 +64,7 @@ namespace ScheduleStopwatch.UI
 			this._settingsCog.transform.localScale = Vector3.one * (float)(isVisible ? 1 : 0);
 		}
 
-		private VehicleStationLocation _connectedStation;
+		private VehicleStation _connectedStation;
 		private Button _settingsCog;
 		private VehicleStation _station;
 

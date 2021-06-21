@@ -53,7 +53,7 @@ namespace ScheduleStopwatch.UI
 						FileLog.Log("Station picked " + stationToAdd.name);
 						OnStationPicked(stationToAdd);
 					},
-					DisabledStations = LazyManager<StationDemandManager>.Current.GetConnectedStationsHashset(station.Location, true)
+					DisabledStations = LazyManager<StationDemandManager>.Current.GetConnectedStationsHashset(station, true)
 				}, false);
 			});
 		}
@@ -121,7 +121,7 @@ namespace ScheduleStopwatch.UI
 		private void InvalidateConnectedStations()
         {
 			ClearExceptButton(_connectedStationsGrid, "AddStationButton");
-			foreach (VehicleStationLocation connectedStation in LazyManager<StationDemandManager>.Current.GetConnectedStationsEnum(_station.Location))
+			foreach (VehicleStation connectedStation in LazyManager<StationDemandManager>.Current.GetConnectedStationsEnum(_station))
 			{
 				Instantiate<StationWindowLogisticTabConnectedStationItem>(GetConnectedStationItemTemplate(), this._connectedStationsGrid).Initialize(this._station, connectedStation);
 			}
@@ -151,7 +151,7 @@ namespace ScheduleStopwatch.UI
 		private void OnStationPicked(VehicleStation station)
 		{
 			StationDemandManager manager = LazyManager<StationDemandManager>.Current;
-			manager.AddConnectedStation(_station.Location, station.Location);
+			manager.AddConnectedStation(_station, station);
 		}
 
 		private static StationWindowLogisticTabDemandBuildingItem GetDemandBuildingsItemTemplate()

@@ -16,7 +16,7 @@ namespace ScheduleStopwatch.UI
 	class StationPickerTool : ITool
 	{
 		public Action<VehicleStation> OnStationPicked { get; set; }
-		public HashSet<VehicleStationLocation> DisabledStations { get; set; }
+		public HashSet<VehicleStation> DisabledStations { get; set; }
 
 		public void Activate()
 		{
@@ -110,7 +110,7 @@ namespace ScheduleStopwatch.UI
 
 		private bool CanPick(VehicleStation station)
 		{
-			return DisabledStations?.Contains(station.Location) == false;
+			return DisabledStations?.Contains(station) == false;
 		}
 
 
@@ -144,7 +144,7 @@ namespace ScheduleStopwatch.UI
 			for (int i = 0; i < allStations.Count; i++)
 			{
 				VehicleStation station = allStations[i];
-				if (DisabledStations?.Contains(station.Location) == true)
+				if (DisabledStations?.Contains(station) == true)
                 {
 					continue;
                 }
