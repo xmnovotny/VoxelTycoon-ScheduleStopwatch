@@ -21,11 +21,12 @@ namespace ScheduleStopwatch.UI
 		public void Initialize(VehicleStation station)
 		{
 			this._station = station;
+
 			this._demandBuildingNodesGrid = base.transform.Find<ScrollRect>("Head/DemandBuildingNodes/ScrollView").content;
 			Transform buttonCont = Instantiate<Transform>(GetAddButtonTemplate(), this._demandBuildingNodesGrid);
-			buttonCont.name = "AddButton";
-			_addButton = buttonCont.Find<Button>("Button");
-			_addButton.onClick.AddListener(delegate ()
+			buttonCont.name = "AddDemandButton";
+			_addDemandButton = buttonCont.Find<Button>("Button");
+			_addDemandButton.onClick.AddListener(delegate ()
 			{
 				UIManager.Current.SetTool(new DemandPickerTool()
 				{
@@ -33,6 +34,23 @@ namespace ScheduleStopwatch.UI
 					{
 						FileLog.Log("Building picked " + building.DisplayName);
 						OnDemandPicked(building);
+					}
+				}, false);
+			});
+			Tooltip.For(_addDemandButton, "Add a new building with demand (Lab or Store)");
+
+			this._connectedStationsGrid = base.transform.Find<ScrollRect>("Head/ConnectedStations/ScrollView").content;
+			Transform stationButtonCont = Instantiate<Transform>(GetAddButtonTemplate(), this._connectedStationsGrid);
+			stationButtonCont.name = "AddStationButton";
+			_addStationButton = stationButtonCont.Find<Button>("Button");
+			_addStationButton.onClick.AddListener(delegate ()
+			{
+				UIManager.Current.SetTool(new StationPickerTool()
+				{
+					OnStationPicked = delegate (VehicleStation stationToAdd)
+					{
+						FileLog.Log("Station picked " + stationToAdd.name);
+						OnStationPicked(stationToAdd);
 					}
 				}, false);
 			});
@@ -47,7 +65,8 @@ namespace ScheduleStopwatch.UI
 		{
 			LazyManager<StorageNetworkManager>.Current.NodeChanged -= this.OnNodeChanged;
 			LazyManager<StationDemandManager>.Current.DemandChange -= this.OnNodeChanged;
-//			LazyManager<WhiteMode>.Current.Release();
+			LazyManager<StationDemandManager>.Current.ConnectedStationChange -= this.OnConnectedStationChange;
+			//			LazyManager<WhiteMode>.Current.Release();
 		}
 
 		// Token: 0x06002F85 RID: 12165 RVA: 0x0009B2D1 File Offset: 0x000994D1
@@ -60,8 +79,10 @@ namespace ScheduleStopwatch.UI
 		{
 			this._offset = Time.unscaledTime;
 			this.InvalidateDemandBuildings();
+			this.InvalidateConnectedStations();
 			LazyManager<StorageNetworkManager>.Current.NodeChanged += this.OnNodeChanged;
 			LazyManager<StationDemandManager>.Current.DemandChange += this.OnNodeChanged;
+			LazyManager<StationDemandManager>.Current.ConnectedStationChange += this.OnConnectedStationChange;
 			//			LazyManager<WhiteMode>.Current.Request();
 		}
 
@@ -69,12 +90,21 @@ namespace ScheduleStopwatch.UI
 		{
 			if (node == (IStorageNetworkNode)_station)
 			{
-				this.InvalidateDemandBuildings();
+				InvalidateDemandBuildings();
 			}
 		}
+
+		private void OnConnectedStationChange(VehicleStationLocation station)
+        {
+			if (station == _station.Location)
+            {
+				InvalidateConnectedStations();
+            }
+        }
+
 		private void InvalidateDemandBuildings()
 		{
-			ClearExceptButton(_demandBuildingNodesGrid, "AddButton");
+			ClearExceptButton(_demandBuildingNodesGrid, "AddDemandButton");
 			foreach (IStorageNetworkNode connectedNode in DemandHelper.GetStationDemandNodes(_station, false))
             {
 				Instantiate<StationWindowLogisticTabDemandBuildingItem>(GetDemandBuildingsItemTemplate(), this._demandBuildingNodesGrid).Initialize(this._station, connectedNode, false);
@@ -83,7 +113,17 @@ namespace ScheduleStopwatch.UI
 			{
 				Instantiate<StationWindowLogisticTabDemandBuildingItem>(GetDemandBuildingsItemTemplate(), this._demandBuildingNodesGrid).Initialize(this._station, connectedNode, true);
 			}
-			_addButton.transform.parent.SetAsLastSibling();
+			_addDemandButton.transform.parent.SetAsLastSibling();
+		}
+
+		private void InvalidateConnectedStations()
+        {
+			ClearExceptButton(_connectedStationsGrid, "AddStationButton");
+			foreach (VehicleStationLocation connectedStation in LazyManager<StationDemandManager>.Current.GetConnectedStationsEnum(_station.Location))
+			{
+				Instantiate<StationWindowLogisticTabConnectedStationItem>(GetConnectedStationItemTemplate(), this._connectedStationsGrid).Initialize(this._station, connectedStation);
+			}
+			_addStationButton.transform.parent.SetAsLastSibling();
 		}
 
 		private void ClearExceptButton(Transform transform, string buttonName)
@@ -106,6 +146,11 @@ namespace ScheduleStopwatch.UI
 				manager.AddDemand(_station.Location, storageNode);
 			}
         }
+		private void OnStationPicked(VehicleStation station)
+		{
+			StationDemandManager manager = LazyManager<StationDemandManager>.Current;
+			manager.AddConnectedStation(_station.Location, station.Location);
+		}
 
 		private static StationWindowLogisticTabDemandBuildingItem GetDemandBuildingsItemTemplate()
         {
@@ -117,6 +162,17 @@ namespace ScheduleStopwatch.UI
 				_demandItemTemplate = nodeItemTransf.gameObject.AddComponent<StationWindowLogisticTabDemandBuildingItem>();
 			}
 			return _demandItemTemplate;
+		}
+		private static StationWindowLogisticTabConnectedStationItem GetConnectedStationItemTemplate()
+		{
+			if (_connectedStationItemTemplate == null)
+			{
+				StorageNetworkTabConnectedNodeItem nodeItem = Instantiate<StorageNetworkTabConnectedNodeItem>(R.Game.UI.StorageNetworking.StorageNetworkTabConnectedNodeItem);
+				Transform nodeItemTransf = nodeItem.transform;
+				DestroyImmediate(nodeItem);
+				_connectedStationItemTemplate = nodeItemTransf.gameObject.AddComponent<StationWindowLogisticTabConnectedStationItem>();
+			}
+			return _connectedStationItemTemplate;
 		}
 
 		private static StationWindowLogisticsTab GetTemplate()
@@ -131,6 +187,10 @@ namespace ScheduleStopwatch.UI
 				Transform connectedNodes = tabTransf.Find("Head/ConnectedNodes");
 				connectedNodes.name = "DemandBuildingNodes";
 				connectedNodes.Find<Text>("Label").text = "Buildings with demand".ToUpper();
+
+				Transform connectedStations = Instantiate<Transform>(connectedNodes, connectedNodes.parent);
+				connectedStations.name = "ConnectedStations";
+				connectedStations.Find<Text>("Label").text = "Connected stations".ToUpper();
 			}
 			return _template;
 		}
@@ -150,12 +210,15 @@ namespace ScheduleStopwatch.UI
 
 		private float _offset;
 		private Transform _demandBuildingNodesGrid;
+		private Transform _connectedStationsGrid;
 		private VehicleStation _station;
-		private Button _addButton;
+		private Button _addDemandButton;
+		private Button _addStationButton;
 
 		private static StationWindowLogisticTabDemandBuildingItem _demandItemTemplate;
 		private static StationWindowLogisticsTab _template;
 		private static Transform _addButtonTemplate;
+		private static StationWindowLogisticTabConnectedStationItem _connectedStationItemTemplate;
 
 		#region HARMONY
 		[HarmonyPostfix]

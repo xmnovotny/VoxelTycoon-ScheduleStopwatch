@@ -36,11 +36,23 @@ namespace ScheduleStopwatch
 
         public ImmutableUniqueList<VehicleStationLocation>? GetConnectedStations(VehicleStationLocation location)
         {
-            if (_connecctedStations.TryGetValue(location, out UniqueList<VehicleStationLocation> stations))
+            if (_connectedStations.TryGetValue(location, out UniqueList<VehicleStationLocation> stations))
             {
                 return stations.ToImmutableUniqueList();
             }
             return null;
+        }
+
+        public IEnumerable<VehicleStationLocation> GetConnectedStationsEnum(VehicleStationLocation location)
+        {
+            if (_connectedStations.TryGetValue(location, out UniqueList<VehicleStationLocation> stations))
+            {
+                for (int i = 0; i < stations.Count; i++)
+                {
+                    yield return stations[i];
+                }
+            }
+            yield break;
         }
 
         public bool AddDemand(VehicleStationLocation location, IStorageNetworkNode demand)
@@ -83,6 +95,20 @@ namespace ScheduleStopwatch
             return result;
         }
 
+        public bool RemoveConnectedStation(VehicleStationLocation location, VehicleStationLocation stationToRemove)
+        {
+            if (_connectedStations.TryGetValue(location, out UniqueList<VehicleStationLocation> list))
+            {
+                bool result = list.QuickRemove(stationToRemove);
+                if (result)
+                {
+                    ConnectedStationChange?.Invoke(location);
+                }
+                return result;
+            }
+            return false;
+        }
+
         private UniqueList<IStorageNetworkNode> GetOrCreateDemandsList(VehicleStationLocation location)
         {
             if (!_additionalDemands.TryGetValue(location, out UniqueList<IStorageNetworkNode> demandList))
@@ -95,16 +121,16 @@ namespace ScheduleStopwatch
 
         private UniqueList<VehicleStationLocation> GetOrCreateConnectedStationsList(VehicleStationLocation location)
         {
-            if (!_connecctedStations.TryGetValue(location, out UniqueList<VehicleStationLocation> stationList))
+            if (!_connectedStations.TryGetValue(location, out UniqueList<VehicleStationLocation> stationList))
             {
                 stationList = new UniqueList<VehicleStationLocation>();
-                _connecctedStations.Add(location, stationList);
+                _connectedStations.Add(location, stationList);
             }
             return stationList;
         }
 
         private readonly Dictionary<VehicleStationLocation, UniqueList<IStorageNetworkNode>> _additionalDemands = new Dictionary<VehicleStationLocation, UniqueList<IStorageNetworkNode>>();
-        private readonly Dictionary<VehicleStationLocation, UniqueList<VehicleStationLocation>> _connecctedStations = new Dictionary<VehicleStationLocation, UniqueList<VehicleStationLocation>>();
+        private readonly Dictionary<VehicleStationLocation, UniqueList<VehicleStationLocation>> _connectedStations = new Dictionary<VehicleStationLocation, UniqueList<VehicleStationLocation>>();
         
     }
 }
