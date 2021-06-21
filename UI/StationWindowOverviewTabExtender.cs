@@ -7,10 +7,12 @@ using UnityEngine.UI;
 using VoxelTycoon;
 using VoxelTycoon.Buildings;
 using VoxelTycoon.Game.UI;
+using VoxelTycoon.Game.UI.StorageNetworking;
 using VoxelTycoon.Localization;
 using VoxelTycoon.Recipes;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.UI;
+using VoxelTycoon.UI.Controls;
 using static ScheduleStopwatch.VehicleScheduleCapacity;
 
 namespace ScheduleStopwatch.UI
@@ -24,6 +26,7 @@ namespace ScheduleStopwatch.UI
 
         public void Initialize(StationWindow window)
         {
+            FileLog.Log(XMNUtils.GameObjectDumper.DumpGameObject(R.Game.UI.VehicleEditorWindow.Content.gameObject));
             Locale locale = LazyManager<LocaleManager>.Current.Locale;
             StationWindow = window;
             OverviewTab = gameObject.GetComponent<StationWindowOverviewTab>();

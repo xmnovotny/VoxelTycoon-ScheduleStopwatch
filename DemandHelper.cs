@@ -14,19 +14,35 @@ namespace ScheduleStopwatch
     [HarmonyPatch]
     public class DemandHelper
     {
-        public static Dictionary<Item, int> GetStationDemands(VehicleStation station, Dictionary<Item, int> demandsList = null, Dictionary<Item, int> unservicedDemands = null)
+        public static IEnumerable<IStorageNetworkNode> GetStationDemandNodes(VehicleStation station, bool additionalDemands = true)
         {
-            Dictionary<Item, int> result = demandsList ?? new Dictionary<Item, int>();
             List<IStorageNetworkNode> targetNodes = new List<IStorageNetworkNode>();
             List<IStorageNetworkNode> sourceNodes = new List<IStorageNetworkNode>();
             station.GetConnectedNodes(targetNodes, sourceNodes);
             StorageNetworkManager manager = LazyManager<StorageNetworkManager>.Current;
             foreach (IStorageNetworkNode node in targetNodes)
             {
-                if (manager.GetIsEnabled(station, node))
+                if (manager.GetIsEnabled(station, node) && (node is Store || node is Lab))
                 {
-                    GetNodeDemands(node, result, unservicedDemands);
+                    yield return node;
                 }
+            }
+            if (additionalDemands)
+            {
+                foreach (IStorageNetworkNode node in LazyManager<StationDemandManager>.Current.GetAdditionalDemandsEnum(station.Location))
+                {
+                    yield return node;
+                }
+            }
+            yield break;
+        }
+
+        public static Dictionary<Item, int> GetStationDemands(VehicleStation station, Dictionary<Item, int> demandsList = null, Dictionary<Item, int> unservicedDemands = null, bool additionalDemands = true)
+        {
+            Dictionary<Item, int> result = demandsList ?? new Dictionary<Item, int>();
+            foreach (IStorageNetworkNode node in GetStationDemandNodes(station, additionalDemands))
+            {
+                GetNodeDemands(node, result, unservicedDemands);
             }
             return result;
         }

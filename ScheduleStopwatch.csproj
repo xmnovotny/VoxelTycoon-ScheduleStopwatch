@@ -37,6 +37,12 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\VoxelTycoon\VoxelTycoon_Data\Managed\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\VoxelTycoon\VoxelTycoon_Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\VoxelTycoon\VoxelTycoon_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\VoxelTycoon\VoxelTycoon_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
