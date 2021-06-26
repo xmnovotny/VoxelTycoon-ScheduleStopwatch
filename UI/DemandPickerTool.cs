@@ -15,6 +15,7 @@ using VoxelTycoon.UI;
 
 namespace ScheduleStopwatch.UI
 {
+	[HarmonyPatch]
     class DemandPickerTool: ITool
     {
 		public Action<Building> OnBuildingPicked { get; set; }
@@ -22,6 +23,7 @@ namespace ScheduleStopwatch.UI
 
 		public void Activate()
 		{
+			_activatedCount++;
 			this.ToggleDefaultTint(true);
 			this._tooltip = UIManager.Current.CreateFrame<Tooltip>(Input.mousePosition);
 			this._tooltip.GetComponent<Canvas>().overridePixelPerfect = false;
@@ -33,6 +35,7 @@ namespace ScheduleStopwatch.UI
 		// Token: 0x06002CF4 RID: 11508 RVA: 0x0008F988 File Offset: 0x0008DB88
 		public bool Deactivate(bool soft)
 		{
+			_activatedCount--;
 			this._tooltip.Close();
 			this.ToggleDefaultTint(false);
 /*			Action onDeactivated = this.OnDeactivated;
@@ -103,6 +106,10 @@ namespace ScheduleStopwatch.UI
 
 						this.OnBuildingPicked?.Invoke(building);
 						Manager<SoundManager>.Current.PlayOnce(R.Audio.Click, null);
+						if (_indicatorEntered)
+						{
+							_disableIndicatorUntilExit = true;
+						}
 						if (!key)
 						{
 							return true;
@@ -194,5 +201,36 @@ namespace ScheduleStopwatch.UI
         private bool _deactivate;
 		private bool _canPick;
 		private Building _building;
+
+		static private int _activatedCount = 0;
+		static private bool _indicatorEntered = false;
+		static private bool _disableIndicatorUntilExit = false;
+
+        #region HARMONY
+        [HarmonyPrefix]
+		[HarmonyPatch(typeof(DemandIndicator), "OnPointerClick")]
+		static private bool DemandIndicator_OnPointerClick_prf()
+		{
+			//disable click on demand indicator when adding new demand
+			return _activatedCount == 0 && !_disableIndicatorUntilExit;
+		}
+
+		[HarmonyPostfix]
+		[HarmonyPatch(typeof(DemandIndicator), "OnPointerEnter")]
+		static private void DemandIndicator_OnPointerEnter_pof()
+		{
+			//disable click on demand indicator when adding new demand
+			_indicatorEntered = true;
+		}
+
+		[HarmonyPostfix]
+		[HarmonyPatch(typeof(DemandIndicator), "OnPointerExit")]
+		static private void DemandIndicator_OnPointerExit_pof()
+		{
+			//disable click on demand indicator when adding new demand
+			_indicatorEntered = false;
+			_disableIndicatorUntilExit = false;
+		}
+        #endregion
     }
 }

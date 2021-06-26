@@ -13,26 +13,18 @@ namespace ScheduleStopwatch
         public Action<IStorageNetworkNode> DemandChange;
         public Action<VehicleStationLocation> ConnectedStationChange;
 
-        public ImmutableUniqueList<IStorageNetworkNode>? GetAdditionalDemands(VehicleStationLocation location)
+        public ImmutableUniqueList<IStorageNetworkNode>? GetAdditionalDemands(VehicleStation station)
         {
-            if (location.IsDead)
-            {
-                return null;
-            }
-            if (_additionalDemands.TryGetValue(location.VehicleStation, out UniqueList<IStorageNetworkNode> demands))
+            if (_additionalDemands.TryGetValue(station, out UniqueList<IStorageNetworkNode> demands))
             {
                 return demands.ToImmutableUniqueList();
             }
             return null;
         }
 
-        public IEnumerable<IStorageNetworkNode> GetAdditionalDemandsEnum(VehicleStationLocation location)
+        public IEnumerable<IStorageNetworkNode> GetAdditionalDemandsEnum(VehicleStation station)
         {
-            if (location.IsDead)
-            {
-                yield break;
-            }
-            if (_additionalDemands.TryGetValue(location.VehicleStation, out UniqueList<IStorageNetworkNode> demands))
+            if (_additionalDemands.TryGetValue(station, out UniqueList<IStorageNetworkNode> demands))
             {
                 for (int i = 0; i < demands.Count; i++)
                 {
@@ -70,14 +62,27 @@ namespace ScheduleStopwatch
         }
 
         /** Returns total demands for selected station and its connected stations */
-        public Dictionary<Item, int> GetCombinedStationsDemands(VehicleStation location, Dictionary<Item, int> demandsList = null, Dictionary<Item, int> unservicedDemands = null, bool additionalDemands = true)
+        public Dictionary<Item, int> GetCombinedStationsDemands(VehicleStation station, Dictionary<Item, int> demandsList = null, Dictionary<Item, int> unservicedDemands = null)
         {
-            //            Dictionary<Item, int> result = demandsList ?? new Dictionary<Item, int>();
-            return null;
+            Dictionary<Item, int> result = demandsList ?? new Dictionary<Item, int>();
+            DemandHelper.GetNodesDemands(GetDemandNodes(station), result, unservicedDemands);
+            return result;
         }
 
-        public IEnumerable<VehicleStation> GetConnectedStationsEnum(VehicleStation station)
+        public IEnumerable<IStorageNetworkNode> GetCombinedStationDemandNodesEnum(VehicleStation station, bool additionalDemands = true)
         {
+            foreach (IStorageNetworkNode node in GetDemandNodes(station, additionalDemands))
+            {
+                yield return node;
+            }
+        }
+
+        public IEnumerable<VehicleStation> GetConnectedStationsEnum(VehicleStation station, bool includeOwnStation = false)
+        {
+            if (includeOwnStation)
+            {
+                yield return station;
+            }
             if (_connectedStations.TryGetValue(station, out UniqueList<VehicleStation> stations))
             {
                 for (int i = 0; i < stations.Count; i++)
@@ -96,11 +101,11 @@ namespace ScheduleStopwatch
                 {
                     return false;
                 }
-                _connedtedBuildings.Add(demand.Building);
+                _connectedBuildings.Add(demand.Building);
                 bool result = GetOrCreateDemandsList(location.VehicleStation).Add(demand);
                 if (result)
                 {
-                    DemandChange?.Invoke(location.VehicleStation);
+                    OnDemandChange(location.VehicleStation);
                 }
                 return result;
             } else
@@ -120,7 +125,7 @@ namespace ScheduleStopwatch
                 bool result = list.QuickRemove(demand);
                 if (result)
                 {
-                    DemandChange?.Invoke(location.VehicleStation);
+                    OnDemandChange(location.VehicleStation);
                 }
                 return result;
             }
@@ -131,11 +136,19 @@ namespace ScheduleStopwatch
         {
             if (stationToAdd != station)
             {
-                _connedtedBuildings.Add(stationToAdd);
+                _connectedBuildings.Add(stationToAdd);
                 bool result = GetOrCreateConnectedStationsList(station).Add(stationToAdd);
                 if (result)
                 {
-                    ConnectedStationChange?.Invoke(station.Location);
+                    if (_additionalDemands.TryGetValue(station, out UniqueList<IStorageNetworkNode> additionalDemands))
+                    {
+                        //remove demands of added station from additional demands of own station
+                        foreach (IStorageNetworkNode node in DemandHelper.GetStationDemandNodes(stationToAdd, false))
+                        {
+                            additionalDemands.QuickRemove(node);
+                        }
+                    }
+                    OnConnectedStationChange(station);
                 }
                 return result;
             }
@@ -149,16 +162,49 @@ namespace ScheduleStopwatch
                 bool result = list.QuickRemove(stationToRemove);
                 if (result)
                 {
-                    ConnectedStationChange?.Invoke(station.Location);
+                    OnConnectedStationChange(station);
                 }
                 return result;
             }
             return false;
         }
 
+        public void OnConnectedStationChange(VehicleStation station)
+        {
+            _demandNodesCache.Remove((station, true));
+            _demandNodesCache.Remove((station, false));
+            ConnectedStationChange?.Invoke(station.Location);
+        }
+
+        public void OnDemandChange(VehicleStation station)
+        {
+            _demandNodesCache.Remove((station, true));
+            _demandNodesCache.Remove((station, false));
+            DemandChange?.Invoke(station);
+        }
+
+        public void OnNodeChange(IStorageNetworkNode node)
+        {
+            if (node.Building is VehicleStation station)
+            {
+                OnDemandChange(station);
+                foreach (KeyValuePair<VehicleStation, UniqueList<VehicleStation>> pair in _connectedStations)
+                {
+                    if (pair.Key == station)
+                    {
+                        continue;
+                    }
+                    if (pair.Value.Contains(station))
+                    {
+                        OnDemandChange(pair.Key);
+                    }
+                }
+            }
+        }
+
         public void OnBuildingRemoved(Building building)
         {
-            if (_connedtedBuildings.Contains(building))
+            if (_connectedBuildings.Contains(building))
             {
                 if (building is VehicleStation station)
                 {
@@ -174,7 +220,7 @@ namespace ScheduleStopwatch
                     {
                         if (pair.Value.QuickRemove(station))
                         {
-                            ConnectedStationChange?.Invoke(pair.Key.Location);
+                            OnConnectedStationChange(pair.Key);
                         }
                     }
                 }
@@ -188,7 +234,7 @@ namespace ScheduleStopwatch
                         }
                     }
                 }
-                _connedtedBuildings.Remove(building);
+                _connectedBuildings.Remove(building);
             }
         }
 
@@ -196,12 +242,28 @@ namespace ScheduleStopwatch
         {
             base.OnInitialize();
             LazyManager<BuildingManager>.Current.BuildingRemoved += OnBuildingRemoved;
+            LazyManager<StorageNetworkManager>.Current.NodeChanged += OnNodeChange;
         }
 
         protected override void OnDeinitialize()
         {
             LazyManager<BuildingManager>.Current.BuildingRemoved -= OnBuildingRemoved;
+            LazyManager<StorageNetworkManager>.Current.NodeChanged -= OnNodeChange;
             base.OnDeinitialize();
+        }
+
+        private HashSet<IStorageNetworkNode> GetDemandNodes(VehicleStation station, bool additionalDemands = true)
+        {
+            if (!_demandNodesCache.TryGetValue((station, additionalDemands), out HashSet<IStorageNetworkNode> result))
+            {
+                result = new HashSet<IStorageNetworkNode>(DemandHelper.GetStationDemandNodes(station, additionalDemands));
+                foreach (VehicleStation addStation in GetConnectedStationsEnum(station))
+                {
+                    result.UnionWith(DemandHelper.GetStationDemandNodes(addStation, false, false));
+                }
+                _demandNodesCache.Add((station, additionalDemands), result);
+            }
+            return result;
         }
 
         private UniqueList<IStorageNetworkNode> GetOrCreateDemandsList(VehicleStation station)
@@ -226,7 +288,7 @@ namespace ScheduleStopwatch
 
         private readonly Dictionary<VehicleStation, UniqueList<IStorageNetworkNode>> _additionalDemands = new Dictionary<VehicleStation, UniqueList<IStorageNetworkNode>>();
         private readonly Dictionary<VehicleStation, UniqueList<VehicleStation>> _connectedStations = new Dictionary<VehicleStation, UniqueList<VehicleStation>>();
-        private readonly Dictionary<VehicleStation, HashSet<IStorageNetworkNode>> _demandNodesCache = new Dictionary<VehicleStation, HashSet<IStorageNetworkNode>>();
-        private readonly HashSet<Building> _connedtedBuildings = new HashSet<Building>();
+        private readonly Dictionary<(VehicleStation station, bool additionalDemands), HashSet<IStorageNetworkNode>> _demandNodesCache = new Dictionary<(VehicleStation, bool), HashSet<IStorageNetworkNode>>();
+        private readonly HashSet<Building> _connectedBuildings = new HashSet<Building>();
     }
 }

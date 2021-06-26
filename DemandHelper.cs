@@ -42,7 +42,7 @@ namespace ScheduleStopwatch
             }
             if (additionalDemands)
             {
-                foreach (IStorageNetworkNode node in LazyManager<StationDemandManager>.Current.GetAdditionalDemandsEnum(station.Location))
+                foreach (IStorageNetworkNode node in LazyManager<StationDemandManager>.Current.GetAdditionalDemandsEnum(station))
                 {
                     yield return node;
                 }
@@ -71,6 +71,14 @@ namespace ScheduleStopwatch
                 GetNodeDemands(node, result, unservicedDemands);
             }
             return result;
+        }
+
+        public static void GetNodesDemands(IEnumerable<IStorageNetworkNode> nodes, Dictionary<Item, int> demands, Dictionary<Item, int> unservicedDemands = null)
+        {
+            foreach (IStorageNetworkNode node in nodes)
+            {
+                GetNodeDemands(node, demands, unservicedDemands);
+            }
         }
 
         public static void GetNodeDemands(IStorageNetworkNode node, Dictionary<Item, int> demands, Dictionary<Item, int> unservicedDemands = null)

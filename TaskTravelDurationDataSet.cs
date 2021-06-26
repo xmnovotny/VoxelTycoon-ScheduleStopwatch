@@ -107,7 +107,7 @@ namespace ScheduleStopwatch
         protected override void DoRead(StateBinaryReader reader, VehicleSchedule schedule)
         {
             base.DoRead(reader, schedule);
-            if (ScheduleStopwatch.GetSchemaVersion(typeof(TaskDurationDataSet)) >= 2)
+            if (ScheduleStopwatchMod.GetSchemaVersion(typeof(TaskDurationDataSet)) >= 2)
             {
                 int count = reader.ReadInt();
 
@@ -120,7 +120,7 @@ namespace ScheduleStopwatch
                         _distanceData.Add(schedule.GetTasks()[taskIndex], value);
                     } else
                     {
-                        ScheduleStopwatch.logger.Log(UnityEngine.LogType.Warning, "RootTask index = -1");
+                        ScheduleStopwatchMod.logger.Log(UnityEngine.LogType.Warning, "RootTask index = -1");
                     }
                 }
             }

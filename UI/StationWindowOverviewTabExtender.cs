@@ -26,7 +26,6 @@ namespace ScheduleStopwatch.UI
 
         public void Initialize(StationWindow window)
         {
-            FileLog.Log(XMNUtils.GameObjectDumper.DumpGameObject(R.Game.UI.VehicleEditorWindow.Content.gameObject));
             Locale locale = LazyManager<LocaleManager>.Current.Locale;
             StationWindow = window;
             OverviewTab = gameObject.GetComponent<StationWindowOverviewTab>();
@@ -35,25 +34,25 @@ namespace ScheduleStopwatch.UI
                 throw new NullReferenceException("Component StationWindowOverviewTab not found");
             }
             Transform content = base.transform.Find("Body/WindowScrollView").GetComponent<ScrollRect>().content;
-            _unloadedContainer = CreateContainer(content, locale.GetString("schedule_stopwatch/monthly_unloaded_items").ToUpper());
+            _unloadedContainer = LazyManager<StationWindowLogisticHelper>.Current.CreateItemsContainer(content, locale.GetString("schedule_stopwatch/monthly_unloaded_items").ToUpper(), "UnloadedItems");
             _unloadedContainer.SetSiblingIndex(2);
             _unloadedItemsContainer = _unloadedContainer.Find("Content");
             _unloadedContainerTitle = _unloadedContainer.Find("Label").gameObject.GetComponent<Text>();
 
             Tooltip.For(
                 _unloadedContainerTitle.transform,
-                () => GetEstimatatedNeededItemsTooltipText(),
+                () => LazyManager<StationWindowLogisticHelper>.Current.GetEstimatatedNeededItemsTooltipText(GetEstimatatedNeededItems(), LastTransfers),
                 null
             );
 
-            _loadedContainer = CreateContainer(content,locale.GetString("schedule_stopwatch/monthly_loaded_items").ToUpper());
+            _loadedContainer = LazyManager<StationWindowLogisticHelper>.Current.CreateItemsContainer(content,locale.GetString("schedule_stopwatch/monthly_loaded_items").ToUpper(), "LoadedItems");
             _loadedContainer.SetSiblingIndex(3);
             _loadedItemsContainer = _loadedContainer.Find("Content");
             _loadedContainerTitle = _loadedContainer.Find("Label").gameObject.GetComponent<Text>();
 
             Tooltip.For(
                 _loadedContainerTitle.transform,
-                () => GetEstimatatedNeededItemsTooltipText(),
+                () => LazyManager<StationWindowLogisticHelper>.Current.GetEstimatatedNeededItemsTooltipText(GetEstimatatedNeededItems(), LastTransfers),
                 null
             );
             this._offset = Time.unscaledTime;
@@ -80,66 +79,7 @@ namespace ScheduleStopwatch.UI
         {
             if (_lastNeededItems == null)
             {
-                Dictionary<Item, float> neededItems = _lastNeededItems = new Dictionary<Item, float>();
-                IReadOnlyDictionary<Item, TransferData> lastTransfers = LastTransfers;
-                _neededItemsPerItem = new Dictionary<Item, Dictionary<Item, float>>();
-                if (lastTransfers.Count == 0)
-                {
-                    return neededItems;
-                }
-
-                List<Item> finalItems = new List<Item>();
-                foreach (KeyValuePair<Item, TransferData> pair in lastTransfers)
-                {
-                    if (pair.Value.unload > 0)
-                    {
-                        finalItems.Add(pair.Key);
-                    }
-                }
-                RecipeHelper helper = LazyManager<RecipeHelper>.Current;
-
-                Dictionary<Item, int> itemsForCalculation = new Dictionary<Item, int>();
-                Dictionary<Item, int> unservicedDemands = new Dictionary<Item, int>();
-
-                RecipeHelper.AddItems(itemsForCalculation, lastTransfers, TransferDirection.loading);
-
-                if (StationWindow.Location.VehicleStation != null)
-                {
-                    _lastDemands = new Dictionary<Item, int>();
-                    DemandHelper.GetStationDemands(StationWindow.Location.VehicleStation, _lastDemands, unservicedDemands);
-                    if (_lastDemands.Count>0)
-                    {
-                        RecipeHelper.AddItems(itemsForCalculation, _lastDemands);
-                    }
-                }
-
-                foreach (KeyValuePair<Item, int> pair in itemsForCalculation)
-                {
-                    Dictionary<Item, float> subNeededItems = _neededItemsPerItem[pair.Key] = new Dictionary<Item, float>();
-                    List<RecipeItem> ingredients = null;
-                    bool isUnserviced = unservicedDemands.TryGetValue(pair.Key, out int unservicedCount) && unservicedCount == pair.Value;
-
-                    if (!isUnserviced && (!lastTransfers.TryGetValue(pair.Key, out TransferData transfData) || transfData.unload == 0))
-                    {
-                        //calculate ingredients only for items that are not unloaded at the station
-                        ingredients = helper.GetIngredients(pair.Key, finalItems, pair.Value);
-                    }
-                    if (ingredients != null && ingredients.Count > 0)
-                    {
-                        AddIngredients(ingredients, neededItems);
-                        AddIngredients(ingredients, subNeededItems);
-                    }
-                    else
-                    {
-                        //no ingredients = raw item / item is transferred (unloaded and loaded) / unserviced demand, we add it to needed items
-                        if (!neededItems.TryGetValue(pair.Key, out float count))
-                        {
-                            count = 0;
-                        }
-                        neededItems[pair.Key] = count + pair.Value;
-                        subNeededItems[pair.Key] = pair.Value;
-                    }
-                }
+                _lastNeededItems = LazyManager<StationWindowLogisticHelper>.Current.GetEstimatatedNeededItems(StationWindow.Location.VehicleStation, LastTransfers, out _neededItemsPerItem, out _lastDemands);
             }
             return _lastNeededItems;
         }
@@ -157,38 +97,6 @@ namespace ScheduleStopwatch.UI
             return null;
         }
 
-        private string GetEstimatatedNeededItemsTooltipText()
-        {
-            Dictionary<Item, float> neededItems = GetEstimatatedNeededItems();
-            RecipeHelper helper = LazyManager<RecipeHelper>.Current;
-            Locale locale = LazyManager<LocaleManager>.Current.Locale;
-            if (neededItems.Count>0)
-            {
-                StringBuilder sb = new StringBuilder();
-                sb.Append(StringHelper.Boldify(LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/needed_items_to_produce").ToUpper()));
-
-                foreach (KeyValuePair<Item, float> pair in neededItems)
-                {
-                    if (pair.Value > 0)
-                    {
-                        string text = pair.Value.ToString("N0");
-                        sb.AppendLine().Append(StringHelper.FormatCountString(pair.Key.DisplayName, text));
-                        if (!LastTransfers.TryGetValue(pair.Key, out TransferData transfCount) || transfCount.load > 0)
-                        {
-                            (int? itemCountPerMonth, Mine mine) = helper.GetMinedItemsPerMineAndMonth(pair.Key);
-                            if (itemCountPerMonth != null)
-                            {
-                                sb.Append(" (" + locale.GetString("schedule_stopwatch/number_of_mines").Format((pair.Value / itemCountPerMonth.Value).ToString("N1"), mine.DisplayName) + ")");
-                            }
-                        }
-                    }
-                }
-                return sb.ToString();
-            }
-
-            return "";
-        }
-        
         private string GetEstimatedItemsForOneLoadItemTooltipText(Item item, int displayAmount)
         {
             Dictionary<Item, float> neededItems = GetEstimatatedNeededItems(item);
@@ -221,18 +129,6 @@ namespace ScheduleStopwatch.UI
             return "";
         }
 
-        private void AddIngredients(List<RecipeItem> itemsToAdd, Dictionary<Item, float> totalItems)
-        {
-            foreach(RecipeItem itemToAdd in itemsToAdd)
-            {
-                if (!totalItems.TryGetValue(itemToAdd.Item, out float count))
-                {
-                    count = 0;
-                } 
-                totalItems[itemToAdd.Item] = count + itemToAdd.Count;
-            }
-        }
-
         private void Invalidate()
         {
             Settings settings = Settings.Current;
@@ -245,8 +141,8 @@ namespace ScheduleStopwatch.UI
             if (settings.ShowStationLoadedItems || settings.ShowStationUnloadedItems)
             {
                 IReadOnlyDictionary<Item, TransferData> transfers = LastTransfers;
-                FillContainerWithItems(_loadedContainer, _loadedItemsContainer, settings.ShowStationLoadedItems ? transfers : null, TransferDirection.loading, itemTooltipTextFunc: GetEstimatedItemsForOneLoadItemTooltipText);
-                FillContainerWithItems(_unloadedContainer, _unloadedItemsContainer, settings.ShowStationUnloadedItems ? transfers : null, TransferDirection.unloading, GetEstimatatedNeededItems());
+                LazyManager<StationWindowLogisticHelper>.Current.FillContainerWithItems(_loadedContainer, _loadedItemsContainer, settings.ShowStationLoadedItems ? transfers : null, TransferDirection.loading, itemTooltipTextFunc: GetEstimatedItemsForOneLoadItemTooltipText);
+                LazyManager<StationWindowLogisticHelper>.Current.FillContainerWithItems(_unloadedContainer, _unloadedItemsContainer, settings.ShowStationUnloadedItems ? transfers : null, TransferDirection.unloading, GetEstimatatedNeededItems());
                 bool incomplete = IncompleteTransfers;
                 bool estimated = EstimatedTransfers;
                 if (_lastIncomplete != incomplete || _lastEstimated != estimated)
@@ -266,121 +162,6 @@ namespace ScheduleStopwatch.UI
             }
         }
 
-        private void FillContainerWithItems(Transform container, Transform itemContainer, IReadOnlyDictionary<Item, TransferData> transfers, TransferDirection direction, Dictionary<Item, float> neededItems = null, Func<Item, int, string> itemTooltipTextFunc = null) 
-        {
-            int count = 0;
-            if (transfers == null)
-            {
-                container.gameObject.SetActive(false);
-                return;
-            }
-            List<ResourceView> resourceViews = new List<ResourceView>();
-            itemContainer.transform.GetComponentsInChildren<ResourceView>(resourceViews);
-            foreach (KeyValuePair<Item, TransferData> pair in transfers)
-            {
-                int value = pair.Value.Get(direction);
-                if (value > 0)
-                {
-                    ResourceView view = this.GetResourceView(resourceViews, count, itemContainer);
-                    Panel panel = view.gameObject.transform.Find("ValueContainer").GetComponent<Panel>();
-                    Transform demandCont = view.transform.Find("DemandContainer");
-                    if (neededItems != null && neededItems.TryGetValue(pair.Key, out float neededCount))
-                    {
-                        view.Show(null, null, LazyManager<IconRenderer>.Current.GetItemIcon(pair.Key.AssetId), StringHelper.Simplify((double)value), StringHelper.FormatCountString(pair.Key.DisplayName, value.ToString("N0") + "/" + neededCount.ToString("N0")));
-
-                        demandCont.Find<Text>("Value").text = StringHelper.Simplify(neededCount);
-                        demandCont.gameObject.SetActive(true);
-                        float ratio = value / neededCount;
-                        if (ratio > 1.2f)
-                        {
-                            panel.color = Color.blue;
-                        }
-                        else
-                        if (ratio < 0.9f)
-                        {
-                            panel.color = Color.red;
-                        } else
-                        {
-                            panel.color = new Color(0, 0.88f, 0);
-                        }
-                    }
-                    else
-                    {
-                        view.ShowItem(pair.Key, null, value);
-                        panel.color = _resourceViewOrigColor;
-                        demandCont.gameObject.SetActive(false);
-                    }
-                    if (itemTooltipTextFunc != null)
-                    {
-                        view.GetComponent<TooltipTarget>().DynamicText = delegate { return itemTooltipTextFunc.Invoke(pair.Key, value); };
-                    }
-                    count++;
-                }
-            }
-            container.gameObject.SetActive(count > 0);
-            while (count < resourceViews.Count)
-            {
-                resourceViews[count].gameObject.SetActive(false);
-                count++;
-            }
-        }
-
-        private ResourceView GetResourceView(List<ResourceView> resourceViews, int i, Transform parent)
-        {
-            if (i < resourceViews.Count)
-            {
-                return resourceViews[i];
-            }
-            if (_resourceViewTemplate == null)
-            {
-                CreateResourceViewTemplate();
-            }
-            ResourceView result = UnityEngine.Object.Instantiate<ResourceView>(_resourceViewTemplate, parent);
-            return result;
-        }
-
-        private void CreateResourceViewTemplate()
-        {
-            _resourceViewTemplate = UnityEngine.Object.Instantiate<ResourceView>(R.Game.UI.ResourceView, null);
-            RectTransform valueContainer = _resourceViewTemplate.transform.Find<RectTransform>("ValueContainer");
-            RectTransform newContainer = UnityEngine.Object.Instantiate<RectTransform>(valueContainer, _resourceViewTemplate.transform);
-            newContainer.SetAsFirstSibling();
-            newContainer.name = "DemandContainer";
-            newContainer.SetActive(false);
-            newContainer.GetComponent<Panel>().color = Color.grey;
-            Vector2 pos = newContainer.anchoredPosition;
-            pos.y = 33;
-            newContainer.anchoredPosition = pos;
-        }
-
-        private void CreateTemplate()
-        {
-            _template = UnityEngine.Object.Instantiate<Transform>(R.Game.UI.StationWindow.StationWindowOverviewTab.transform.Find("Body/WindowScrollView").GetComponent<ScrollRect>().content.Find("Sources"));
-            _template.gameObject.SetActive(false);
-            GridLayoutGroup group = _template.Find<GridLayoutGroup>("Content");
-
-            RectOffset padding = group.padding;
-            padding.top = 5;
-            padding.bottom = 0;
-            group.padding = padding;
-
-            Vector2 spacing = group.spacing;
-            spacing.y = 26;
-            group.spacing = spacing;
-
-            _resourceViewOrigColor = R.Game.UI.ResourceView.gameObject.transform.Find("ValueContainer").GetComponent<Panel>().color;
-        }
-
-        private Transform CreateContainer(Transform parent, string title)
-        {
-            if (!_template)
-            {
-                CreateTemplate();
-            }
-            Transform result = GameObject.Instantiate<Transform>(_template, parent);
-            result.Find("Label").gameObject.GetComponent<Text>().text = title;
-            return result;
-        }
 
         private void OnSettingsChanged()
         {
@@ -416,11 +197,17 @@ namespace ScheduleStopwatch.UI
                 if (_lastTransfers == null)
                 {
                     TaskTransfers transfersSum = new TaskTransfers();
+                    _incompleteTransfers = false;
+                    _estimatedTransfers = false;
 
-                    ImmutableList<Vehicle> vehicles = LazyManager<VehicleStationLocationManager>.Current.GetServicedVehicles(StationWindow.Location);
-                    _lastTransfers = Manager<VehicleScheduleDataManager>.Current.GetStationTaskTransfersSum(vehicles, StationWindow.Location, out bool incompleteTransfers, out bool isEstimated);
-                    _incompleteTransfers = incompleteTransfers;
-                    _estimatedTransfers = isEstimated; 
+                    foreach (VehicleStation connStation in LazyManager<StationDemandManager>.Current.GetConnectedStationsEnum(StationWindow.Location.VehicleStation, true))
+                    {
+                        ImmutableList<Vehicle> vehicles = LazyManager<VehicleStationLocationManager>.Current.GetServicedVehicles(connStation.Location);
+                        Manager<VehicleScheduleDataManager>.Current.GetStationTaskTransfersSum(vehicles, connStation.Location, out bool incompleteTransfers, out bool isEstimated, transfersSum);
+                        _incompleteTransfers |= incompleteTransfers;
+                        _estimatedTransfers |= isEstimated;
+                    }
+                    _lastTransfers = transfersSum.Transfers;
                 }
                 return _lastTransfers;
             }
@@ -453,8 +240,6 @@ namespace ScheduleStopwatch.UI
         private Transform _loadedContainer, _loadedItemsContainer;
         private Transform _unloadedContainer, _unloadedItemsContainer;
         private Text _loadedContainerTitle, _unloadedContainerTitle;
-        private static Transform _template;
-        private static ResourceView _resourceViewTemplate;
         private float _offset;
         private bool _lastIncomplete = false, _lastEstimated = false;
         private bool? _incompleteTransfers = null;
@@ -463,7 +248,6 @@ namespace ScheduleStopwatch.UI
         private Dictionary<Item, float> _lastNeededItems;
         private Dictionary<Item, Dictionary<Item, float>> _neededItemsPerItem;
         private Dictionary<Item, int> _lastDemands;
-        private static Color _resourceViewOrigColor;
 
         private static Transform _actualTargetItemsContainer;
 

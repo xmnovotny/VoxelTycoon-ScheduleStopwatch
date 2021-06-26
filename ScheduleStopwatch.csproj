@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <DebugType>portable</DebugType>
     <UserSecretsId>9b7ea2c0-28cc-4f3f-a92d-6c02087cf6be</UserSecretsId>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -93,5 +94,4 @@
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="if $(ConfigurationName) == Debug (&#xD;&#xA;  &quot;$(Pdb2MdbExe)&quot; &quot;$(TargetPath)&quot;&#xD;&#xA;)&#xD;&#xA;&#xD;&#xA;copy /Y &quot;$(TargetPath)&quot; &quot;$(VoxelTycoonInstallationDir)/Content/$(TargetName)&quot;&#xD;&#xA;&#xD;&#xA;copy /Y &quot;$(ProjectDir)mod.json&quot; &quot;$(VoxelTycoonInstallationDir)/Content/$(TargetName)&quot;&#xD;&#xA;&#xD;&#xA;xcopy /Y &quot;$(ProjectDir)/Content/localization&quot; &quot;$(VoxelTycoonInstallationDir)/Content/$(TargetName)/localization&quot;&#xD;&#xA;&#xD;&#xA;copy /Y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(VoxelTycoonInstallationDir)/Content/$(TargetName)&quot;&#xD;&#xA;&#xD;&#xA;if exist &quot;$(TargetDir)$(TargetName).dll.mdb&quot; (copy /Y &quot;$(TargetDir)$(TargetName).dll.mdb&quot; &quot;$(VoxelTycoonInstallationDir)/Content/$(TargetName)&quot;)&#xD;&#xA;&#xD;&#xA;copy /Y &quot;$(TargetPath)&quot; &quot;$(VoxelTycoonWorkshopDir)/$(ScheduleStopwatchId)&quot;&#xD;&#xA;&#xD;&#xA;xcopy /Y &quot;$(ProjectDir)/Content/localization&quot; &quot;$(VoxelTycoonWorkshopDir)/$(ScheduleStopwatchId)/localization&quot;&#xD;&#xA;&#xD;&#xA;copy /Y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(VoxelTycoonWorkshopDir)/$(ScheduleStopwatchId)&quot;&#xD;&#xA;&#xD;&#xA;if exist &quot;$(TargetDir)$(TargetName).dll.mdb&quot; (copy /Y &quot;$(TargetDir)$(TargetName).dll.mdb&quot; &quot;$(VoxelTycoonWorkshopDir)/$(ScheduleStopwatchId)&quot;)" />
   </Target>
-
 </Project>
