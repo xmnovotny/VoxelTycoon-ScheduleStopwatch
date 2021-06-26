@@ -274,6 +274,14 @@ namespace ScheduleStopwatch.UI
 			StorageNetworkTabConnectedNodeItem nodeItem = Instantiate<StorageNetworkTabConnectedNodeItem>(R.Game.UI.StorageNetworking.StorageNetworkTabConnectedNodeItem);
 			Transform nodeItemTransf = nodeItem.transform;
 			DestroyImmediate(nodeItem);
+			DestroyImmediate(nodeItemTransf.gameObject.GetComponent<Button>());
+			DestroyImmediate(nodeItemTransf.gameObject.GetComponent<ClickableDecorator>());
+			Instantiate<Transform>(R.Game.UI.ResourceView.transform.Find("ValueContainer"), nodeItemTransf).name = "ValueContainer";
+
+			Instantiate<Transform>(R.Game.UI.ResourceView.transform.Find("Background"), nodeItemTransf);
+			Transform transform;
+			(transform = Instantiate<Transform>(R.Game.UI.ResourceView.transform.Find("Image"), nodeItemTransf)).name = "ItemImage";
+			transform.GetComponent<RectTransform>().anchoredPosition = new Vector2(15, 15);
 			_buildingCountItemsTemplate = nodeItemTransf.gameObject.AddComponent<StationWindowLogisticTabBuildingCountItem>();
 		}
 
@@ -335,7 +343,17 @@ namespace ScheduleStopwatch.UI
 				Transform productionNeededContainer = LazyManager<StationWindowLogisticHelper>.Current.CreateItemsContainer(bodyContent, "Items needed for production".ToUpper(), "NeededItems");
 				productionNeededContainer.SetActive(true);
 
-				AddBuildingItemsContainer(bodyContent, "Factories needed".ToUpper(), "NeededFactories");
+				Transform factNeededCont = AddBuildingItemsContainer(bodyContent, "Factories needed".ToUpper(), "NeededFactories");
+				GridLayoutGroup group = factNeededCont.Find<GridLayoutGroup>("ScrollView/Viewport/Content");
+
+				RectOffset padding = group.padding;
+				padding.top = 0;
+				group.padding = padding;
+
+				Vector2 spacing = group.spacing;
+				spacing.y = 16;
+				group.spacing = spacing;
+
 			}
 			return _template;
 		}
@@ -467,6 +485,7 @@ namespace ScheduleStopwatch.UI
 		private static Transform _addButtonTemplate;
 		private static StationWindowLogisticTabConnectedStationItem _connectedStationItemTemplate;
 		private static Transform _buildingItemsContainerTemplate;
+		private static StationWindowLogisticTabBuildingCountItem _buildingCountItemsTemplate;
 
 		private Dictionary<Item, float> _neededItems;
 		private Dictionary<Item, Dictionary<Item, float>> _neededItemsPerItem;
@@ -475,7 +494,6 @@ namespace ScheduleStopwatch.UI
 		private Dictionary<(Device device, Recipe recipe), float> _factoriesNeeded;
 		private bool? _incompleteTransfers = null;
 		private bool? _estimatedTransfers = null;
-        private StationWindowLogisticTabBuildingCountItem _buildingCountItemsTemplate;
 
         #region HARMONY
         [HarmonyPostfix]

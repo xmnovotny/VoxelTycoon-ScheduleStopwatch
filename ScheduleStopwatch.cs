@@ -10,7 +10,7 @@ using VoxelTycoon.Localization;
 namespace ScheduleStopwatch
 {
     [SchemaVersion(3)]
-    public class ScheduleStopwatchMod : Mod
+    public class ScheduleStopwatch : Mod
     {
         public const int SAVE_VERSION = 2;
         private Harmony harmony;
@@ -50,7 +50,7 @@ namespace ScheduleStopwatch
 
         protected override void Write(StateBinaryWriter writer)
         {
-            if (SaveSerializer.Current.SchemaVersions.Get<ScheduleStopwatchMod>() < 3)
+            if (SaveSerializer.Current.SchemaVersions.Get<ScheduleStopwatch>() < 3)
             {
                 writer.WriteByte(SAVE_VERSION);
             }
@@ -63,7 +63,7 @@ namespace ScheduleStopwatch
             _readVersion = null;
             try
             {
-                int antVersion = SchemaVersion<ScheduleStopwatchMod>.Get();
+                int antVersion = SchemaVersion<ScheduleStopwatch>.Get();
                 if (antVersion < 3)
                 {
                     _readVersion = reader.ReadByte();

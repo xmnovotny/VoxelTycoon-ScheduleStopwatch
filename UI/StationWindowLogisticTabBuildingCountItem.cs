@@ -1,9 +1,10 @@
-﻿namespace ScheduleStopwatch.UI
+﻿using VoxelTycoon;
+
+namespace ScheduleStopwatch.UI
 {
     using UnityEngine;
     using UnityEngine.EventSystems;
     using UnityEngine.UI;
-    using VoxelTycoon;
     using VoxelTycoon.Buildings;
     using VoxelTycoon.Recipes;
     using VoxelTycoon.Tracks;
@@ -25,13 +26,26 @@
         {
             this._station = station;
             this._building = building;
-            this._count = count;
+            this._count = Mathf.Ceil(count * 10) / 10;
             this._recipe = recipe;
             base.transform.Find<Image>("Thumb").sprite = this.GetThumbIcon();
+            Image image = base.transform.Find<Image>("ItemImage");
+
+            if (this._recipe !=  null)
+            {
+                image.sprite = GetItemIcon();
+                image.gameObject.SetActive(true);
+            } else
+            {
+                image.gameObject.SetActive(false);
+            }
             this._settingsCog = base.transform.Find<Button>("ConnectionCog");
+            this._valueText = base.transform.Find<Text>("ValueContainer/Value");
+            this._valueText.text = _count.ToString("N1");
+            this._valueText.transform.parent.gameObject.SetActive(true);
             //			VoxelTycoon.UI.ContextMenu.For(this._settingsCog, PickerBehavior.OverlayToRight, new Action<VoxelTycoon.UI.ContextMenu>(this.SetupContextMenu));
             this.SetSettingsCogVisibility(false);
-            Tooltip.For(this, null, ScheduleStopwatch.BuildingHelper.GetBuildingName(_building), GetTooltipText, 0);
+            Tooltip.For(this, null, BuildingHelper.GetBuildingName(_building), GetTooltipText, 0);
         }
 
         /// <summary>
@@ -82,6 +96,12 @@
             return LazyManager<IconRenderer>.Current.GetBuildingIcon(assetId, "default");
         }
 
+        private Sprite GetItemIcon()
+        {
+            int assetId = this._recipe.OutputItems[0].Item.AssetId;
+            return LazyManager<IconRenderer>.Current.GetItemIcon(assetId);
+        }
+
         /// <summary>
         /// The SetSettingsCogVisibility.
         /// </summary>
@@ -100,5 +120,7 @@
         private Button _settingsCog;
 
         private VehicleStation _station;
+
+        private Text _valueText;
     }
 }

@@ -44,7 +44,7 @@ namespace ScheduleStopwatch
             {
                 base.DoRead(reader, schedule, data);
                 _startDistance = null;
-                if (ScheduleStopwatchMod.GetSchemaVersion(typeof(VehicleScheduleData)) >= 2)
+                if (ScheduleStopwatch.GetSchemaVersion(typeof(VehicleScheduleData)) >= 2)
                 {
                     if (reader.ReadBool())
                     {
