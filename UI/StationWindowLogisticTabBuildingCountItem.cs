@@ -22,20 +22,26 @@ namespace ScheduleStopwatch.UI
         /// <param name="building">The building<see cref="Building"/>.</param>
         /// <param name="recipe">The recipe<see cref="Recipe"/>.</param>
         /// <param name="count">The count<see cref="float"/>.</param>
-        public void Initialize(VehicleStation station, Building building, Recipe recipe, float count)
+        /// <param name="item">The item<see cref="Item"/>.</param>
+        public void Initialize(VehicleStation station, Building building, Recipe recipe, float count, Item item = null)
         {
             this._station = station;
             this._building = building;
             this._count = Mathf.Ceil(count * 10) / 10;
             this._recipe = recipe;
+            this._item = item;
             base.transform.Find<Image>("Thumb").sprite = this.GetThumbIcon();
             Image image = base.transform.Find<Image>("ItemImage");
 
-            if (this._recipe !=  null)
+            if (this._recipe != null)
             {
+                _item = this._recipe.OutputItems[0].Item;
+            }
+            if (_item != null) { 
                 image.sprite = GetItemIcon();
                 image.gameObject.SetActive(true);
-            } else
+            }
+            else
             {
                 image.gameObject.SetActive(false);
             }
@@ -78,7 +84,7 @@ namespace ScheduleStopwatch.UI
         /// <returns>The <see cref="string"/>.</returns>
         private string GetTooltipText()
         {
-            return (_recipe != null ? _recipe.DisplayName : "") + " (" + _count.ToString("N1") + ")";
+            return (_recipe != null ? _recipe.DisplayName : BuildingHelper.GetBuildingName(_building)) + " (" + _count.ToString("N1") + ")";
         }
 
         /// <summary>
@@ -96,10 +102,13 @@ namespace ScheduleStopwatch.UI
             return LazyManager<IconRenderer>.Current.GetBuildingIcon(assetId, "default");
         }
 
+        /// <summary>
+        /// The GetItemIcon.
+        /// </summary>
+        /// <returns>The <see cref="Sprite"/>.</returns>
         private Sprite GetItemIcon()
         {
-            int assetId = this._recipe.OutputItems[0].Item.AssetId;
-            return LazyManager<IconRenderer>.Current.GetItemIcon(assetId);
+            return LazyManager<IconRenderer>.Current.GetItemIcon(_item.AssetId);
         }
 
         /// <summary>
@@ -116,6 +125,8 @@ namespace ScheduleStopwatch.UI
         private float _count;
 
         private Recipe _recipe;
+
+        private Item _item;
 
         private Button _settingsCog;
 

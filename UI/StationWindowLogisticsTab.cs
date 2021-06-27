@@ -187,7 +187,28 @@ namespace ScheduleStopwatch.UI
 			List<StationWindowLogisticTabBuildingCountItem> items = new();
 			_factoriesItemsContainer.GetComponentsInChildren<StationWindowLogisticTabBuildingCountItem>(true, items);
 			int count = 0;
-            Dictionary<(Device device, Recipe recipe), float> factoriesNeeded = FactoriesNeeded;
+			
+			//mines
+			IReadOnlyDictionary<Item, TransferData> transfers = LastTransfers;
+			RecipeHelper helper = LazyManager<RecipeHelper>.Current;
+			foreach (KeyValuePair<Item, float> itemAmount in NeededItems)
+			{
+				if (itemAmount.Value < 0.1 || (transfers.TryGetValue(itemAmount.Key, out TransferData data) && data.unload > 0))
+				{
+					continue;
+				}
+				(int? itemPerMonth, Mine mine) = helper.GetMinedItemsPerMineAndMonth(itemAmount.Key);
+				if (itemPerMonth.HasValue)
+				{
+					StationWindowLogisticTabBuildingCountItem item = GetBuildingCountItem(items, count, _factoriesItemsContainer);
+					item.Initialize(_station, mine, null, itemAmount.Value / itemPerMonth.Value, itemAmount.Key);
+					item.gameObject.SetActive(true);
+					count++;
+				}
+			}
+
+			Dictionary<(Device device, Recipe recipe), float> factoriesNeeded = FactoriesNeeded;
+			//devices
 			foreach (KeyValuePair<(Device device, Recipe recipe), float> deviceAmount in (from f in factoriesNeeded orderby f.Key.device.DisplayName.ToString(), f.Key.recipe.DisplayName.ToString() select f))
 			{
 				if (deviceAmount.Value > 0.01)
@@ -198,6 +219,7 @@ namespace ScheduleStopwatch.UI
 					count++;
 				}
 			}
+
 			_factoriesContainer.gameObject.SetActive(count > 0);
             for (; count < items.Count; count++)
             {
@@ -281,7 +303,7 @@ namespace ScheduleStopwatch.UI
 			Instantiate<Transform>(R.Game.UI.ResourceView.transform.Find("Background"), nodeItemTransf);
 			Transform transform;
 			(transform = Instantiate<Transform>(R.Game.UI.ResourceView.transform.Find("Image"), nodeItemTransf)).name = "ItemImage";
-			transform.GetComponent<RectTransform>().anchoredPosition = new Vector2(15, 15);
+			transform.GetComponent<RectTransform>().anchoredPosition = new Vector2(-15, 15);
 			_buildingCountItemsTemplate = nodeItemTransf.gameObject.AddComponent<StationWindowLogisticTabBuildingCountItem>();
 		}
 
