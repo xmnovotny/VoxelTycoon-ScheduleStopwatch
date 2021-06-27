@@ -7,7 +7,7 @@ using VoxelTycoon.Tracks.Tasks;
 
 namespace ScheduleStopwatch
 {
-    [SchemaVersion(2)]
+    [SchemaVersion(3)]
     public class TaskDurationDataSet
     {
         public class DurationData

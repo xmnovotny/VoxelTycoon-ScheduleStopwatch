@@ -6,7 +6,7 @@ using VoxelTycoon.Tracks.Tasks;
 
 namespace ScheduleStopwatch
 {
-    [SchemaVersion(2)]
+    [SchemaVersion(3)]
     public class TaskTravelDurationDataSet: TaskDurationDataSet
     {
         private readonly Dictionary<RootTask, float> _distanceData = new Dictionary<RootTask, float>();

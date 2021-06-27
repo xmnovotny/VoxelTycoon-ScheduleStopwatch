@@ -267,9 +267,9 @@ namespace ScheduleStopwatch.UI
             ____targetsContainer.Find<Text>("Label").text += " " + LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/monthly_demand").ToUpper();
         }
 
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         [HarmonyPatch(typeof(StationWindowOverviewTab), "OnSelect")]
-        private static void StationWindowOverviewTab_OnSelect_pof(StationWindowOverviewTab __instance)
+        private static void StationWindowOverviewTab_OnSelect_prf(StationWindowOverviewTab __instance)
         {
             StationWindowOverviewTabExtender tabExt = __instance.gameObject.GetComponent<StationWindowOverviewTabExtender>();
             if (tabExt != null)

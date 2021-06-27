@@ -119,6 +119,7 @@ namespace ScheduleStopwatch.UI
 			if (node == (IStorageNetworkNode)_station)
 			{
 				InvalidateDemandBuildings();
+				Invalidate();
 			}
 		}
 
@@ -128,8 +129,9 @@ namespace ScheduleStopwatch.UI
             {
 				InvalidateConnectedStations();
 				InvalidateDemandBuildings();
-            }
-        }
+				Invalidate();
+			}
+		}
 
 		private void ClearCachedValues()
         {

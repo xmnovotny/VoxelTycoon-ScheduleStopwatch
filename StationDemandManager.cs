@@ -4,10 +4,12 @@ using System.Text;
 using VoxelTycoon;
 using VoxelTycoon.Buildings;
 using VoxelTycoon.Researches;
+using VoxelTycoon.Serialization;
 using VoxelTycoon.Tracks;
 
 namespace ScheduleStopwatch
 {
+    [SchemaVersion(3)]
     public class StationDemandManager: LazyManager<StationDemandManager>
     {
         public Action<IStorageNetworkNode> DemandChange;
@@ -236,6 +238,100 @@ namespace ScheduleStopwatch
                 }
                 _connectedBuildings.Remove(building);
             }
+        }
+
+        internal void Write(StateBinaryWriter writer)
+        {
+            writer.WriteInt(_additionalDemands.Count);
+            foreach (KeyValuePair<VehicleStation, UniqueList<IStorageNetworkNode>> stationPair in _additionalDemands)
+            {
+                if (stationPair.Value.Count > 0)
+                {
+                    writer.WriteBuilding(stationPair.Key);
+                    
+                    UniqueList<IStorageNetworkNode> list = stationPair.Value;
+                    int count = list.Count;
+                    
+                    writer.WriteInt(count);                    
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        writer.WriteBuilding(list[i].Building);
+                    }
+                }
+            }
+
+            writer.WriteInt(_connectedStations.Count);
+            foreach (KeyValuePair<VehicleStation, UniqueList<VehicleStation>> stationPair in _connectedStations)
+            {
+                if (stationPair.Value.Count > 0)
+                {
+                    writer.WriteBuilding(stationPair.Key);
+
+                    UniqueList<VehicleStation> list = stationPair.Value;
+                    int count = list.Count;
+
+                    writer.WriteInt(count);
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        writer.WriteBuilding(list[i]);
+                    }
+                }
+            }
+        }
+
+        internal void Read(StateBinaryReader reader)
+        {
+            _connectedBuildings.Clear();
+            _additionalDemands.Clear();
+            _connectedStations.Clear();
+
+            if (ScheduleStopwatch.GetSchemaVersion(typeof(StationDemandManager)) >= 3)
+            {
+                int count = reader.ReadInt();
+                for (int i = 0; i < count; i++)
+                {
+                    VehicleStation station = reader.ReadBuilding<VehicleStation>();
+                    UniqueList<IStorageNetworkNode> demandList = null;
+                    if (station != null)
+                    {
+                        demandList = GetOrCreateDemandsList(station);
+                    }
+
+                    int countList = reader.ReadInt();
+                    for (int j = 0; j < countList; j++)
+                    {
+                        IStorageNetworkNode node = reader.ReadBuilding<Building>() as IStorageNetworkNode;
+                        if (demandList != null && node != null)
+                        {
+                            demandList.Add(node);
+                            _connectedBuildings.Add(node.Building);
+                        }
+                    }
+                }
+
+                count = reader.ReadInt();
+                for (int i = 0; i < count; i++)
+                {
+                    VehicleStation station = reader.ReadBuilding<VehicleStation>();
+                    UniqueList<VehicleStation> stationList = null;
+                    if (station != null)
+                    {
+                        stationList = GetOrCreateConnectedStationsList(station);
+                    }
+
+                    int countList = reader.ReadInt();
+                    for (int j = 0; j < countList; j++)
+                    {
+                        VehicleStation connStation = reader.ReadBuilding<VehicleStation>();
+                        if (stationList != null && connStation != null)
+                        {
+                            stationList.Add(connStation);
+                            _connectedBuildings.Add(connStation);
+                        }
+                    }
+                }
+            }
+
         }
 
         protected override void OnInitialize()

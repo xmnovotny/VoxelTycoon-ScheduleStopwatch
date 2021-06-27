@@ -10,7 +10,7 @@ using TaskTransfers = ScheduleStopwatch.VehicleScheduleCapacity.TaskTransfers;
 
 namespace ScheduleStopwatch
 {
-    [SchemaVersion(2)]
+    [SchemaVersion(3)]
     class VehicleScheduleDataManager : Manager<VehicleScheduleDataManager>
     {
         private const int DURATION_PER_STATION_RENEW_TIME_DAYS = 2;

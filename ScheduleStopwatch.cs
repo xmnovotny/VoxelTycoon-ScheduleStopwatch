@@ -12,7 +12,7 @@ namespace ScheduleStopwatch
     [SchemaVersion(3)]
     public class ScheduleStopwatch : Mod
     {
-        public const int SAVE_VERSION = 2;
+        public const int SAVE_VERSION = 3;
         private Harmony harmony;
         private const string harmonyID = "cz.xmnovotny.schedulestopwatch.patch";
         private static int? _readVersion = null;
@@ -55,7 +55,7 @@ namespace ScheduleStopwatch
                 writer.WriteByte(SAVE_VERSION);
             }
             VehicleScheduleDataManager.Current.Write(writer);
-
+            LazyManager<StationDemandManager>.Current.Write(writer);
         }
 
         protected override void Read(StateBinaryReader reader)
@@ -69,6 +69,7 @@ namespace ScheduleStopwatch
                     _readVersion = reader.ReadByte();
                 }
                 VehicleScheduleDataManager.Current.Read(reader);
+                LazyManager<StationDemandManager>.Current.Read(reader);
             }
             catch (Exception e)
             {

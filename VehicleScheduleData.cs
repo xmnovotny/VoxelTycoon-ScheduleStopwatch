@@ -9,7 +9,7 @@ using static ScheduleStopwatch.TaskDurationDataSet;
 
 namespace ScheduleStopwatch
 {
-    [SchemaVersion(2)]
+    [SchemaVersion(3)]
     public partial class VehicleScheduleData
     {
         public Vehicle Vehicle { get; private set; }

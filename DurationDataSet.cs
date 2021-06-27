@@ -5,7 +5,7 @@ using VoxelTycoon.Serialization;
 
 namespace ScheduleStopwatch
 {
-    [SchemaVersion(2)]
+    [SchemaVersion(3)]
     public class DurationDataSet
     {
         public const int DEFAULT_BUFFER_SIZE = 10;
