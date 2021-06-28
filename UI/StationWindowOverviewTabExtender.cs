@@ -14,6 +14,7 @@ using VoxelTycoon.Tracks;
 using VoxelTycoon.UI;
 using VoxelTycoon.UI.Controls;
 using static ScheduleStopwatch.VehicleScheduleCapacity;
+using Debug = System.Diagnostics.Debug;
 
 namespace ScheduleStopwatch.UI
 {
@@ -221,7 +222,8 @@ namespace ScheduleStopwatch.UI
                 {
                     IReadOnlyDictionary<Item, TransferData> _ = LastTransfers;
                 }
-                return _incompleteTransfers.Value;
+
+                return _incompleteTransfers != null && _incompleteTransfers.Value;
             }
         }
 
@@ -233,7 +235,7 @@ namespace ScheduleStopwatch.UI
                 {
                     IReadOnlyDictionary<Item, TransferData> _ = LastTransfers;
                 }
-                return _estimatedTransfers.Value;
+                return _estimatedTransfers != null && _estimatedTransfers.Value;
             }
         }
 

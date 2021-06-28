@@ -230,7 +230,7 @@ namespace ScheduleStopwatch
             List<VehicleStationLocation> firstNonstopList = new List<VehicleStationLocation>();
             List<VehicleStationLocation> currentNonstopList = new List<VehicleStationLocation>();
             VehicleStationLocation firstNonNonstop = null, lastNonNonstop = null;
-            RootTask firstNonNostopTask = null;
+            RootTask firstNonNonstopTask = null;
             foreach (TaskSnapshot snapshot in _lastSnapshot.TaskSnapshots)
             {
                 if (snapshot.nonstop)
@@ -249,7 +249,7 @@ namespace ScheduleStopwatch
                     if (firstNonNonstop == null)
                     {
                         firstNonNonstop = snapshot.location;
-                        firstNonNostopTask = snapshot.task;
+                        firstNonNonstopTask = snapshot.task;
                     }
                     if (lastNonNonstop != null)
                     {
@@ -261,7 +261,9 @@ namespace ScheduleStopwatch
             }
             if (firstNonNonstop != null && lastNonNonstop != null)
             {
-                yield return (firstNonNostopTask, lastNonNonstop, firstNonNonstop, currentNonstopList.Count > 0 ? new List<VehicleStationLocation>(currentNonstopList) : null);
+                List<VehicleStationLocation> tmpNonstopList = new (firstNonstopList);
+                tmpNonstopList.AddRange(currentNonstopList);
+                yield return (firstNonNonstopTask, lastNonNonstop, firstNonNonstop, tmpNonstopList.Count > 0 ? tmpNonstopList : null);
             }
             yield break;
         }

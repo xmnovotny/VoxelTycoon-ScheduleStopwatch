@@ -28,7 +28,7 @@
   "schedule_stopwatch/average_schedule_speed": "Average speed: {0} {1}",
   "schedule_stopwatch/ratio_loading_total": "Ratio of loading time to total time: {0}%",
   "schedule_stopwatch/partial": "partial",
-  "schedule_stopwatch/monthly_demand": "(monthly demand)",
+  "schedule_stopwatch/monthly_demand": "(+monthly demand)",
   "schedule_stopwatch/estimated": "(estimated)",
   "schedule_stopwatch/inaccurate": "(inaccurate)"
 }

@@ -9,11 +9,14 @@ using VoxelTycoon.Recipes;
 using VoxelTycoon.Researches;
 using static ScheduleStopwatch.VehicleScheduleCapacity;
 using XMNUtils;
+using UnityEngine;
 
 namespace ScheduleStopwatch
 {
     class RecipeHelper : LazyManager<RecipeHelper>
     {
+        private const float CONVEYOR_ITEMS_PER_SECOND = 1;
+
         protected override void OnInitialize()
         {
             base.OnInitialize();
@@ -265,18 +268,35 @@ namespace ScheduleStopwatch
         public Dictionary<(Device device, Recipe recipe), float> GetNeededDevicesPerMonth(Dictionary<Recipe, float> recipesAmounts)
         {
             Dictionary<(Device device, Recipe recipe), float> result = new();
-            FileLog.Log("Devices: ");
             foreach (KeyValuePair<Recipe, float> recipeAmount in recipesAmounts)
             {
                 Device device = GetDevice(recipeAmount.Key);
                 if (device)
                 {
-                    float devicesCount = (recipeAmount.Key.Duration * recipeAmount.Value * TimeManager.GameMonthsPerSecond);
+                    float loadingSeconds = Math.Max(0, _maxInputItemsPerRecipe[recipeAmount.Key] - 1) * CONVEYOR_ITEMS_PER_SECOND;
+                    float devicesCount = ((recipeAmount.Key.Duration + loadingSeconds) * recipeAmount.Value * TimeManager.GameMonthsPerSecond);
                     result.AddFloatToDict((device, recipeAmount.Key), devicesCount);
-                    FileLog.Log($"{device.DisplayName}, {recipeAmount.Key.DisplayName}: " + devicesCount.ToString("N2"));
                 }
             }
             return result;
+        }
+
+        public int GetRecipeInputItemMaxAmount(Recipe recipe)
+        {
+            return _maxInputItemsPerRecipe[recipe];
+        }
+
+        private static int CalculateRecipeInputItemMaxAmount(Recipe recipe)
+        {
+            float max = 0;
+            foreach (RecipeItem recipeItem in recipe.InputItems)
+            {
+                if (recipeItem.Count > max)
+                {
+                    max = recipeItem.Count;
+                }
+            }
+            return Mathf.RoundToInt(max);
         }
 
         private void AddRecipeItemToDict(Dictionary<Item, RecipeItem> dictionary, Item item, float count)
@@ -409,6 +429,7 @@ namespace ScheduleStopwatch
         private readonly Dictionary<Item, Dictionary<Recipe, float>> _itemToSubRecipes = new Dictionary<Item, Dictionary<Recipe, float>>();
         private Dictionary<Item, ValueTuple<int, Mine>> _minedItemsPerMonth = null;
         private Dictionary<Recipe, Device> _recipeToDevice = null;
+        private LazyDictionary<Recipe, int> _maxInputItemsPerRecipe = new LazyDictionary<Recipe, int>(CalculateRecipeInputItemMaxAmount);
 
     }
 }

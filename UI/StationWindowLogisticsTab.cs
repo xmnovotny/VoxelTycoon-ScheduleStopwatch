@@ -20,7 +20,7 @@ using static ScheduleStopwatch.VehicleScheduleCapacity;
 namespace ScheduleStopwatch.UI
 {
 	[HarmonyPatch]
-    class StationWindowLogisticsTab: MonoBehaviour, IWindowTabSelectHandler, IWindowTabDeselectHandler
+    internal class StationWindowLogisticsTab: MonoBehaviour, IWindowTabSelectHandler, IWindowTabDeselectHandler
     {
 		public void Initialize(VehicleStation station)
 		{
@@ -34,10 +34,7 @@ namespace ScheduleStopwatch.UI
 			{
 				UIManager.Current.SetTool(new DemandPickerTool()
 				{
-					OnBuildingPicked = delegate (Building building)
-					{
-						OnDemandPicked(building);
-					},
+					OnBuildingPicked = OnDemandPicked,
 					DisabledNodes = new HashSet<IStorageNetworkNode>(LazyManager<StationDemandManager>.Current.GetCombinedStationDemandNodesEnum(station, true))
 				}, false);
 			});
@@ -51,10 +48,7 @@ namespace ScheduleStopwatch.UI
 			{
 				UIManager.Current.SetTool(new StationPickerTool()
 				{
-					OnStationPicked = delegate (VehicleStation stationToAdd)
-					{
-						OnStationPicked(stationToAdd);
-					},
+					OnStationPicked = OnStationPicked,
 					DisabledStations = LazyManager<StationDemandManager>.Current.GetConnectedStationsHashset(station, true)
 				}, false);
 			});
@@ -104,13 +98,11 @@ namespace ScheduleStopwatch.UI
 		}
 
 		protected void Update()
-        {
-			if (this._station?.isActiveAndEnabled == true)
+		{
+			if (this._station is not {isActiveAndEnabled: true}) return;
+			if (TimeHelper.OncePerUnscaledTime(1f, this._offset))
 			{
-				if (TimeHelper.OncePerUnscaledTime(1f, this._offset))
-				{
-					this.Invalidate();
-				}
+				this.Invalidate();
 			}
 		}
 
@@ -144,13 +136,13 @@ namespace ScheduleStopwatch.UI
 			_factoriesNeeded = null;
 		}
 
+		// ReSharper disable Unity.PerformanceAnalysis
 		private void Invalidate()
         {
 			ClearCachedValues();
 			InvalidateNeededItems();
 			InvalidateNeededFactories();
 			LazyManager<StationWindowLogisticHelper>.Current.FillContainerWithNeededItems(_demandedContainer, _demandedItemsContainer, Demands);
-//			LazyManager<StationWindowLogisticHelper>.Current.FillContainerWithNeededItems(_productionNeededContainer, _productionNeededItemsContainer, NeededItems);
 		}
 
 		private void InvalidateNeededItems()
@@ -174,11 +166,11 @@ namespace ScheduleStopwatch.UI
                 {
 					value -= demand;
                 }
-				if (value > 0)
-				{
-					helper.AddOneItemToContainer(resourceViews, count, _productionNeededItemsContainer, pair.Key, value, null, null);
-					count++;
-				}
+
+				if (value <= 0) continue;
+				
+				helper.AddOneItemToContainer(resourceViews, count, _productionNeededItemsContainer, pair.Key, value, null, null);
+				count++;
 			}
 			_productionNeededContainer.gameObject.SetActive(count > 0);
 			helper.DeactivateResourceViews(resourceViews, count);
@@ -187,7 +179,7 @@ namespace ScheduleStopwatch.UI
 		private void InvalidateNeededFactories()
         {
 			List<StationWindowLogisticTabBuildingCountItem> items = new();
-			_factoriesItemsContainer.GetComponentsInChildren<StationWindowLogisticTabBuildingCountItem>(true, items);
+			_factoriesItemsContainer.GetComponentsInChildren(true, items);
 			int count = 0;
 			
 			//mines
@@ -234,11 +226,11 @@ namespace ScheduleStopwatch.UI
 			ClearExceptButton(_demandBuildingNodesGrid, "AddDemandButton");
 			foreach (IStorageNetworkNode connectedNode in LazyManager<StationDemandManager>.Current.GetCombinedStationDemandNodesEnum(_station, false))
             {
-				Instantiate<StationWindowLogisticTabDemandBuildingItem>(GetDemandBuildingsItemTemplate(), this._demandBuildingNodesGrid).Initialize(this._station, connectedNode, false);
+				Instantiate(GetDemandBuildingsItemTemplate(), _demandBuildingNodesGrid).Initialize(_station, connectedNode, false);
 			}
 			foreach (IStorageNetworkNode connectedNode in LazyManager<StationDemandManager>.Current.GetAdditionalDemandsEnum(_station))
 			{
-				Instantiate<StationWindowLogisticTabDemandBuildingItem>(GetDemandBuildingsItemTemplate(), this._demandBuildingNodesGrid).Initialize(this._station, connectedNode, true);
+				Instantiate(GetDemandBuildingsItemTemplate(), _demandBuildingNodesGrid).Initialize(_station, connectedNode, true);
 			}
 			_addDemandButton.transform.parent.SetAsLastSibling();
 		}
@@ -248,14 +240,14 @@ namespace ScheduleStopwatch.UI
 			ClearExceptButton(_connectedStationsGrid, "AddStationButton");
 			foreach (VehicleStation connectedStation in LazyManager<StationDemandManager>.Current.GetConnectedStationsEnum(_station))
 			{
-				Instantiate<StationWindowLogisticTabConnectedStationItem>(GetConnectedStationItemTemplate(), this._connectedStationsGrid).Initialize(this._station, connectedStation);
+				Instantiate(GetConnectedStationItemTemplate(), this._connectedStationsGrid).Initialize(this._station, connectedStation);
 			}
 			_addStationButton.transform.parent.SetAsLastSibling();
 		}
 
-		private void ClearExceptButton(Transform transform, string buttonName)
+		private void ClearExceptButton(Transform trans, string buttonName)
         {
-			foreach (object obj in transform)
+			foreach (object obj in trans)
 			{
 				Transform transf = (Transform)obj;
 				if (transf.name != buttonName)
@@ -303,9 +295,9 @@ namespace ScheduleStopwatch.UI
 			Instantiate<Transform>(R.Game.UI.ResourceView.transform.Find("ValueContainer"), nodeItemTransf).name = "ValueContainer";
 
 			Instantiate<Transform>(R.Game.UI.ResourceView.transform.Find("Background"), nodeItemTransf);
-			Transform transform;
-			(transform = Instantiate<Transform>(R.Game.UI.ResourceView.transform.Find("Image"), nodeItemTransf)).name = "ItemImage";
-			transform.GetComponent<RectTransform>().anchoredPosition = new Vector2(-15, 15);
+			Transform trans;
+			(trans = Instantiate<Transform>(R.Game.UI.ResourceView.transform.Find("Image"), nodeItemTransf)).name = "ItemImage";
+			trans.GetComponent<RectTransform>().anchoredPosition = new Vector2(-15, 15);
 			_buildingCountItemsTemplate = nodeItemTransf.gameObject.AddComponent<StationWindowLogisticTabBuildingCountItem>();
 		}
 
@@ -388,13 +380,13 @@ namespace ScheduleStopwatch.UI
             {
 				_buildingItemsContainerTemplate = Instantiate<Transform>(R.Game.UI.StorageNetworking.StorageNetworkTab.transform.Find("Head/ConnectedNodes"));
 			}
-			Transform _result = Instantiate<Transform>(_buildingItemsContainerTemplate, parent);
-			_result.Find<Text>("Label").text = title;
+			Transform result = Instantiate<Transform>(_buildingItemsContainerTemplate, parent);
+			result.Find<Text>("Label").text = title;
 			if (name != null)
             {
-				_result.name = name;
+				result.name = name;
             }
-			return _result;
+			return result;
         }
 
 		private static Transform GetAddButtonTemplate()
