@@ -1,20 +1,19 @@
 ﻿#define BETA
 using HarmonyLib;
-using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text;
+using ScheduleStopwatch.Helper;
 using UnityEngine;
 using UnityEngine.UI;
 using VoxelTycoon;
 using VoxelTycoon.Buildings;
-using VoxelTycoon.Game;
 using VoxelTycoon.Game.UI;
 using VoxelTycoon.Game.UI.StorageNetworking;
 using VoxelTycoon.Recipes;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.UI;
 using VoxelTycoon.UI.Controls;
+using XMNUtils;
 using static ScheduleStopwatch.VehicleScheduleCapacity;
 
 namespace ScheduleStopwatch.UI
@@ -324,53 +323,60 @@ namespace ScheduleStopwatch.UI
 			return _connectedStationItemTemplate;
 		}
 
+		private static Transform GetStorageNetworkTab()
+		{
+			Transform tabTransf;
+			Version version = new Version();
+			if (version.CompareTo("0.86.0.6") >= 0)
+			{
+				tabTransf = ScheduleStopwatchHelper_0_86_0_6.GetStorageNetworkTab();
+			}
+			else
+			{
+				tabTransf = ScheduleStopwatchHelper_0_86_0_0.GetStorageNetworkTab();
+			}
+
+			return tabTransf;
+		}
+		
 		private static StationWindowLogisticsTab GetTemplate()
         {
-			if (_template == null)
-			{
-#if BETA
-				LayoutElement tab = Instantiate<LayoutElement>(R.Game.UI.StorageNetworking.StorageNetworkTab);
-				Transform tabTransf = tab.transform;
-//				FileLog.Log(XMNUtils.GameObjectDumper.DumpGameObject(tab.gameObject));
-#else
-				StorageNetworkTab tab = Instantiate<StorageNetworkTab>(R.Game.UI.StorageNetworking.StorageNetworkTab);
-				Transform tabTransf = tab.transform;
-				DestroyImmediate(tab);
-#endif
-				_template = tabTransf.gameObject.AddComponent<StationWindowLogisticsTab>();
-				tabTransf.Find("Placeholder").DestroyGameObject();
-				Transform connectedNodes = tabTransf.Find("Head/ConnectedNodes");
-				connectedNodes.name = "DemandBuildingNodes";
-				connectedNodes.Find<Text>("Label").text = "Buildings with demand".ToUpper();
+	        if (_template != null) return _template;
 
-				AddBuildingItemsContainer(connectedNodes.parent, "Connected stations".ToUpper(), "ConnectedStations");
-				Transform body = tabTransf.Find("Body");
-				body.DestroyGameObject();
+	        Transform tabTransf = GetStorageNetworkTab();
 
-				body = Instantiate<Transform>(R.Game.UI.StationWindow.StationWindowOverviewTab.transform.Find("Body"), tabTransf);
-				body.name = "Body";
-				body.Find("Placeholder")?.DestroyGameObject();
-				Transform bodyContent = body.Find("WindowScrollView").GetComponent<ScrollRect>().content;
-				bodyContent.Clear();
+	        _template = tabTransf.gameObject.AddComponent<StationWindowLogisticsTab>();
+			tabTransf.Find("Placeholder").DestroyGameObject();
+			Transform connectedNodes = tabTransf.Find("Head/ConnectedNodes");
+			connectedNodes.name = "DemandBuildingNodes";
+			connectedNodes.Find<Text>("Label").text = "Buildings with demand".ToUpper();
 
-				Transform demandedContainer = LazyManager<StationWindowLogisticHelper>.Current.CreateItemsContainer(bodyContent, "Demanded items".ToUpper(), "DemandedItems");
-				demandedContainer.SetActive(true);
+			AddBuildingItemsContainer(connectedNodes.parent, "Connected stations".ToUpper(), "ConnectedStations");
+			Transform body = tabTransf.Find("Body");
+			body.DestroyGameObject();
 
-				Transform productionNeededContainer = LazyManager<StationWindowLogisticHelper>.Current.CreateItemsContainer(bodyContent, "Items needed for production".ToUpper(), "NeededItems");
-				productionNeededContainer.SetActive(true);
+			body = Instantiate<Transform>(R.Game.UI.StationWindow.StationWindowOverviewTab.transform.Find("Body"), tabTransf);
+			body.name = "Body";
+			body.Find("Placeholder")?.DestroyGameObject();
+			Transform bodyContent = body.Find("WindowScrollView").GetComponent<ScrollRect>().content;
+			bodyContent.Clear();
 
-				Transform factNeededCont = AddBuildingItemsContainer(bodyContent, "Factories needed".ToUpper(), "NeededFactories");
-				GridLayoutGroup group = factNeededCont.Find<GridLayoutGroup>("ScrollView/Viewport/Content");
+			Transform demandedContainer = LazyManager<StationWindowLogisticHelper>.Current.CreateItemsContainer(bodyContent, "Demanded items".ToUpper(), "DemandedItems");
+			demandedContainer.SetActive(true);
 
-				RectOffset padding = group.padding;
-				padding.top = 0;
-				group.padding = padding;
+			Transform productionNeededContainer = LazyManager<StationWindowLogisticHelper>.Current.CreateItemsContainer(bodyContent, "Items needed for production".ToUpper(), "NeededItems");
+			productionNeededContainer.SetActive(true);
 
-				Vector2 spacing = group.spacing;
-				spacing.y = 16;
-				group.spacing = spacing;
+			Transform factNeededCont = AddBuildingItemsContainer(bodyContent, "Factories needed".ToUpper(), "NeededFactories");
+			GridLayoutGroup group = factNeededCont.Find<GridLayoutGroup>("ScrollView/Viewport/Content");
 
-			}
+			RectOffset padding = @group.padding;
+			padding.top = 0;
+			@group.padding = padding;
+
+			Vector2 spacing = @group.spacing;
+			spacing.y = 16;
+			@group.spacing = spacing;
 			return _template;
 		}
 
@@ -378,7 +384,7 @@ namespace ScheduleStopwatch.UI
         {
 			if (_buildingItemsContainerTemplate == null)
             {
-				_buildingItemsContainerTemplate = Instantiate<Transform>(R.Game.UI.StorageNetworking.StorageNetworkTab.transform.Find("Head/ConnectedNodes"));
+				_buildingItemsContainerTemplate = Instantiate<Transform>(GetStorageNetworkTab().Find("Head/ConnectedNodes"));
 			}
 			Transform result = Instantiate<Transform>(_buildingItemsContainerTemplate, parent);
 			result.Find<Text>("Label").text = title;

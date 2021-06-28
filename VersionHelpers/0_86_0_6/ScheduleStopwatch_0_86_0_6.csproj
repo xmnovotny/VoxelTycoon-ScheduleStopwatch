@@ -26,8 +26,8 @@
     <Reference Include="$(VoxelTycoonInstallationDir)\VoxelTycoon_Data\Managed\0Harmony.dll">
       <HintPath>$(VoxelTycoonInstallationDir)\VoxelTycoon_Data\Managed\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="$(VoxelTycoonInstallationDir)\VoxelTycoon_Data\Managed\Assembly-CSharp.dll">
-      <HintPath>{$VoxelTycoonInstallationDir}\VoxelTycoon_Data\Managed\Assembly-CSharp.dll</HintPath>
+    <Reference Include="e:\projekty\VoxelTycoon\VoxelTycoonVersions\0_86_0_6\Assembly-CSharp.dll">
+      <HintPath>e:\projekty\VoxelTycoon\VoxelTycoonVersions\0_86_0_6\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="$(VoxelTycoonInstallationDir)\VoxelTycoon_Data\Managed\UnityEngine.CoreModule.dll">
       <HintPath>{$VoxelTycoonInstallationDir}\VoxelTycoon_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
@@ -89,23 +89,6 @@
     <Reference Include="UnityEngine.UnityWebRequestWWWModule">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\VoxelTycoon\VoxelTycoon_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
     </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="VersionHelpers\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Remove="VersionHelpers\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="VersionHelpers\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="VersionHelpers\0_86_0_0\ScheduleStopwatch_0_86_0_0.csproj" />
-    <ProjectReference Include="VersionHelpers\0_86_0_6\ScheduleStopwatch_0_86_0_6.csproj" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
