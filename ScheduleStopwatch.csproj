@@ -93,6 +93,12 @@
 
   <ItemGroup>
     <Compile Remove="VersionHelpers\**" />
+    <Compile Include="..\Utils\CSharp9Helper.cs">
+      <Link>Content\Utils\CSharp9Helper.cs</Link>
+    </Compile>
+    <Compile Include="..\Utils\XMNUtils.cs">
+      <Link>Content\Utils\XMNUtils.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

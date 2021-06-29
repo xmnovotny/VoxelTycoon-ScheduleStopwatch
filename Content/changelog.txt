@@ -1,3 +1,7 @@
+Version 2.0.1
+* [Bugfix] Fixed NullReferenceException in vehicle window
+* [Bugfix] Fixed error in the saving and loading game
+
 Version 2.0
 * When editing vehicle schedule or creating a new one, mod tries to get travel and station loading from another trains or another part of own schedule, so transport capacity can be shown immediate
 * When there are same items unloaded and loaded in the station, both loading and unloading amounts are displayed in the station window instead of difference between load and unload
