@@ -20,7 +20,7 @@
   "schedule_stopwatch/task_times_hint": "Cestovní čas od přechozího úkolu/Čas úkolu ve stanici",
   "schedule_stopwatch/monthly_unloaded_items": "Předpokládaná měsíční vykládka",
   "schedule_stopwatch/monthly_loaded_items": "Předpokládaná měsíční nakládka",
-  "schedule_stopwatch/needed_items_to_produce": "Suroviny potřebné pro výrobu položek očekávané nakládky",
+  "schedule_stopwatch/needed_items_to_produce": "Suroviny potřebné pro výrobu potávaných a nakládaných položek",
   "schedule_stopwatch/needed_items_to_produce_this": "Suroviny potřebné pro výrobu této položky",
   "schedule_stopwatch/number_of_mines": "{0}x {1}",
   "schedule_stopwatch/no_transfers": "Žádné přesuny",
@@ -30,6 +30,25 @@
   "schedule_stopwatch/partial": "částečná",
   "schedule_stopwatch/monthly_demand": "(+měsíční poptávka)",
   "schedule_stopwatch/estimated": "(odhadovaný)",
-  "schedule_stopwatch/inaccurate": "(přibližně)"
+  "schedule_stopwatch/inaccurate": "(přibližně)",
+  "schedule_stopwatch/add_new_demand_tooltip": "Přidá další budovu s poptávkou (laboratoř nebo obchod)",
+  "schedule_stopwatch/connect_station_tooltip": "Připojí další stanici pro součet nakládky, vykládky a poptávky",
+  "schedule_stopwatch/demanded_items_tooltip": "Zboží přímo poptávané obchody nebo laboratořemi v okolí stanice (stanic)",
+  "schedule_stopwatch/needed_items_tooltip": "Suroviny, které jsou potřeba pro výrobu požadovaného nebo nakládaného zboží ve stanici (stanicích)",
+  "schedule_stopwatch/needed_factories_tooltip": "Počet továren potřebných pro výrobu požadovaného nebo nakládaného zboží ve stanici (stanicích)",
+  "schedule_stopwatch/buildings_with_demand": "Budovy s poptávkou",
+  "schedule_stopwatch/connected_stations": "Připojené stanice",
+  "schedule_stopwatch/demanded_items": "Požadované zboží",
+  "schedule_stopwatch/needed_items": "Suroviny potřebné pro produkci a nakládku",
+  "schedule_stopwatch/factories_needed": "Potřebné továrny",
+  "schedule_stopwatch/logistics_2": "Logistika II",
+  "schedule_stopwatch/add_building_for_demand": "Přidat budovu s poptávkou",
+  "schedule_stopwatch/already_added": "Již přidáno",
+  "schedule_stopwatch/pick_store_or_lab": "Vyberte obchod nebo laboratoř pro zjištění poptávky",
+  "schedule_stopwatch/add_connected_station": "Přidá propojenou stanici",
+  "schedule_stopwatch/pick_station": "Vyberte stanici",
+  "schedule_stopwatch/remove": "Odstranit",
+  "schedule_stopwatch/no_demanded_items": "Žádné požadované zboží"
+
 }
 
