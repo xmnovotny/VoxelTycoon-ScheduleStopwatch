@@ -117,15 +117,17 @@ namespace ScheduleStopwatch.UI
             int itemsLimit = routeTotalTransfers != null ? 7 : 10;
             _lastTransfersPerStation = null;
             _lastMonthMultiplier = data.ScheduleMonthlyMultiplier;
-            _lastInaccurate = data.ScheduleAvereageDuration.Estimated;
+            _lastTotalTime = data.ScheduleAvereageDuration;
+            _lastInaccurate = _lastTotalTime != null && _lastTotalTime.Estimated;
+            _lastInaccurate = false;
             if (_text != null)
             {
                 itemsLimit = routeTotalTransfers != null ? 3 : 5;
-                _lastTotalTime = data.ScheduleAvereageDuration;
                 if (_lastTotalTime != null)
                 {
+                    _lastInaccurate = _lastTotalTime.Estimated;
                     _text.text = locale.GetString("schedule_stopwatch/days_hours").Format(((int)_lastTotalTime.Duration.TotalDays).ToString("N0"), _lastTotalTime.Duration.Hours.ToString("N0"));
-                    if (_lastTotalTime.Estimated)
+                    if (_lastInaccurate)
                     {
                         _text.color = Color.gray;
                     } else

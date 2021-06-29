@@ -62,7 +62,7 @@ namespace ScheduleStopwatch
 
         public VehicleScheduleData GetOrCreateVehicleScheduleData(Vehicle vehicle)
         {
-            if (!_vehiclesData.ContainsKey(vehicle))
+            if (!_vehiclesData.ContainsKey(vehicle) || _vehiclesData[vehicle] == null)
             {
                 _vehiclesData[vehicle] = new VehicleScheduleData(vehicle);
             }
