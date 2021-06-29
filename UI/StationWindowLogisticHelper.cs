@@ -208,8 +208,9 @@ namespace ScheduleStopwatch.UI
             }
             RecipeHelper helper = LazyManager<RecipeHelper>.Current;
 
+            Settings settings = Settings.Current;
             Dictionary<Item, int> itemsForCalculation = new Dictionary<Item, int>();
-            Dictionary<Item, int> unservicedDemands = new Dictionary<Item, int>();
+            Dictionary<Item, int> unservicedDemands = settings.CalculateUnservicedDemands ? null : new Dictionary<Item, int>();
 
             RecipeHelper.AddItems(itemsForCalculation, transfers, TransferDirection.loading);
 
@@ -227,7 +228,7 @@ namespace ScheduleStopwatch.UI
             {
                 Dictionary<Item, float> subNeededItems = neededItemsPerItem[pair.Key] = new Dictionary<Item, float>();
                 List<RecipeItem> ingredients = null;
-                bool isUnserviced = unservicedDemands.TryGetValue(pair.Key, out int unservicedCount) && unservicedCount == pair.Value;
+                bool isUnserviced = unservicedDemands != null && unservicedDemands.TryGetValue(pair.Key, out int unservicedCount) && unservicedCount == pair.Value;
 
                 if (!isUnserviced && (!transfers.TryGetValue(pair.Key, out TransferData transfData) || transfData.unload == 0))
                 {

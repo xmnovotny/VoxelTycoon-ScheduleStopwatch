@@ -77,6 +77,7 @@ namespace ScheduleStopwatch.UI
 		{
 			LazyManager<StationDemandManager>.Current.DemandChange -= this.OnNodeChanged;
 			LazyManager<StationDemandManager>.Current.ConnectedStationChange -= this.OnConnectedStationChange;
+			Settings.Current.Unsubscribe(OnSettingsChanged);
 			//			LazyManager<WhiteMode>.Current.Release();
 		}
 
@@ -94,6 +95,7 @@ namespace ScheduleStopwatch.UI
 			this.Invalidate();
 			LazyManager<StationDemandManager>.Current.DemandChange += this.OnNodeChanged;
 			LazyManager<StationDemandManager>.Current.ConnectedStationChange += this.OnConnectedStationChange;
+			Settings.Current.Subscribe(OnSettingsChanged);
 			//			LazyManager<WhiteMode>.Current.Request();
 		}
 
@@ -104,6 +106,11 @@ namespace ScheduleStopwatch.UI
 			{
 				this.Invalidate();
 			}
+		}
+
+		private void OnSettingsChanged()
+		{
+			Invalidate();
 		}
 
 		private void OnNodeChanged(IStorageNetworkNode node)

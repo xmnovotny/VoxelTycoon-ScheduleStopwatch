@@ -13,6 +13,7 @@ namespace ScheduleStopwatch
         private bool _showTotalTransferCapacity = true;
         private bool _showStationLoadedItems = true;
         private bool _showStationUnloadedItems = true;
+        private bool _calculateUnservicedDemands = false;
 
         public bool ShowIndividualTaskTimes { 
             get => _showIndividualTaskTimes;
@@ -48,6 +49,11 @@ namespace ScheduleStopwatch
         {
             get => _showStationUnloadedItems;
             set => SetProperty<bool>(value, ref _showStationUnloadedItems);
+        }
+        public bool CalculateUnservicedDemands
+        {
+            get => _calculateUnservicedDemands;
+            set => SetProperty(value, ref _calculateUnservicedDemands);
         }
     }
 }

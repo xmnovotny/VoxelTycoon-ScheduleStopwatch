@@ -48,6 +48,7 @@
   "schedule_stopwatch/add_connected_station": "Add connected station",
   "schedule_stopwatch/pick_station": "Pick station",
   "schedule_stopwatch/remove": "Remove",
-  "schedule_stopwatch/no_demanded_items": "No demanded items"
-  
+  "schedule_stopwatch/no_demanded_items": "No demanded items",
+  "schedule_stopwatch/calculate_unserviced_demands": "Calculate needed items for stores with no deliveries",
+  "schedule_stopwatch/calculate_unserviced_demands_description": "Calculation of ingredients and factories for the requested items by the store will be performed, even if store has not yet been serviced"
 }

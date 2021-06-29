@@ -48,7 +48,7 @@
   "schedule_stopwatch/add_connected_station": "Přidá propojenou stanici",
   "schedule_stopwatch/pick_station": "Vyberte stanici",
   "schedule_stopwatch/remove": "Odstranit",
-  "schedule_stopwatch/no_demanded_items": "Žádné požadované zboží"
-
+  "schedule_stopwatch/calculate_unserviced_demands": "Počítat potřebné suroviny pro neobsluhované obchody",
+  "schedule_stopwatch/calculate_unserviced_demands_description": "Výpočet potřebných surovin a továren se provede i pro zboží požadované obchodem, do kterého ještě nebylo doručeno žádné zboží."
 }
 

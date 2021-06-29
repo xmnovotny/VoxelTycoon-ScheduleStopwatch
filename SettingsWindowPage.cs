@@ -66,6 +66,14 @@ namespace ScheduleStopwatch
             {
                 settings.ShowStationUnloadedItems = false;
             });
+
+            settingsControl.AddToggle(locale.GetString("schedule_stopwatch/calculate_unserviced_demands"), locale.GetString("schedule_stopwatch/calculate_unserviced_demands_description"), settings.CalculateUnservicedDemands, delegate ()
+            {
+                settings.CalculateUnservicedDemands = true;
+            }, delegate ()
+            {
+                settings.CalculateUnservicedDemands = false;
+            });
         }
 
     }

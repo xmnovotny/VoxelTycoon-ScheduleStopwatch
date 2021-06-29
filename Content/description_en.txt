@@ -27,8 +27,16 @@ Note: After installing a modification into an existing game, it takes some time 
 In order to display the sum of data for all vehicles on the same route, all vehicles need to have fully loaded data.
 
 [h2]Changelog[/h2]
-
-[h3]Version 2.0[/h3]
+[b]Version 2.0.2[/b]
+[list]
+[*] Added settings for calculating ingredients for unserviced stores demands
+[/list]
+[b]Version 2.0.1[/b]
+[list]
+[*] [Bugfix] Fixed NullReferenceException in vehicle window
+[*] [Bugfix] Fixed error in the saving and loading game
+[/list]
+[b]Version 2.0[/b]
 [list]
 [*] When editing vehicle schedule or creating a new one, mod tries to get travel and station loading from another trains or another part of own schedule, so transport capacity can be shown immediate
 [*] When there are same items unloaded and loaded in the station, both loading and unloading amounts are displayed in the station window instead of difference between load and unload
@@ -42,15 +50,13 @@ In order to display the sum of data for all vehicles on the same route, all vehi
 [*] [Bonus] Fix for incorrect display of population needed for next demand in the city window
 [*] [Bonus] Refit task duration is calculated only for units that needs to change the transported item, instead of all units in the refit task
 [/list]
-
-[h3]Version 1.2[/h3]
+[b]Version 1.2[/b]
 [list]
 [*] display average vehicle speed in total schedule time tooltip
 [*] display the ratio of the loading time to the total time of the timetable
 [*] calculates and display the sum of items needed to produce estimated loaded items for the station (using the "estimated un/loaded items" tooltip in the station window or individually using the tooltip for each loaded item)
 [/list]
-
-[h3]Version 1.1[/h3]
+[b]Version 1.1[/b]
 [list]
 [*] the number of items displayed is now limited to prevent overflow
 [*] display estimated sum of deliveries/pickups from vehicles in the station window
