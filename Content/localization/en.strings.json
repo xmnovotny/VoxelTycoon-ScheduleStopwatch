@@ -30,5 +30,24 @@
   "schedule_stopwatch/partial": "partial",
   "schedule_stopwatch/monthly_demand": "(+monthly demand)",
   "schedule_stopwatch/estimated": "(estimated)",
-  "schedule_stopwatch/inaccurate": "(inaccurate)"
+  "schedule_stopwatch/inaccurate": "(inaccurate)",
+  "schedule_stopwatch/add_new_demand_tooltip": "Add a new building with demand (Lab or Store)",
+  "schedule_stopwatch/connect_station_tooltip": "Connect an additional station for the sum of monthly demands, deliveries and pickups.",
+  "schedule_stopwatch/demanded_items_tooltip": "Items directly demanded by stores and labs within the station(s).",
+  "schedule_stopwatch/needed_items_tooltip": "Items needed to produce requested and picked items within the station(s).",
+  "schedule_stopwatch/needed_factories_tooltip": "Number of factories needed to produce requested and picked items within the station(s).",
+  "schedule_stopwatch/buildings_with_demand": "Buildings with demand",
+  "schedule_stopwatch/connected_stations": "Connected stations",
+  "schedule_stopwatch/demanded_items": "Demanded items",
+  "schedule_stopwatch/needed_items": "Items needed for production and pickup",
+  "schedule_stopwatch/factories_needed": "Factories needed",
+  "schedule_stopwatch/logistics_2": "Logistics II",
+  "schedule_stopwatch/add_building_for_demand": "Add building for station demand",
+  "schedule_stopwatch/already_added": "Already added",
+  "schedule_stopwatch/pick_store_or_lab": "Pick store or lab for station demand",
+  "schedule_stopwatch/add_connected_station": "Add connected station",
+  "schedule_stopwatch/pick_station": "Pick station",
+  "schedule_stopwatch/remove": "Remove",
+  "schedule_stopwatch/no_demanded_items": "No demanded items"
+  
 }

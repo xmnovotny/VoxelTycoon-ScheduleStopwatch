@@ -6,6 +6,7 @@ using VoxelTycoon.Audio;
 using VoxelTycoon.Buildings;
 using VoxelTycoon.Game;
 using VoxelTycoon.Game.UI;
+using VoxelTycoon.Localization;
 using VoxelTycoon.Researches;
 using VoxelTycoon.Theming;
 using VoxelTycoon.Tracks;
@@ -68,12 +69,12 @@ namespace ScheduleStopwatch.UI
 					if (_canPick)
 					{
 						this._tooltip.Background = new PanelColor(ReadyToPickTooltipColor, 0f);
-						this._tooltip.Text = "Add connected station";
+						this._tooltip.Text = LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/add_connected_station");
 					}
 					else
 					{
 						this._tooltip.Background = new PanelColor(WrongReadyToPickHighlightColor, 0f);
-						this._tooltip.Text = "Already added";
+						this._tooltip.Text = LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/already_added");
 						station.SetTint(new Color?(WrongReadyToPickHighlightColor));
 					}
 				}
@@ -101,7 +102,7 @@ namespace ScheduleStopwatch.UI
 					this._station = null;
 				}
 				this._tooltip.Background = new PanelColor(PickingTooltipColor, 0f);
-				this._tooltip.Text = "Pick station";
+				this._tooltip.Text = LazyManager<LocaleManager>.Current.Locale.GetString("Pick station");
 			}
 			this._tooltip.RectTransform.anchoredPosition = (new Vector2(Input.mousePosition.x, Input.mousePosition.y) + new Vector2(-10f, -16f)) / UIManager.Current.Scale;
 			this._tooltip.ClampPositionToScreen();

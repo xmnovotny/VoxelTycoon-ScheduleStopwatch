@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using VoxelTycoon;
 using VoxelTycoon.Buildings;
+using VoxelTycoon.Localization;
 using VoxelTycoon.Researches;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.UI;
@@ -41,7 +42,7 @@ namespace ScheduleStopwatch.UI
 
 		private void SetupContextMenu(VoxelTycoon.UI.ContextMenu menu)
         {
-			menu.AddItem("Remove", () => RemoveItem());
+			menu.AddItem(LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/remove"), () => RemoveItem());
         }
 
 		private void RemoveItem()
@@ -66,7 +67,7 @@ namespace ScheduleStopwatch.UI
                 }
 				return result;
             }
-			return "No demanded items";
+			return LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/no_demanded_items");
 		}
 
 		private Sprite GetThumbIcon()

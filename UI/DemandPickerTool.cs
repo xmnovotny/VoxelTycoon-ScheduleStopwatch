@@ -9,6 +9,7 @@ using VoxelTycoon.Buildings;
 using VoxelTycoon.Cities;
 using VoxelTycoon.Game;
 using VoxelTycoon.Game.UI;
+using VoxelTycoon.Localization;
 using VoxelTycoon.Researches;
 using VoxelTycoon.Theming;
 using VoxelTycoon.UI;
@@ -89,12 +90,12 @@ namespace ScheduleStopwatch.UI
 					if (_canPick)
                     {
 						this._tooltip.Background = new PanelColor(DemandPickerTool.ReadyToPickTooltipColor, 0f);
-						this._tooltip.Text = "Add building for station demand";
+						this._tooltip.Text = LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/add_building_for_demand");
 					}
 					else
                     {
 						this._tooltip.Background = new PanelColor(DemandPickerTool.WrongReadyToPickHighlightColor, 0f);
-						this._tooltip.Text = "Already added";
+						this._tooltip.Text = LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/already_added");
 						building.SetTint(new Color?(WrongReadyToPickHighlightColor));
 					}
 				}
@@ -129,7 +130,7 @@ namespace ScheduleStopwatch.UI
 					this._building = null;
 				}
 				this._tooltip.Background = new PanelColor(DemandPickerTool.PickingTooltipColor, 0f);
-				this._tooltip.Text = "Pick store or lab for station demand";
+				this._tooltip.Text = LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/pick_store_or_lab");
 			}
 			this._tooltip.RectTransform.anchoredPosition = (new Vector2(Input.mousePosition.x, Input.mousePosition.y) + new Vector2(-10f, -16f)) / UIManager.Current.Scale;
 			this._tooltip.ClampPositionToScreen();

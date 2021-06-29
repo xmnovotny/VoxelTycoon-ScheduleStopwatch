@@ -130,6 +130,7 @@ namespace ScheduleStopwatch.UI
             return "";
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         private void Invalidate()
         {
             Settings settings = Settings.Current;

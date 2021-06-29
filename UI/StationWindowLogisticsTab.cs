@@ -9,6 +9,7 @@ using VoxelTycoon;
 using VoxelTycoon.Buildings;
 using VoxelTycoon.Game.UI;
 using VoxelTycoon.Game.UI.StorageNetworking;
+using VoxelTycoon.Localization;
 using VoxelTycoon.Recipes;
 using VoxelTycoon.Tracks;
 using VoxelTycoon.UI;
@@ -24,6 +25,7 @@ namespace ScheduleStopwatch.UI
 		public void Initialize(VehicleStation station)
 		{
 			this._station = station;
+			Locale locale = LazyManager<LocaleManager>.Current.Locale;
 
 			this._demandBuildingNodesGrid = base.transform.Find<ScrollRect>("Head/DemandBuildingNodes/ScrollView").content;
 			Transform buttonCont = Instantiate<Transform>(GetAddButtonTemplate(), this._demandBuildingNodesGrid);
@@ -37,7 +39,7 @@ namespace ScheduleStopwatch.UI
 					DisabledNodes = new HashSet<IStorageNetworkNode>(LazyManager<StationDemandManager>.Current.GetCombinedStationDemandNodesEnum(station, true))
 				}, false);
 			});
-			Tooltip.For(_addDemandButton, "Add a new building with demand (Lab or Store)");
+			Tooltip.For(_addDemandButton, locale.GetString("schedule_stopwatch/add_new_demand_tooltip"));
 
 			this._connectedStationsGrid = base.transform.Find<ScrollRect>("Head/ConnectedStations/ScrollView").content;
 			Transform stationButtonCont = Instantiate<Transform>(GetAddButtonTemplate(), this._connectedStationsGrid);
@@ -51,19 +53,19 @@ namespace ScheduleStopwatch.UI
 					DisabledStations = LazyManager<StationDemandManager>.Current.GetConnectedStationsHashset(station, true)
 				}, false);
 			});
-			Tooltip.For(_addStationButton, "Connect an additional station for the sum of monthly demands, deliveries and pickups.");
+			Tooltip.For(_addStationButton, locale.GetString("schedule_stopwatch/connect_station_tooltip"));
 
 			Transform bodyContent = base.transform.Find("Body/WindowScrollView").GetComponent<ScrollRect>().content;
 			_demandedContainer = bodyContent.Find("DemandedItems");
-			Tooltip.For(_demandedContainer.Find("Label"), "Items directly demanded by stores and labs within the station(s).");
+			Tooltip.For(_demandedContainer.Find("Label"), locale.GetString("schedule_stopwatch/demanded_items_tooltip"));
 			_demandedItemsContainer = _demandedContainer.Find("Content");
 
 			_productionNeededContainer = bodyContent.Find("NeededItems");
-			Tooltip.For(_productionNeededContainer.Find("Label"), "Items needed to produce requested and picked items within the station(s).");
+			Tooltip.For(_productionNeededContainer.Find("Label"), locale.GetString("schedule_stopwatch/needed_items_tooltip"));
 			_productionNeededItemsContainer = _productionNeededContainer.Find("Content");
 
 			_factoriesContainer = bodyContent.Find("NeededFactories");
-			Tooltip.For(_factoriesContainer.Find("Label"), "Number of factories needed to produce requested and picked items within the station(s).");
+			Tooltip.For(_factoriesContainer.Find("Label"), locale.GetString("schedule_stopwatch/needed_factories_tooltip"));
 			_factoriesItemsContainer = _factoriesContainer.Find<ScrollRect>("ScrollView").content;
 		}
 
@@ -342,16 +344,17 @@ namespace ScheduleStopwatch.UI
 		private static StationWindowLogisticsTab GetTemplate()
         {
 	        if (_template != null) return _template;
-
+	        Locale locale = LazyManager<LocaleManager>.Current.Locale;
+	        
 	        Transform tabTransf = GetStorageNetworkTab();
 
 	        _template = tabTransf.gameObject.AddComponent<StationWindowLogisticsTab>();
 			tabTransf.Find("Placeholder").DestroyGameObject();
 			Transform connectedNodes = tabTransf.Find("Head/ConnectedNodes");
 			connectedNodes.name = "DemandBuildingNodes";
-			connectedNodes.Find<Text>("Label").text = "Buildings with demand".ToUpper();
+			connectedNodes.Find<Text>("Label").text = locale.GetString("schedule_stopwatch/buildings_with_demand").ToUpper();
 
-			AddBuildingItemsContainer(connectedNodes.parent, "Connected stations".ToUpper(), "ConnectedStations");
+			AddBuildingItemsContainer(connectedNodes.parent, locale.GetString("schedule_stopwatch/connected_stations").ToUpper(), "ConnectedStations");
 			Transform body = tabTransf.Find("Body");
 			body.DestroyGameObject();
 
@@ -361,22 +364,22 @@ namespace ScheduleStopwatch.UI
 			Transform bodyContent = body.Find("WindowScrollView").GetComponent<ScrollRect>().content;
 			bodyContent.Clear();
 
-			Transform demandedContainer = LazyManager<StationWindowLogisticHelper>.Current.CreateItemsContainer(bodyContent, "Demanded items".ToUpper(), "DemandedItems");
+			Transform demandedContainer = LazyManager<StationWindowLogisticHelper>.Current.CreateItemsContainer(bodyContent, locale.GetString("schedule_stopwatch/demanded_items").ToUpper(), "DemandedItems");
 			demandedContainer.SetActive(true);
 
-			Transform productionNeededContainer = LazyManager<StationWindowLogisticHelper>.Current.CreateItemsContainer(bodyContent, "Items needed for production".ToUpper(), "NeededItems");
+			Transform productionNeededContainer = LazyManager<StationWindowLogisticHelper>.Current.CreateItemsContainer(bodyContent, locale.GetString("schedule_stopwatch/needed_items").ToUpper(), "NeededItems");
 			productionNeededContainer.SetActive(true);
 
-			Transform factNeededCont = AddBuildingItemsContainer(bodyContent, "Factories needed".ToUpper(), "NeededFactories");
+			Transform factNeededCont = AddBuildingItemsContainer(bodyContent, locale.GetString("schedule_stopwatch/factories_needed").ToUpper(), "NeededFactories");
 			GridLayoutGroup group = factNeededCont.Find<GridLayoutGroup>("ScrollView/Viewport/Content");
 
-			RectOffset padding = @group.padding;
+			RectOffset padding = group.padding;
 			padding.top = 0;
-			@group.padding = padding;
+			group.padding = padding;
 
-			Vector2 spacing = @group.spacing;
+			Vector2 spacing = group.spacing;
 			spacing.y = 16;
-			@group.spacing = spacing;
+			group.spacing = spacing;
 			return _template;
 		}
 
@@ -526,7 +529,7 @@ namespace ScheduleStopwatch.UI
 			{
 				StationWindowLogisticsTab tab = Instantiate<StationWindowLogisticsTab>(GetTemplate());
 				tab.Initialize(__instance.Location.VehicleStation);
-				__instance.AddTab("Logistics II", tab.transform, UIColors.Solid.HeroBackground, TabContentHideMode.Deactivate);
+				__instance.AddTab(LocaleManager.Current.Locale.GetString("Logistics II"), tab.transform, UIColors.Solid.HeroBackground, TabContentHideMode.Deactivate);
 			}
 		}
 
