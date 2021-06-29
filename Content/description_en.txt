@@ -1,13 +1,13 @@
 For displaying time spent on schedule tasks and travel between them and calculating estimated monthly transport capacity for vehicles and stations and calculating needed factories and mines
 
 [h2]Features[/h2]
-[list] 
+[list]
 [*] display total duration of one cycle of the schedule
 [*] display duration of the task in the station (eg. loading/unloading) for each task in the schedule
 [*] display travel time between individual tasks (non-stops tasks are ignored)
 [*] display estimated sum of deliveries/pickups from vehicles in the station window
 [*] display average vehicle speed and the ratio of the loading time to the total time of the timetable (using the total duration tooltip)
-[*] calculates and display the sum of items needed to produce estimated loaded items for the station (using the "esitmated un/loaded items" tooltip in the station window or individually using the tooltip for each loaded item)
+[*] calculates and display the sum of items needed to produce estimated loaded items for the station (using the "estimated un/loaded items" tooltip in the station window or individually using the tooltip for each loaded item)
 [*] calculates estimated transport capacity for vehicle and for all vehicles having the same route and display it as sum for whole schedule, sum per stations in the schedule (via tooltip) and for individual tasks
 [*] display monthly demands of connected stores and laboratories in the station window
 [*] ability to add store or laboratory outside the station range for further calculations
@@ -18,12 +18,12 @@ For displaying time spent on schedule tasks and travel between them and calculat
 
 [h2]Bonus features[/h2]
 [*] fix for incorrect display of population needed for next demand in the city window
-[*] refit task duration is calculated only for units that needs to change the transported item, instead of all units in the refit task    
+[*] refit task duration is calculated only for units that needs to change the transported item, instead of all units in the refit task
 [/list]
 
 Safely add/remove a mod from existing games.
 
-Note: After installing a modification into an existing game, it takes some time before the timings are available - all vehicles must complete one cycle of the schedule. The same applies when a new vehicle with a new route is added and there isn't vehicle with same stations. 
+Note: After installing a modification into an existing game, it takes some time before the timings are available - all vehicles must complete one cycle of the schedule. The same applies when a new vehicle with a new route is added and there isn't vehicle with same stations.
 In order to display the sum of data for all vehicles on the same route, all vehicles need to have fully loaded data.
 
 [h2]Changelog[/h2]
@@ -40,14 +40,14 @@ In order to display the sum of data for all vehicles on the same route, all vehi
 [*] Display count of needed factories and mines based on demands, picked and delivered items
 [*] [BugFix] Fixed editing a schedule of vehicle with assigned route
 [*] [Bonus] Fix for incorrect display of population needed for next demand in the city window
-[*] [Bonus] Refit task duration is calculated only for units that needs to change the transported item, instead of all units in the refit task    
+[*] [Bonus] Refit task duration is calculated only for units that needs to change the transported item, instead of all units in the refit task
 [/list]
 
 [h3]Version 1.2[/h3]
 [list]
 [*] display average vehicle speed in total schedule time tooltip
 [*] display the ratio of the loading time to the total time of the timetable
-[*] calculates and display the sum of items needed to produce estimated loaded items for the station (using the "esitmated un/loaded items" tooltip in the station window or individually using the tooltip for each loaded item)
+[*] calculates and display the sum of items needed to produce estimated loaded items for the station (using the "estimated un/loaded items" tooltip in the station window or individually using the tooltip for each loaded item)
 [/list]
 
 [h3]Version 1.1[/h3]
@@ -55,7 +55,7 @@ In order to display the sum of data for all vehicles on the same route, all vehi
 [*] the number of items displayed is now limited to prevent overflow
 [*] display estimated sum of deliveries/pickups from vehicles in the station window
 [*] when you copy a vehicle with a set route, or when you assign an existing route to a vehicle, the average route time data is copied to that vehicle (so that the total capacity of the route is recalculated and displayed immediately)
-[*] added dutch translation (thanks to Github user kevin4998)
+[*] added Dutch translation (thanks to Github user kevin4998)
 [/list]
 
 Source: https://github.com/xmnovotny/VoxelTycoon-ScheduleStopwatch

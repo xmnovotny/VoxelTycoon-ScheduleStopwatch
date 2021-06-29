@@ -1,24 +1,63 @@
 Voor het weergeven van de tijd die is besteed aan geplande taken, het reizen tussen de taken en het berekenen van de geschatte maandelijkse transportcapaciteit voor voertuigen.
 
-Kenmerken
-- Geeft de totale duur van één cyclus van het schema weer.
-- Geeft de duur van de taak in een station (bijv. laden/lossen) voor elke taak in het schema weer.
-- Geeft de reistijd tussen afzonderlijke taken (non-stop taken worden genegeerd) weer.
-- Geeft de geschatte som van leveringen/afhalingen van voertuigen weer in het stationsvenster.
-- Berekent de geschatte transportcapaciteit voor individuele en alle voertuigen met dezelfde route. En geeft dit weer als de som van het hele schema, de som per stations in het schema (via tooltip) en voor individuele taken.
-- Al deze weergaven opties zijn configureerbaar via de Spelinstellingen -> Mods.
+[h2]Kenmerken[/h2]
+[list]
+[*] Geeft de totale duur van één cyclus van het schema weer.
+[*] Geeft de duur van de taak in een station (bijv. laden/lossen) voor elke taak in het schema weer.
+[*] Geeft de reistijd tussen afzonderlijke taken (non-stop taken worden genegeerd) weer.
+[*] Geeft de geschatte som van leveringen/afhalingen van voertuigen weer in het stationsvenster.
+[*] Berekent de geschatte transportcapaciteit voor individuele en alle voertuigen met dezelfde route. En geeft dit weer als de som van het hele schema, de som per stations in het schema (via tooltip) en voor individuele taken.
+[*] Berekent en toont de som van bouwmaterialen, die nodig zijn om de geschatte geladen producten voor het station te produceren (met behulp van de "geschatte ongeladen items" tooltip in het stationsvenster of afzonderlijk met behulp van de tooltip voor elk geladen product)
+[*] Berekent de geschatte transportcapaciteit voor het voertuig en voor alle voertuigen met dezelfde route. En geeft deze weer als som voor het hele schema, som per stations in het schema (via tooltip) en voor individuele taken.
+[*] Geeft de maandelijkse eisen van alle aangesloten winkels en laboratoria in het stationsvenster weer.
+[*] De mogelijkheid om een winkel of laboratorium toe te voegen buiten het stationsbereik voor verdere berekeningen.
+[*] De mogelijkheid om een ander station aan te sluiten voor som-leveringen, afhalingen en vraag.
+[*] Geeft het aantal benodigde fabrieken en mijnen weer op basis van vraag, gekozen en geleverden producten.
+[*] Al deze weergaven opties zijn configureerbaar via de Spelinstellingen -> Mods.
+[/list]
 
-Veilig een mod toevoegen/verwijderen van bestaande games.
+[h2]Bonus Kenmerken[/h2]
+[list]
+[*] Oplossing voor onjuiste weergave van de bevolking die nodig is voor de volgende client in het stadsvenster
+[*] De duur van de refit-taak wordt alleen berekend voor eenheden die het getransporteerde item moeten wijzigen, in plaats van alle eenheden in de refit-taak
+[/list]
+
+Veilig om toe te voegen/verwijderen van bestaande games.
 
 Opmerking: Na het installeren van deze mod in een bestaand spel, duurt het enige tijd voordat de tijden beschikbaar zijn - alle voertuigen moeten één cyclus van het schema voltooien. Hetzelfde geldt wanneer een nieuw voertuig met een nieuwe route wordt toegevoegd.
 Om de som van de gegevens voor alle voertuigen op dezelfde route weer te geven, moeten alle voertuigen volledig geladen gegevens hebben.
 
-Wijzigingslog
+[h2]Wijzigingslog[/h2]
 
-Versie 1.1
-- Het aantal weergegeven items is nu beperkt om tekst overloop te voorkomen.
-- Geeft de geschatte som van leveringen / pick-ups van voertuigen weer in het stationsvenster.
-- Wanneer u een voertuig met een ingestelde route kopieert, of wanneer u een bestaande route aan een voertuig toewijst, dan worden de gemiddelde routetijdgegevens naar dat voertuig gekopieerd (zodat de totale capaciteit van de route opnieuw wordt berekend en direct wordt weergegeven).
-- Nederlandse vertaling toegevoegd (met dank aan Github-gebruiker kevin4998).
+[h3]Version 2.0[/h3]
+[list]
+[*] Bij het bewerken van het voertuigschema of het maken van een nieuwe, probeert de mod de reis en stationslaad tijd te laden van een andere trein of een ander deel van de eigen dienstregeling. Hierdoor kan de transportcapaciteit direct worden getoond.
+[*] Wanneer er dezelfde items worden gelost en geladen in het station, dan worden zowel de laad- als loshoeveelheden weergegeven in het stationsvenster (in plaats van het verschil tussen laden en lossen).
+[*] Geeft de tooltip met overdracht voor elke eenheid op het tabblad voertuigdetails weer.
+[*] Geeft de maandelijkse eisen van winkels en laboratoria weer in de stationsvensters.
+[*] Een nieuw tabblad toegevoegd in het voertuigschema-venster genaamd "Logistiek II".
+[*] De mogelijkheid om nog een winkel of laboratorium toe te voegen (buiten het stationsbereik) voor het berekenen van de vraag.
+[*] De mogelijkheid om een ​​ander station aan te sluiten voor somleveringen, ophalingen en vraag.
+[*] Geeft het aantal benodigde fabrieken en mijnen op basis van vraag, gepickte en geleverde producten weer.
+[*] [BugFix] Het bewerken van een schema van een voertuig met toegewezen route is nou weer mogelijk.
+[*] [Bonus] Verbeterde de onjuiste weergave van de bevolking die nodig is voor de volgende client in het stadsvenster.
+[*] [Bonus] De duur van de refit-taak wordt alleen berekend voor eenheden die het getransporteerde item moeten wijzigen, in plaats van alle eenheden in de refit-taak.
+[/list]
+
+[h3]Version 1.2[/h3]
+[list]
+[*] Geeft de tooltip gemiddelde voertuigsnelheid weer in het totale tijdschema.
+[*] Geeft de verhouding weer tussen de laadtijd en de totale tijd, van de dienstregeling.
+[*] Berekent en toont de som van de bouwmaterialen die nodig zijn om geschatte geladen producten voor het station te produceren (met behulp van de "geschatte ongeladen items" tooltip in het stationsvenster of afzonderlijk met behulp van de tooltip voor elk geladen product)
+[/list]
+
+[h3]Versie 1.1[/h3]
+[list]
+[*] Het aantal weergegeven items is nu beperkt om tekst overloop te voorkomen.
+[*] Geeft de geschatte som van leveringen / pick-ups van voertuigen weer in het stationsvenster.
+[*] Wanneer u een voertuig met een ingestelde route kopieert, of wanneer u een bestaande route aan een voertuig toewijst, dan worden de gemiddelde routetijdgegevens naar dat voertuig gekopieerd (zodat de totale capaciteit van de route opnieuw wordt berekend en direct wordt weergegeven).
+[*] Nederlandse vertaling toegevoegd (met dank aan Github-gebruiker kevin4998).
+[/list]
 
 Bron: https://github.com/xmnovotny/VoxelTycoon-ScheduleStopwatch
+Probleemtracker: https://github.com/xmnovotny/VoxelTycoon-ScheduleStopwatch/issues
