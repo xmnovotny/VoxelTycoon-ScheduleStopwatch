@@ -102,7 +102,7 @@ namespace ScheduleStopwatch.UI
 					this._station = null;
 				}
 				this._tooltip.Background = new PanelColor(PickingTooltipColor, 0f);
-				this._tooltip.Text = LazyManager<LocaleManager>.Current.Locale.GetString("Pick station");
+				this._tooltip.Text = LazyManager<LocaleManager>.Current.Locale.GetString("schedule_stopwatch/pick_station");
 			}
 			this._tooltip.RectTransform.anchoredPosition = (new Vector2(Input.mousePosition.x, Input.mousePosition.y) + new Vector2(-10f, -16f)) / UIManager.Current.Scale;
 			this._tooltip.ClampPositionToScreen();

@@ -20,7 +20,7 @@
   "schedule_stopwatch/task_times_hint": "Travel time since the previous task/Task time in the station\nGray color indicates that the time is estimated",
   "schedule_stopwatch/monthly_unloaded_items": "Expected monthly unloaded items",
   "schedule_stopwatch/monthly_loaded_items": "Expected monthly loaded items",
-  "schedule_stopwatch/needed_items_to_produce": "Items needed to produce expected loaded items",
+  "schedule_stopwatch/needed_items_to_produce": "Items needed for production and pickup",
   "schedule_stopwatch/needed_items_to_produce_this": "Items needed to produce this item",
   "schedule_stopwatch/number_of_mines": "{0} of {1}",
   "schedule_stopwatch/no_transfers": "No transfers",

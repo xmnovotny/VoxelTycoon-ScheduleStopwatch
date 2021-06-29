@@ -529,7 +529,7 @@ namespace ScheduleStopwatch.UI
 			{
 				StationWindowLogisticsTab tab = Instantiate<StationWindowLogisticsTab>(GetTemplate());
 				tab.Initialize(__instance.Location.VehicleStation);
-				__instance.AddTab(LocaleManager.Current.Locale.GetString("Logistics II"), tab.transform, UIColors.Solid.HeroBackground, TabContentHideMode.Deactivate);
+				__instance.AddTab(LocaleManager.Current.Locale.GetString("schedule_stopwatch/logistics_2"), tab.transform, UIColors.Solid.HeroBackground, TabContentHideMode.Deactivate);
 			}
 		}
 
