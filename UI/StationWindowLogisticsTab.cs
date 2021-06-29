@@ -1,5 +1,4 @@
-﻿#define BETA
-using HarmonyLib;
+﻿using HarmonyLib;
 using System.Linq;
 using System.Collections.Generic;
 using ScheduleStopwatch.Helper;

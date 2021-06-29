@@ -1,31 +1,62 @@
-Pro zobrazení èasu stráveného plnìním poloek jízdního øádu a cestami mezi nimi a pro vıpoèet odhadované mìsíèní pøepravní kapacity vozidel.
+Pro zobrazenÃ­ Äasu strÃ¡venÃ©ho plnÄ›nÃ­m poloÅ¾ek jÃ­zdnÃ­ho Å™Ã¡du a cestami mezi nimi pro vÃ½poÄet odhadovanÃ© mÄ›sÃ­ÄnÃ­ pÅ™epravnÃ­ kapacity vozidel a potÅ™ebnÃ©ho poÄtu tovÃ¡ren a dolÅ¯.
 
-Funkce
-- zobrazení celkové doby trvání jednoho cyklu jízdního øádu
-- zobrazení doby trvání úkolu ve stanici (napø. nakládka/vykládka) pro kadı úkol v jízdním øádu
-- zobrazení doby jízdy mezi jednotlivımi stanicemi (stanice, kde se nezastavuje se ignorují)
-- zobrazení odhadovaného souètu nakládky/vykládky z vozidel v oknì stanice
-- zobrazení prùmìrné rychlosti vlaku a pomìru doby nakládky k celkové dobì jízdního øádu (prostøednictvím nápovìdy k celkové dobì trvání)
-- vypoèítá a zobrazí souèet poloek potøebnıch k vırobì odhadovanıch naloenıch poloek pro stanici (pomocí nápovìdy k nadpisu "oèekávaná mìsíèní nakládka/vykládka" v oknì stanice nebo jednotlivì pomocí nápovìdy ke kadé nakládané poloce)
-- vypoèítá odhadovanou pøepravní kapacitu pro vozidlo a pro všechna vozidla, která mají stejnou trasu a zobrazí ji jako souèet pro celı jízdní øád, souèet pro jednotlivé stanice v jízdním øádu (prostøednictvím tooltipu) a pro jednotlivé úkoly
-- zobrazované poloky lze konfigurovat v Nastavení hry -> Mody
+[h2]Funkce[/h2]
+[list]
+[*] zobrazenÃ­ celkovÃ© doby trvÃ¡nÃ­ jednoho cyklu jÃ­zdnÃ­ho Å™Ã¡du
+[*] zobrazenÃ­ doby trvÃ¡nÃ­ Ãºkolu ve stanici (napÅ™. naklÃ¡dka/vyklÃ¡dka) pro kaÅ¾dÃ½ Ãºkol v jÃ­zdnÃ­m Å™Ã¡du
+[*] zobrazenÃ­ doby jÃ­zdy mezi jednotlivÃ½mi stanicemi (stanice, kde se nezastavuje se ignorujÃ­)
+[*] zobrazenÃ­ odhadovanÃ©ho souÄtu naklÃ¡dky/vyklÃ¡dky z vozidel v oknÄ› stanice
+[*] zobrazenÃ­ prÅ¯mÄ›rnÃ© rychlosti vlaku a pomÄ›ru doby naklÃ¡dky k celkovÃ© dobÄ› jÃ­zdnÃ­ho Å™Ã¡du (prostÅ™ednictvÃ­m nÃ¡povÄ›dy k celkovÃ© dobÄ› trvÃ¡nÃ­)
+[*] zobrazenÃ­ tooltipu pro pÅ™epravnÃ­ kapacitu jednotlivÃ½ch vagonÅ¯ v detailu vozidla
+[*] vypoÄÃ­tÃ¡ a zobrazÃ­ souÄet poloÅ¾ek potÅ™ebnÃ½ch k vÃ½robÄ› odhadovanÃ½ch naloÅ¾enÃ½ch nebo poÅ¾adovanÃ½ch poloÅ¾ek pro stanici (pomocÃ­ nÃ¡povÄ›dy k nadpisu "oÄekÃ¡vanÃ¡ mÄ›sÃ­ÄnÃ­ naklÃ¡dka/vyklÃ¡dka" v oknÄ› stanice nebo jednotlivÄ› pomocÃ­ nÃ¡povÄ›dy ke kaÅ¾dÃ© naklÃ¡danÃ© poloÅ¾ce)
+[*] vypoÄÃ­tÃ¡ odhadovanou pÅ™epravnÃ­ kapacitu pro vozidlo a pro vÅ¡echna vozidla, kterÃ¡ majÃ­ stejnou trasu a zobrazÃ­ ji jako souÄet pro celÃ½ jÃ­zdnÃ­ Å™Ã¡d, souÄet pro jednotlivÃ© stanice v jÃ­zdnÃ­m Å™Ã¡du (prostÅ™ednictvÃ­m tooltipu) a pro jednotlivÃ© Ãºkoly
+[*] zobrazenÃ­ mÄ›sÃ­ÄnÃ­ poptÃ¡vky pÅ™ipojenÃ½ch obchodÅ¯ a laboratoÅ™Ã­ v oknÄ› stanice
+[*] moÅ¾nost pÅ™idat obchod nebo laboratoÅ™ mimo dosah stanice pro zahrnutÃ­ do vÃ½poÄtÅ¯
+[*] moÅ¾nost pÅ™ipojit dalÅ¡Ã­ stanici pro souÄet vyklÃ¡dky, naklÃ¡dky a poptÃ¡vky
+[*] zobrazenÃ­ potÅ™ebnÃ©ho mnoÅ¾stvÃ­ tovÃ¡ren a dolÅ¯ na zÃ¡kladÄ› dopravovanÃ©ho zboÅ¾Ã­ a poptÃ¡vky
+[*] zobrazovanÃ© poloÅ¾ky lze konfigurovat v NastavenÃ­ hry -> Mody
+[/list]
 
-Mod je moné bezpeènì pøidat/odebrat do/z existujících uloenıch her.
+[h2] BonusovÃ© funkce [/h2]
+[list]
+[*] Oprava zobrazenÃ­ chybnÃ©ho poÄtu obyvatel potÅ™ebnÃ©ho pro dalÅ¡Ã­ obchod ve mÄ›stÄ›
+[*] Doba potÅ™ebnÃ¡ na pÅ™estavbu vozidel na jinÃ½ nÃ¡klad se poÄÃ­tÃ¡ jen pro vozy, kterÃ© skuteÄnÄ› mÄ›nÃ­ druh zboÅ¾Ã­.
+[/list]
 
-Poznámka: Po instalaci modifikace do stávající hry je potøeba nìjakı èas, ne jsou k dispozici èasové údaje - všechna vozidla musí splnit jeden cyklus plánu. Toté platí, kdy je pøidáno nové vozidlo s novou trasou. 
-Pro zobrazení souètu údajù za všechna vozidla stejné trasy je potøeba, aby všechna vozidla mìla plnì naètené údaje.
+Mod je moÅ¾nÃ© bezpeÄnÄ› pÅ™idat/odebrat do/z existujÃ­cÃ­ch uloÅ¾enÃ½ch her.
 
-Changelog
+PoznÃ¡mka: Po instalaci modifikace do stÃ¡vajÃ­cÃ­ hry je potÅ™eba nÄ›jakÃ½ Äas, neÅ¾ jsou k dispozici ÄasovÃ© Ãºdaje - vÅ¡echna vozidla musÃ­ splnit jeden cyklus plÃ¡nu. TotÃ©Å¾ platÃ­, kdyÅ¾ je pÅ™idÃ¡no novÃ© vozidlo s novou trasou. 
+Pro zobrazenÃ­ souÄtu ÃºdajÅ¯ za vÅ¡echna vozidla stejnÃ© trasy je potÅ™eba, aby vÅ¡echna vozidla mÄ›la plnÄ› naÄtenÃ© Ãºdaje.
 
-Verze 1.2
-- zobrazení prùmìrné rychlosti vozidla
-- zobrazení pomìru doby nakládky k celkové dobì jízdního øádu
-- vypoèítá a zobrazí souèet poloek potøebnıch k vırobì odhadovanıch naloenıch poloek pro stanici 
+[h2]Changelog[/h2]
 
-Verze 1.1
-- poèet zobrazenıch poloek je nyní omezen, aby se zabránilo jejich pøeteèení
-- zobrazení odhadovaného souètu nakládky/vykládky z vozidel v oknì stanice
-- pøi kopírování vozidla s nastavenou trasou nebo pøi pøiøazení existující trasy k vozidlu se údaje o prùmìrném èase trasy zkopírují do tohoto vozidla (take celková kapacita trasy se okamitì pøepoèítá a zobrazí)
-- pøidán nizozemskı pøeklad (díky uivateli Githubu kevin4998)
+[h3]Verze 2.0[/h3]
+[list]
+[*] pÅ™i editaci jÃ­zdnÃ­ho Å™Ã¡du nebo vytvoÅ™enÃ­ novÃ©ho se mod pokusÃ­ zÃ­skat cestovnÃ­ nebo naklÃ¡dacÃ­ Äas z jinÃ©ho vlaku nebo z jinÃ© ÄÃ¡sti jÃ­zdnÃ­ho Å™Ã¡du vlastnÃ­ho vlaku, takÅ¾e pÅ™epravnÃ­ kapacitu je moÅ¾nÃ© ihned zobrazit
+[*] pokud se v jednÃ© stanici souÄasnÄ› vyklÃ¡dÃ¡ i naklÃ¡dÃ¡ stejnÃ© zboÅ¾Ã­, tak se zobrazÃ­ obÄ› hodnoty v pÅ™Ã­sluÅ¡nÃ© ÄÃ¡sti mÃ­sto rozdÃ­lu naklÃ¡dky a vyklÃ¡dky
+[*] zobrazenÃ­ tooltipu pro pÅ™epravnÃ­ kapacitu jednotlivÃ½ch vagonÅ¯ v detailu vozidla
+[*] zobrazenÃ­ mÄ›sÃ­ÄnÃ­ poptÃ¡vky obchodÅ¯ a laboratoÅ™Ã­ u vyklÃ¡danÃ©ho zboÅ¾Ã­
+[*] vytvoÅ™ena novÃ¡ zÃ¡loÅ¾ka v oknÄ› vozidla "Logistika II"
+[*] moÅ¾nost pÅ™idat obchod nebo laboratoÅ™ mimo dosah stanice pro zahrnutÃ­ do vÃ½poÄtÅ¯
+[*] moÅ¾nost pÅ™ipojit dalÅ¡Ã­ stanici pro souÄet vyklÃ¡dky, naklÃ¡dky a poptÃ¡vky
+[*] zobrazenÃ­ potÅ™ebnÃ©ho mnoÅ¾stvÃ­ tovÃ¡ren a dolÅ¯ na zÃ¡kladÄ› dopravovanÃ©ho zboÅ¾Ã­ a poptÃ¡vky
+[*] [Bugfix] oprava chyby editovÃ¡nÃ­ jÃ­zdnÃ­ho Å™Ã¡du u vozidel s pÅ™iÅ™azenou trasou
+[*] [Bonus] oprava zobrazenÃ­ chybnÃ©ho poÄtu obyvatel potÅ™ebnÃ©ho pro dalÅ¡Ã­ obchod ve mÄ›stÄ›
+[*] [Bonus] doba potÅ™ebnÃ¡ na pÅ™estavbu vozidel na jinÃ½ nÃ¡klad se poÄÃ­tÃ¡ jen pro vozy, kterÃ© skuteÄnÄ› mÄ›nÃ­ druh zboÅ¾Ã­
+[/list] 
 
-Zdrojovı kód: https://github.com/xmnovotny/VoxelTycoon-ScheduleStopwatch
+[h3]Verze 1.2[/h3]
+[list]
+[*] zobrazenÃ­ prÅ¯mÄ›rnÃ© rychlosti vozidla
+[*] zobrazenÃ­ pomÄ›ru doby naklÃ¡dky k celkovÃ© dobÄ› jÃ­zdnÃ­ho Å™Ã¡du
+[*] vypoÄÃ­tÃ¡ a zobrazÃ­ souÄet poloÅ¾ek potÅ™ebnÃ½ch k vÃ½robÄ› odhadovanÃ½ch naloÅ¾enÃ½ch poloÅ¾ek pro stanici
+[/list] 
+
+[h3]Verze 1.1[/h3]
+[*] poÄet zobrazenÃ½ch poloÅ¾ek je nynÃ­ omezen, aby se zabrÃ¡nilo jejich pÅ™eteÄenÃ­
+[*] zobrazenÃ­ odhadovanÃ©ho souÄtu naklÃ¡dky/vyklÃ¡dky z vozidel v oknÄ› stanice
+[*] pÅ™i kopÃ­rovÃ¡nÃ­ vozidla s nastavenou trasou nebo pÅ™i pÅ™iÅ™azenÃ­ existujÃ­cÃ­ trasy k vozidlu se Ãºdaje o prÅ¯mÄ›rnÃ©m Äase trasy zkopÃ­rujÃ­ do tohoto vozidla (takÅ¾e celkovÃ¡ kapacita trasy se okamÅ¾itÄ› pÅ™epoÄÃ­tÃ¡ a zobrazÃ­)
+[*] pÅ™idÃ¡n nizozemskÃ½ pÅ™eklad (dÃ­ky uÅ¾ivateli Githubu kevin4998)
+
+ZdrojovÃ½ kÃ³d: https://github.com/xmnovotny/VoxelTycoon-ScheduleStopwatch
+HlÃ¡Å¡enÃ­ chyb: https://github.com/xmnovotny/VoxelTycoon-ScheduleStopwatch/issues
