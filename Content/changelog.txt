@@ -1,3 +1,18 @@
+Version 2.0
+* When editing vehicle schedule or creating a new one, mod tries to get travel and station loading from another trains or another part of own schedule, so transport capacity can be shown immediate
+* When there are same items unloaded and loaded in the station, both loading and unloading amounts are displayed in the station window instead of difference between load and unload
+* Display tooltip with transfers for each unit in the vehicle details tab
+* Displaying monthly demands of stores and laboratories in the station windows unloaded items and targets building
+* Created a new tab in the vehicle schedule window "Logistics II"
+* Ability to add another store or lab (outside of the station range) for calculating demands
+* Ability to connect another station for sum deliveries, pickups and demands
+* Display count of needed factories and mines based on demands, picked and delivered items
+ 
+* [BugFix] Fixed editing a schedule of vehicle with assigned route
+
+* [Bonus] Fix for incorrect display of population needed for next demand in the city window
+* [Bonus] Refit task duration is calculated only for units that needs to change the transported item, instead of all units in the refit task    
+
 Version 1.2
 * Display average speed in total schedule time tooltip
 * Display loading time / total schedule time ratio in total schedule time tooltip
