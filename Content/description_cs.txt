@@ -29,8 +29,16 @@ Poznámka: Po instalaci modifikace do stávající hry je potřeba nějaký čas
 Pro zobrazení součtu údajů za všechna vozidla stejné trasy je potřeba, aby všechna vozidla měla plně načtené údaje.
 
 [h2]Changelog[/h2]
-
-[h3]Verze 2.0[/h3]
+[b]Version 2.0.2[/b]
+[list]
+[*] Přidáno nastavení pro volbu výpočtu surovin a továren pro zboží poptávané obchody, které nejsou obsluhovány
+[/list]
+[list]
+[b]Verze 2.0.1[/b]
+[*] [Bugfix] Oprava NullReferenceException při zobrazení okna vozidla
+[*] [Bugfix] Opravena chyba ukládání a nahrávání hry
+[/list]
+[b]Verze 2.0[/b]
 [list]
 [*] při editaci jízdního řádu nebo vytvoření nového se mod pokusí získat cestovní nebo nakládací čas z jiného vlaku nebo z jiné části jízdního řádu vlastního vlaku, takže přepravní kapacitu je možné ihned zobrazit
 [*] pokud se v jedné stanici současně vykládá i nakládá stejné zboží, tak se zobrazí obě hodnoty v příslušné části místo rozdílu nakládky a vykládky
@@ -45,14 +53,14 @@ Pro zobrazení součtu údajů za všechna vozidla stejné trasy je potřeba, ab
 [*] [Bonus] doba potřebná na přestavbu vozidel na jiný náklad se počítá jen pro vozy, které skutečně mění druh zboží
 [/list] 
 
-[h3]Verze 1.2[/h3]
+[b]Verze 1.2[/b]
 [list]
 [*] zobrazení průměrné rychlosti vozidla
 [*] zobrazení poměru doby nakládky k celkové době jízdního řádu
 [*] vypočítá a zobrazí součet položek potřebných k výrobě odhadovaných naložených položek pro stanici
 [/list] 
 
-[h3]Verze 1.1[/h3]
+[b]Verze 1.1[/b]
 [*] počet zobrazených položek je nyní omezen, aby se zabránilo jejich přetečení
 [*] zobrazení odhadovaného součtu nakládky/vykládky z vozidel v okně stanice
 [*] při kopírování vozidla s nastavenou trasou nebo při přiřazení existující trasy k vozidlu se údaje o průměrném čase trasy zkopírují do tohoto vozidla (takže celková kapacita trasy se okamžitě přepočítá a zobrazí)
