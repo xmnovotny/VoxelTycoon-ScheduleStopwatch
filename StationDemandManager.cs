@@ -245,36 +245,30 @@ namespace ScheduleStopwatch
             writer.WriteInt(_additionalDemands.Count);
             foreach (KeyValuePair<VehicleStation, UniqueList<IStorageNetworkNode>> stationPair in _additionalDemands)
             {
-                if (stationPair.Value.Count > 0)
+                writer.WriteBuilding(stationPair.Key);
+                
+                UniqueList<IStorageNetworkNode> list = stationPair.Value;
+                int count = list.Count;
+                
+                writer.WriteInt(count);                    
+                for (int i = 0; i < list.Count; i++)
                 {
-                    writer.WriteBuilding(stationPair.Key);
-                    
-                    UniqueList<IStorageNetworkNode> list = stationPair.Value;
-                    int count = list.Count;
-                    
-                    writer.WriteInt(count);                    
-                    for (int i = 0; i < list.Count; i++)
-                    {
-                        writer.WriteBuilding(list[i].Building);
-                    }
+                    writer.WriteBuilding(list[i].Building);
                 }
             }
 
             writer.WriteInt(_connectedStations.Count);
             foreach (KeyValuePair<VehicleStation, UniqueList<VehicleStation>> stationPair in _connectedStations)
             {
-                if (stationPair.Value.Count > 0)
+                writer.WriteBuilding(stationPair.Key);
+
+                UniqueList<VehicleStation> list = stationPair.Value;
+                int count = list.Count;
+
+                writer.WriteInt(count);
+                for (int i = 0; i < list.Count; i++)
                 {
-                    writer.WriteBuilding(stationPair.Key);
-
-                    UniqueList<VehicleStation> list = stationPair.Value;
-                    int count = list.Count;
-
-                    writer.WriteInt(count);
-                    for (int i = 0; i < list.Count; i++)
-                    {
-                        writer.WriteBuilding(list[i]);
-                    }
+                    writer.WriteBuilding(list[i]);
                 }
             }
         }
@@ -292,12 +286,12 @@ namespace ScheduleStopwatch
                 {
                     VehicleStation station = reader.ReadBuilding<VehicleStation>();
                     UniqueList<IStorageNetworkNode> demandList = null;
-                    if (station != null)
+                    int countList = reader.ReadInt();
+                    if (countList > 0 && station != null)
                     {
                         demandList = GetOrCreateDemandsList(station);
                     }
 
-                    int countList = reader.ReadInt();
                     for (int j = 0; j < countList; j++)
                     {
                         IStorageNetworkNode node = reader.ReadBuilding<Building>() as IStorageNetworkNode;
@@ -314,12 +308,12 @@ namespace ScheduleStopwatch
                 {
                     VehicleStation station = reader.ReadBuilding<VehicleStation>();
                     UniqueList<VehicleStation> stationList = null;
-                    if (station != null)
+                    int countList = reader.ReadInt();
+                    if (countList > 0 && station != null)
                     {
                         stationList = GetOrCreateConnectedStationsList(station);
                     }
 
-                    int countList = reader.ReadInt();
                     for (int j = 0; j < countList; j++)
                     {
                         VehicleStation connStation = reader.ReadBuilding<VehicleStation>();
