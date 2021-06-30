@@ -33,8 +33,8 @@ Pro zobrazení součtu údajů za všechna vozidla stejné trasy je potřeba, ab
 [list]
 [*] Přidáno nastavení pro volbu výpočtu surovin a továren pro zboží poptávané obchody, které nejsou obsluhovány
 [/list]
-[list]
 [b]Verze 2.0.1[/b]
+[list]
 [*] [Bugfix] Oprava NullReferenceException při zobrazení okna vozidla
 [*] [Bugfix] Opravena chyba ukládání a nahrávání hry
 [/list]
