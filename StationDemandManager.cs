@@ -331,6 +331,8 @@ namespace ScheduleStopwatch
         protected override void OnInitialize()
         {
             base.OnInitialize();
+            LazyManager<BuildingManager>.Current.BuildingRemoved -= OnBuildingRemoved;
+            LazyManager<StorageNetworkManager>.Current.NodeChanged -= OnNodeChange;
             LazyManager<BuildingManager>.Current.BuildingRemoved += OnBuildingRemoved;
             LazyManager<StorageNetworkManager>.Current.NodeChanged += OnNodeChange;
         }

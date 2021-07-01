@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using System.Linq;
 using System.Collections.Generic;
-using ScheduleStopwatch.Helper;
 using UnityEngine;
 using UnityEngine.UI;
 using VoxelTycoon;
@@ -333,18 +332,7 @@ namespace ScheduleStopwatch.UI
 
 		private static Transform GetStorageNetworkTab()
 		{
-			Transform tabTransf;
-			Version version = new Version();
-			if (version.CompareTo("0.86.0.6") >= 0)
-			{
-				tabTransf = ScheduleStopwatchHelper_0_86_0_6.GetStorageNetworkTab();
-			}
-			else
-			{
-				tabTransf = ScheduleStopwatchHelper_0_86_0_0.GetStorageNetworkTab();
-			}
-
-			return tabTransf;
+			return Instantiate(R.Game.UI.StorageNetworking.StorageNetworkTab).transform;
 		}
 		
 		private static StationWindowLogisticsTab GetTemplate()

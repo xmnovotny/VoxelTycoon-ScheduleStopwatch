@@ -67,14 +67,16 @@ namespace ScheduleStopwatch
 
         {
             base.OnInitialize();
+            VehicleScheduleHelper.Current.VehicleRouteChanged -= OnVehicleRouteChange;
             VehicleScheduleHelper.Current.VehicleRouteChanged += OnVehicleRouteChange;
+            VehicleScheduleHelper.Current.VehicleIsEnabledChanged -= OnVehicleIsEnabledChanged;
             VehicleScheduleHelper.Current.VehicleIsEnabledChanged += OnVehicleIsEnabledChanged;
         }
 
         protected override void OnDeinitialize()
         {
-            VehicleScheduleHelper.Current.VehicleRouteChanged -= OnVehicleRouteChange;
-            VehicleScheduleHelper.Current.VehicleIsEnabledChanged -= OnVehicleIsEnabledChanged;
+//            VehicleScheduleHelper.Current.VehicleRouteChanged -= OnVehicleRouteChange;
+//            VehicleScheduleHelper.Current.VehicleIsEnabledChanged -= OnVehicleIsEnabledChanged;
             foreach (CacheData data in _cache.Values)
             {
                 data.OnRouteDataRemove();

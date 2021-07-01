@@ -31,12 +31,12 @@ namespace ScheduleStopwatch
         {
             Harmony.DEBUG = false;
             harmony = (Harmony)(object)new Harmony(harmonyID);
-            FileLog.Reset();
-            Manager<VehicleScheduleDataManager>.Initialize();
+            //FileLog.Reset();
             if (XMNUtils.ModFunctions.IsModInstalled("AdvancedTransferTask"))
             {
                 Manager<AdvancedTransferTaskAdapter>.Initialize();
             }
+            Manager<VehicleScheduleDataManager>.Initialize();
             harmony.PatchAll();
         }
 
