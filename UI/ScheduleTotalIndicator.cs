@@ -118,7 +118,7 @@ namespace ScheduleStopwatch.UI
             _lastTransfersPerStation = null;
             _lastMonthMultiplier = data.ScheduleMonthlyMultiplier;
             _lastTotalTime = data.ScheduleAvereageDuration;
-            _lastInaccurate = _lastTotalTime != null && _lastTotalTime.Estimated;
+            _lastInaccurate = _lastTotalTime is {Estimated: true};
             _lastInaccurate = false;
             if (_text != null)
             {

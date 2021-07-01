@@ -142,7 +142,16 @@ namespace ScheduleStopwatch
                         {
                             return null;
                         }
-                        routeTransfers.Add(vehicleData.Capacity.GetTransfers(vehicle.Schedule.GetTasks()[taskIndex]), mult, vehicleData.ScheduleAvereageDuration.Estimated);
+
+                        IReadOnlyDictionary<Item, TransferData> transfers = vehicleData.Capacity.GetTransfers(vehicle.Schedule.GetTasks()[taskIndex]);
+                        if (transfers != null)
+                        {
+                            routeTransfers.Add(transfers, mult, vehicleData.ScheduleAvereageDuration.Estimated);
+                        }
+                        else
+                        {
+                            return null;
+                        }
                     }
                 }
 
@@ -392,7 +401,7 @@ namespace ScheduleStopwatch
                 return; //some refit is set to auto
             }
             if (!ProcessSchedule(storages, false)) //find start state of loaded items
-                return;  //some vehicle unit has stroage setted to auto and there is no refit in the schedule for set it to the specific item
+                return;  //some vehicle unit has storage set to auto and there is no refit in the schedule for set it to the specific item
             ProcessSchedule(storages, false, _transfers); //finally simulate counts loaded and unloaded for each task
             _hasValidData = true;
         }
