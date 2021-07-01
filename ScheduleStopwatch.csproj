@@ -35,6 +35,9 @@
     <Reference Include="$(VoxelTycoonInstallationDir)\VoxelTycoon_Data\Managed\UnityEngine.TextRenderingModule.dll">
       <HintPath>{$VoxelTycoonInstallationDir}\VoxelTycoon_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
+    <Reference Include="AdvancedTransferTask, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\AdvancedTransferTask\AdvancedTransferTask\obj\Release\netstandard2.0\AdvancedTransferTask.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\VoxelTycoon\VoxelTycoon_Data\Managed\Newtonsoft.Json.dll</HintPath>
     </Reference>

@@ -100,6 +100,23 @@ namespace ScheduleStopwatch
             VehicleIsEnabledChanged?.Invoke(vehicle);
         }
 
+        private void OnAdvancedTaskPercentChange(TransferTask task)
+        {
+            OnSubtaskChanged(task, true, false);
+        }
+
+        protected override void OnDeinitialize()
+        {
+            Manager<AdvancedTransferTaskAdapter>.Current?.UnsubscribePercentChange(OnAdvancedTaskPercentChange);
+            base.OnDeinitialize();
+        }
+
+        protected override void OnInitialize()
+        {
+            base.OnInitialize();
+            Manager<AdvancedTransferTaskAdapter>.Current?.SubscribePercentChange(OnAdvancedTaskPercentChange);
+        }
+        
         #region Harmony
         #region RootTask
         //VehicleSchedule.CurrentTask is still set to the finished task
@@ -327,5 +344,6 @@ namespace ScheduleStopwatch
 
         #endregion
         #endregion
+
     }
 }

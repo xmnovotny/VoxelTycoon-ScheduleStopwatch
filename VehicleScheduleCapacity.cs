@@ -174,7 +174,7 @@ namespace ScheduleStopwatch
         }
 
 
-        private struct StorageState
+        internal struct StorageState
         {
             public Storage storage;
             public int count;
@@ -247,6 +247,7 @@ namespace ScheduleStopwatch
             ImmutableUniqueList<VehicleUnit> targetUnits = transferTask.GetTargetUnits();
             int targetUnitsCount = targetUnits.Count;
 
+            Dictionary<VehicleUnit, int> loadingLimits = Manager<AdvancedTransferTaskAdapter>.Current?.GetCapacityLimits(transferTask, storages);
             for (int k = 0; k < targetUnitsCount; k++)
             {
                 VehicleUnit targetUnit = targetUnits[k];
@@ -257,7 +258,19 @@ namespace ScheduleStopwatch
                         //autorefitable storage = cannot determine transfer
                         return false;
                     }
-                    int newCount = transferTask is LoadTask ? storage.storage.Capacity : 0;
+
+                    int newCount;
+                    if (loadingLimits != null && loadingLimits.TryGetValue(targetUnit, out int limit))
+                    {
+                        newCount = transferTask is LoadTask
+                            ? Math.Max(storage.count, limit)
+                            : Math.Min(storage.count, limit);
+                    }
+                    else
+                    {
+                        newCount = transferTask is LoadTask ? storage.storage.Capacity : 0;
+                    }
+                    
                     if (storage.count != newCount)
                     {
                         if (calculateTransfer)

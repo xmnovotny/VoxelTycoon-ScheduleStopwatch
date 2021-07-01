@@ -124,7 +124,7 @@ namespace ScheduleStopwatch
                     continue;
                 }
                 VehicleScheduleData scheduleData = this[vehicles[i]];
-                IReadOnlyDictionary<Item, TransferData> transfers = scheduleData?.Capacity.GetTransfersPerStation()[station];
+                IReadOnlyDictionary<Item, TransferData> transfers = scheduleData?.Capacity.GetTransfersPerStation()?[station];
                 float? mult;
                 if (transfers != null && (mult = scheduleData.ScheduleMonthlyMultiplier) != null)
                 {
