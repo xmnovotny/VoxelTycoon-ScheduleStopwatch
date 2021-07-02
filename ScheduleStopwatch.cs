@@ -31,7 +31,7 @@ namespace ScheduleStopwatch
         {
             Harmony.DEBUG = false;
             harmony = (Harmony)(object)new Harmony(harmonyID);
-            //FileLog.Reset();
+            FileLog.Reset();
             if (XMNUtils.ModFunctions.IsModInstalled("AdvancedTransferTask"))
             {
                 Manager<AdvancedTransferTaskAdapter>.Initialize();

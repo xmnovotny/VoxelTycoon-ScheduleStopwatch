@@ -28,8 +28,16 @@ Mod je možné bezpečně přidat/odebrat do/z existujících uložených her.
 Poznámka: Po instalaci modifikace do stávající hry je potřeba nějaký čas, než jsou k dispozici časové údaje - všechna vozidla musí splnit jeden cyklus plánu. Totéž platí, když je přidáno nové vozidlo s novou trasou. 
 Pro zobrazení součtu údajů za všechna vozidla stejné trasy je potřeba, aby všechna vozidla měla plně načtené údaje.
 
+[h2]Kompatibilita[/h2]
+Mod by měl být kompatibilní s většinou ostatních modů.
+Podpora pro [b][url=https://steamcommunity.com/sharedfiles/filedetails/?id=2533976267]Advanced transfer task mod[/url][/b] - výpočty přepravních kapacit zahrnují hodnoty nastavení tímto modem.
+
 [h2]Changelog[/h2]
-[b]Version 2.0.2[/b]
+[b]Verze 2.0.3[/b]
+[list]
+[*] Přidána podpora pro [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2533976267]Advanced transfer task mod[/url]
+[/list]
+[b]Verze 2.0.2[/b]
 [list]
 [*] Přidáno nastavení pro volbu výpočtu surovin a továren pro zboží poptávané obchody, které nejsou obsluhovány
 [/list]
