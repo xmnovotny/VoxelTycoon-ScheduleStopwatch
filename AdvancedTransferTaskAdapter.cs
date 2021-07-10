@@ -54,6 +54,7 @@ namespace ScheduleStopwatch
             {
                 Item item = storageInfo.Value.storage?.Item;
                 if (item == null) continue;
+                if (!_tmpCapacity.ContainsKey(item)) continue;
                 
                 int limit = _tmpCapacityPerUnit[item];
                 if (_additionalCapacity[item] > 0)
