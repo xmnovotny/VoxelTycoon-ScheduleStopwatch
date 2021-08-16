@@ -173,9 +173,7 @@ namespace ScheduleStopwatch
             }
             if (!_transfPerStationPerUnit.TryGetValue(unitIndex, out TransfersPerStationCont result))
             {
-                if (!TransfPerUnit.TryGetValue(unitIndex, out Dictionary<RootTask, TaskTransfers> transfers)) {
-                    transfers = null;
-                }
+                Dictionary<RootTask, TaskTransfers> transfers = TransfPerUnit?.GetValueOrDefault(unitIndex);
                 result = new TransfersPerStationCont(transfers);
                 _transfPerStationPerUnit.Add(unitIndex, result);
             }

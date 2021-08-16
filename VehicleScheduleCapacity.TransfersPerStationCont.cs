@@ -53,11 +53,11 @@ namespace ScheduleStopwatch
                 }
             }
 
-            public void Add(TransfersPerStationCont transfPerStation, float? mutliplier, bool estimated = false)
+            public void Add(TransfersPerStationCont transfPerStation, float? multiplier, bool estimated = false)
             {
                 foreach (KeyValuePair<VehicleStationLocation, TaskTransfers> pair in transfPerStation._transfPerSt)
                 {
-                    Add(pair.Key, pair.Value, mutliplier, estimated);
+                    Add(pair.Key, pair.Value, multiplier, estimated);
                 }
             }
 

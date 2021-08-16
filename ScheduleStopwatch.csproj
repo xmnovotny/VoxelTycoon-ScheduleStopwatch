@@ -96,20 +96,32 @@
 
   <ItemGroup>
     <Compile Remove="VersionHelpers\**" />
+    <Compile Remove="Utils\ModSettings\**" />
     <Compile Include="..\Utils\CSharp9Helper.cs">
-      <Link>Content\Utils\CSharp9Helper.cs</Link>
+      <Link>Utils\CSharp9Helper.cs</Link>
+    </Compile>
+    <Compile Include="..\Utils\SimpleDelegateFactory.cs">
+      <Link>Utils\SimpleDelegateFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\Utils\SimpleLazyManager.cs">
+      <Link>Utils\SimpleLazyManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Utils\SimpleManager.cs">
+      <Link>Utils\SimpleManager.cs</Link>
     </Compile>
     <Compile Include="..\Utils\XMNUtils.cs">
-      <Link>Content\Utils\XMNUtils.cs</Link>
+      <Link>Utils\XMNUtils.cs</Link>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Remove="VersionHelpers\**" />
+    <EmbeddedResource Remove="Utils\ModSettings\**" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="VersionHelpers\**" />
+    <None Remove="Utils\ModSettings\**" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
