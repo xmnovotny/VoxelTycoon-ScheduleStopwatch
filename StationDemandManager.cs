@@ -87,12 +87,18 @@ namespace ScheduleStopwatch
             }
             if (_connectedStations.TryGetValue(station, out UniqueList<VehicleStation> stations))
             {
-                for (int i = 0; i < stations.Count; i++)
+                for (int i = stations.Count - 1; i >= 0; i--)
                 {
-                    yield return stations[i];
+                    VehicleStation connectedStation = stations[i];
+                    if (ReferenceEquals(connectedStation, null) || !connectedStation.IsBuilt)
+                    {
+                        stations.QuickRemoveAt(i);
+                        continue;
+                    }
+
+                    yield return connectedStation;
                 }
             }
-            yield break;
         }
 
         public bool AddDemand(VehicleStationLocation location, IStorageNetworkNode demand)
@@ -110,10 +116,9 @@ namespace ScheduleStopwatch
                     OnDemandChange(location.VehicleStation);
                 }
                 return result;
-            } else
-            {
-                throw new ArgumentException("Only Store and Lab can be added as a station demand", "demand");
             }
+
+            throw new ArgumentException("Only Store and Lab can be added as a station demand", nameof(demand));
         }
 
         public bool RemoveDemand(VehicleStationLocation location, IStorageNetworkNode demand)

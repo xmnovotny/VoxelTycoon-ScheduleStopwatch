@@ -100,7 +100,7 @@ namespace ScheduleStopwatch.UI
 
 		protected void Update()
 		{
-			if (this._station is not {isActiveAndEnabled: true}) return;
+			if (ReferenceEquals(_station, null) || !_station.IsBuilt) return;
 			if (TimeHelper.OncePerUnscaledTime(1f, this._offset))
 			{
 				this.Invalidate();
