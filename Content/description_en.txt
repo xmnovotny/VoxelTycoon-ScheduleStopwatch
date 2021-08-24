@@ -31,6 +31,11 @@ It should be compatible with with the majority of the mods
 Supports [b][url=https://steamcommunity.com/sharedfiles/filedetails/?id=2533976267]Advanced transfer task mod[/url][/b] and calculates transfers based on that mod settings
 
 [h2]Changelog[/h2]
+[b]Version 2.0.4[/b]
+[list]
+[*] [Bugfix] Fixed NullReferenceException while calculating station transfers and removing stations
+[*] Added chinese translation (thanks to Github user TheHZDev)
+[/list]
 [b]Version 2.0.3[/b]
 [list]
 [*] Added support for [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2533976267]Advanced transfer task mod [/url]

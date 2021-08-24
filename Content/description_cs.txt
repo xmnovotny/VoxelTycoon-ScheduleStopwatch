@@ -33,6 +33,11 @@ Mod by měl být kompatibilní s většinou ostatních modů.
 Podpora pro [b][url=https://steamcommunity.com/sharedfiles/filedetails/?id=2533976267]Advanced transfer task mod[/url][/b] - výpočty přepravních kapacit zahrnují hodnoty nastavení tímto modem.
 
 [h2]Changelog[/h2]
+[b]Verze 2.0.4[/b]
+[list]
+[*] [Bugfix] Oprava NullReferenceException při výpočtu staničních údajů nakládky a při odstranění stanice
+[*] Přidán čínský překlad (díky uživateli Githubu TheHZDev)
+[/list]
 [b]Verze 2.0.3[/b]
 [list]
 [*] Přidána podpora pro [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2533976267]Advanced transfer task mod[/url]

@@ -1,5 +1,9 @@
+Version 2.0.4
+* [Bugfix] Fixed NullReferenceException while calculating station transfers and removing stations
+* Added chinese translation (thanks to Github user TheHZDev)
+
 Version 2.0.3
-* [Bugfix] Fixed NullReferenceException while calculating station transfers
+* Added support for [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2533976267]Advanced transfer task mod [/url]
 
 Version 2.0.2
 * Added settings for calculating ingredients for unserviced stores demands
